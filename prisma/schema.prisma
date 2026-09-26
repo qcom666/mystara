@@ -1,0 +1,220 @@
+// Prisma schema — see PROJECT_ARCHITECTURE.md §10 for entity rationale.
+// Tarot card/spread *content* is intentionally NOT modeled here (Decision Log #1);
+// Reading/ReadingCard reference that content by plain string id.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Auth.js standard models (JWT session strategy still uses Account/User) ---
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  // Optional now — a Telegram-only user has no email at all. At least one of
+  // (email, telegramId) is always set; enforced in application code, not the
+  // schema, since Prisma can't express "either/or" constraints.
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String? // set only for Credentials sign-up; null for OAuth-only/Telegram users
+
+  // Telegram Mini App identity (see src/lib/telegram/). Populated the first
+  // time a user opens the Mini App — see PROJECT_ARCHITECTURE.md §16/§19.
+  telegramId       String? @unique
+  telegramUsername String?
+  telegramPhotoUrl String?
+
+  // Shared by numerology + astrology (see modules/numerology, modules/astrology).
+  // Stored on the profile once so returning users don't re-enter it, but both
+  // flows also work ad hoc without saving (same guest-friendly pattern as Tarot).
+  birthDate DateTime?
+
+  language String @default("en")
+  timezone String @default("UTC")
+
+  // Proof of consent to personal-data processing (152-FZ art. 9): when it was
+  // given and under which policy version (src/lib/legal/operator.ts). Null for
+  // accounts created before consent capture existed.
+  privacyConsentAt      DateTime?
+  privacyPolicyVersion  String?
+
+  createdAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  readings           Reading[]
+  favorites          Favorite[]
+  subscription       Subscription?
+  numerologyReadings NumerologyReading[]
+  astrologyReadings  AstrologyReading[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Product models ---
+
+enum Orientation {
+  UPRIGHT
+  REVERSED
+}
+
+enum FavoriteType {
+  CARD
+  SPREAD
+}
+
+enum PlanTier {
+  FREE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+model Reading {
+  id         String   @id @default(cuid())
+  userId     String
+  spreadId   String // references modules/tarot/domain spreads.data.ts, not a DB row
+  question   String?
+  seed       String // provenance only — rendering always uses ReadingCard rows, never a replay (see architecture §6)
+  isFavorite Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards             ReadingCard[]
+  aiInterpretation  AIInterpretation?
+
+  @@index([userId, createdAt])
+}
+
+model ReadingCard {
+  id          String      @id @default(cuid())
+  readingId   String
+  cardId      String // references modules/tarot/domain card dataset
+  positionId  String // references the spread's position id
+  orientation Orientation
+  order       Int
+
+  reading Reading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+
+  @@index([readingId])
+}
+
+model AIInterpretation {
+  id                  String   @id @default(cuid())
+  readingId           String   @unique
+  provider            String
+  summary             String   @db.Text
+  overall             String   @db.Text
+  themes              String[]
+  advice              String[]
+  challenges          String[]
+  cardInterpretations Json // Array<{ positionId, cardId, interpretation }>
+  generatedAt         DateTime @default(now())
+
+  reading Reading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String       @id @default(cuid())
+  userId    String
+  type      FavoriteType
+  targetId  String // cardId or spreadId depending on `type`
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, targetId])
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  tier               PlanTier           @default(FREE)
+  status             SubscriptionStatus @default(ACTIVE)
+  provider           String? // e.g. "stripe" — null until a payment provider is wired up
+  externalId         String?
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// --- Numerology & Astrology (Phase 7/8) ---
+// Same pattern as Tarot: the *meanings* (life path number text, zodiac sign
+// text, actor fun-fact data) are static domain data in modules/numerology
+// and modules/astrology, not DB rows — only the user's own computed results
+// are persisted here.
+
+model NumerologyReading {
+  id             String   @id @default(cuid())
+  userId         String
+  birthDate      DateTime
+  lifePathNumber Int
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model AstrologyReading {
+  id        String   @id @default(cuid())
+  userId    String
+  birthDate DateTime
+  sunSign   String // zodiac sign id, e.g. "aries" — references modules/astrology domain data
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// Future: BirthChart (full natal chart — needs an ephemeris data source, not
+// just a birthdate), CompatibilityReading, DailyHoroscope, Notification,
+// Payment — intentionally not modeled yet. See PROJECT_ARCHITECTURE.md §10.

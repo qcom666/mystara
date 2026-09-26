@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+:root {
+  --midnight-950: #05040a;
+  --midnight-900: #0a0814;
+  --midnight-800: #13101f;
+  --midnight-700: #1d192e;
+  --midnight-600: #2a2440;
+
+  --gold-300: #f3da8f;
+  --gold-400: #e6c368;
+  --gold-500: #d4af37;
+  --gold-600: #b3922c;
+
+  --violet-300: #c4b0fb;
+  --violet-400: #a78bfa;
+  --violet-500: #8b5cf6;
+  --violet-600: #6d3ff0;
+
+  --silver-200: #e7e9f0;
+  --silver-300: #cdd1de;
+  --silver-400: #9ca0b5;
+  --silver-500: #6f7488;
+
+  --background: var(--midnight-950);
+  --foreground: var(--silver-200);
+}
+
+@theme inline {
+  --color-midnight-950: var(--midnight-950);
+  --color-midnight-900: var(--midnight-900);
+  --color-midnight-800: var(--midnight-800);
+  --color-midnight-700: var(--midnight-700);
+  --color-midnight-600: var(--midnight-600);
+
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+
+  --color-violet-300: var(--violet-300);
+  --color-violet-400: var(--violet-400);
+  --color-violet-500: var(--violet-500);
+  --color-violet-600: var(--violet-600);
+
+  --color-silver-200: var(--silver-200);
+  --color-silver-300: var(--silver-300);
+  --color-silver-400: var(--silver-400);
+  --color-silver-500: var(--silver-500);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-display: var(--font-cormorant), "Iowan Old Style", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-fade-in-up: fade-in-up 0.7s ease-out both;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+* {
+  border-color: var(--midnight-700);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--violet-600);
+  color: var(--silver-200);
+}
+
+/*
+ * Custom reusable classes, deliberately placed in Tailwind's own
+ * `utilities` layer. Cascade layers always rank unlayered CSS above ANY
+ * `@layer`, regardless of source order or selector specificity — a plain
+ * `.foo { position: relative }` here would silently beat a Tailwind
+ * `fixed`/`absolute` utility applied on the same element every time. That
+ * exact bug shipped once already (a modal rendered at `position: relative`
+ * instead of `fixed` because `.noise-overlay` — unlayered — overrode it), so
+ * `.noise-overlay` also no longer sets `position` itself; callers add their
+ * own Tailwind position utility (see cta-section.tsx, dialog.tsx).
+ */
+@layer utilities {
+  /* Subtle film-grain noise so flat dark panels don't look sterile. Inline
+     SVG, no asset request. Requires the element to already have a
+     non-static `position` (relative/fixed/absolute) from its own classes. */
+  .noise-overlay {
+    isolation: isolate;
+  }
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .glass-panel {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.015));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, var(--gold-300), var(--gold-500) 60%, var(--gold-600));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card-glow {
+    box-shadow: 0 0 60px -12px rgb(212 175 55 / 0.25);
+  }
+
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--gold-400);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
