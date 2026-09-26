@@ -138,7 +138,8 @@ behind each decision referenced below.
 ## Deployment
 - [x] Live on Vercel: https://taroproject.vercel.app (project `taro_project`, team `qcom666`); public, no deployment protection; env: `AUTH_SECRET`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SITE_URL`
 - [ ] Production has no `DATABASE_URL` (accounts/history off) — blocked on the localization decision above
-- [ ] Connect a Git repo (none yet, no commits) for push-to-deploy and preview URLs; today it's `npx vercel --prod` from the working tree
+- [x] Git repo: private GitHub repo `qcom666/mystara` (branch `main`), CI in `.github/workflows/ci.yml` (typecheck → lint → tests → build)
+- [ ] Vercel ↔ GitHub link for push-to-deploy and preview URLs (see status in Deployment notes; until linked, deploy with `npx vercel --prod`)
 
 ## Pre-launch honesty pass
 - [x] Fake testimonials removed from the landing page (component + i18n keys)
@@ -205,6 +206,6 @@ behind each decision referenced below.
 - [x] i18n — English + Russian, see Phase 9 below
 - [x] Unit tests: deck integrity, draw engine (no dupes/reproducibility), spread engine, usage-limit policy, reading reconstruction
 - [ ] Component/E2E tests (Playwright) — not started, recommended before real users hit the app
-- [ ] CI pipeline (typecheck/lint/test/build on push)
+- [x] CI pipeline (typecheck/lint/test/build on push) — GitHub Actions
 - [ ] Rate limiting middleware on API routes (usage-limit *policy* exists; a request-level limiter, e.g. Upstash, does not)
 - [ ] Structured logging / error monitoring (Sentry or similar)
