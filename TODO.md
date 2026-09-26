@@ -139,7 +139,7 @@ behind each decision referenced below.
 - [x] Live on Vercel: https://taroproject.vercel.app (project `taro_project`, team `qcom666`); public, no deployment protection; env: `AUTH_SECRET`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SITE_URL`
 - [ ] Production has no `DATABASE_URL` (accounts/history off) — blocked on the localization decision above
 - [x] Git repo: private GitHub repo `qcom666/mystara` (branch `main`), CI in `.github/workflows/ci.yml` (typecheck → lint → tests → build)
-- [ ] Vercel ↔ GitHub link for push-to-deploy and preview URLs (see status in Deployment notes; until linked, deploy with `npx vercel --prod`)
+- [ ] Vercel ↔ GitHub link for push-to-deploy and preview URLs — needs the account owner: Vercel → Account Settings → Authentication → connect GitHub ("Login Connection"), install the Vercel GitHub App on `qcom666`, then `npx vercel git connect https://github.com/qcom666/mystara`. Until then deploy with `npx vercel --prod`
 
 ## Pre-launch honesty pass
 - [x] Fake testimonials removed from the landing page (component + i18n keys)

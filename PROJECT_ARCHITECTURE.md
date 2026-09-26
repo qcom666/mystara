@@ -537,8 +537,13 @@ an optional card names a real actor who shares something with it.
 - **Currently live:** https://taroproject.vercel.app (Vercel project
   `taro_project`, team `qcom666`, production-only env vars `AUTH_SECRET`,
   `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SITE_URL`; no `DATABASE_URL` yet, so
-  accounts/history are off in production). Deployed with `npx vercel --prod`
-  from the working tree — the repo has no git remote, so no auto-deploys.
+  accounts/history are off in production). Source lives in the private GitHub
+  repo `qcom666/mystara` (branch `main`; CI in `.github/workflows/ci.yml`:
+  typecheck → lint → tests → build). Production is still deployed manually with
+  `npx vercel --prod`: `vercel git connect` failed with "add a Login Connection to
+  your GitHub account first", i.e. the Vercel account needs GitHub connected
+  (Vercel → Account Settings → Authentication) and the Vercel GitHub App
+  installed on the GitHub account before push-to-deploy works.
   Note: on a machine behind a fake-IP proxy, `curl` to `*.vercel.app` can fail
   the TLS handshake even though the site is fine; check in a browser.
 - **Telegram-specific:** the Mini App URL registered with @BotFather must be
@@ -679,8 +684,9 @@ an optional card names a real actor who shares something with it.
     the point of invisible". The wording lives in `footer.disclaimer`
     (en + ru) and is reused on the Telegram screens where the footer is hidden.
 15. **Production deploy is manual `vercel --prod` from the working tree.**
-    The repo has no commits or remote, so there is no Git integration yet;
-    connecting a GitHub repo would give push-to-deploy and preview URLs.
+    The repo now exists on GitHub (`qcom666/mystara`, private) with CI, but the
+    Vercel↔GitHub link still needs a one-time setup by the account owner (see
+    §19); once linked, pushes to `main` deploy and PRs get preview URLs.
     Production has no database, so sign-up/history are unavailable there
     until a `DATABASE_URL` is added (and, per #13, where that DB lives is a
     legal decision, not just a technical one).
