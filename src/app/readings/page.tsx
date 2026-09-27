@@ -6,7 +6,7 @@ import { isDatabaseConfigured } from "@/lib/db";
 import { listAstrologyReadingsForUser } from "@/lib/repositories/astrology.repository";
 import { listNumerologyReadingsForUser } from "@/lib/repositories/numerology.repository";
 import { listReadingsForUser } from "@/lib/repositories/reading.repository";
-import type { ZodiacSignId } from "@/modules/astrology/domain/types";
+import type { Sect, ZodiacSignId } from "@/modules/astrology/domain/types";
 import type { LifePathNumber } from "@/modules/numerology/domain/types";
 
 export const metadata: Metadata = { title: "My Readings" };
@@ -41,11 +41,13 @@ export default async function ReadingsHistoryPage() {
       id: entry.id,
       number: entry.lifePathNumber as LifePathNumber,
       createdAt: entry.createdAt.toISOString(),
+      fullName: entry.fullName,
     })),
     astrologyReadings: astrologyReadings.map((entry) => ({
       id: entry.id,
       signId: entry.sunSign as ZodiacSignId,
       createdAt: entry.createdAt.toISOString(),
+      sect: entry.sect as Sect | null,
     })),
   };
 

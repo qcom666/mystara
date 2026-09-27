@@ -1,15 +1,17 @@
 import { prisma } from "@/lib/db";
-import type { ZodiacSignId } from "@/modules/astrology/domain/types";
+import type { Sect, ZodiacSignId } from "@/modules/astrology/domain/types";
 
 export interface CreateAstrologyReadingInput {
   userId: string;
   birthDate: Date;
   sunSign: ZodiacSignId;
+  /** null when the user picked "Not sure" in AstrologyInputForm. */
+  sect?: Sect | null;
 }
 
 export async function createAstrologyReading(input: CreateAstrologyReadingInput) {
   return prisma.astrologyReading.create({
-    data: { userId: input.userId, birthDate: input.birthDate, sunSign: input.sunSign },
+    data: { userId: input.userId, birthDate: input.birthDate, sunSign: input.sunSign, sect: input.sect ?? null },
   });
 }
 

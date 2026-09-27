@@ -43,7 +43,7 @@ export function AstrologyResult({ birthDate, sect, onReset }: AstrologyResultPro
       const response = await fetch("/api/astrology", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ birthDate: birthDate.toISOString().slice(0, 10), sunSign: sign.id }),
+        body: JSON.stringify({ birthDate: birthDate.toISOString().slice(0, 10), sunSign: sign.id, sect }),
       });
       if (!response.ok) throw new Error("save_failed");
       setSaveStatus("saved");

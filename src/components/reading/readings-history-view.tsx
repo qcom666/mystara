@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatCardCount, useLocale, useTranslation, type Locale } from "@/lib/i18n";
 import { localizeZodiacSign, requireZodiacSignById } from "@/modules/astrology/domain/zodiac-signs.data";
-import type { ZodiacSignId } from "@/modules/astrology/domain/types";
+import type { Sect, ZodiacSignId } from "@/modules/astrology/domain/types";
 import { getLifePathMeaning } from "@/modules/numerology/domain/life-path-meanings.data";
 import { getNumberTypeLabels } from "@/modules/numerology/domain/number-type-framing";
 import type { LifePathNumber } from "@/modules/numerology/domain/types";
@@ -35,12 +35,16 @@ interface NumerologySummary {
   id: string;
   number: LifePathNumber;
   createdAt: string;
+  /** Only present when a name with at least one calculable letter was given (see hasCalculableLetters). */
+  fullName: string | null;
 }
 
 interface AstrologySummary {
   id: string;
   signId: ZodiacSignId;
   createdAt: string;
+  /** null when the user picked "Not sure" at the time. */
+  sect: Sect | null;
 }
 
 export type ReadingsHistoryData =
@@ -115,6 +119,7 @@ export function ReadingsHistoryView({ data }: { data: ReadingsHistoryData }) {
                         <p className="text-sm text-silver-100">
                           {getNumberTypeLabels("lifePath", locale).label} {entry.number} — {getLifePathMeaning(entry.number, locale).title}
                         </p>
+                        {entry.fullName && <p className="mt-0.5 text-xs text-silver-400">{entry.fullName}</p>}
                         <p className="text-xs text-silver-500">{new Date(entry.createdAt).toLocaleDateString()}</p>
                       </div>
                     </GlassPanel>
@@ -131,11 +136,12 @@ export function ReadingsHistoryView({ data }: { data: ReadingsHistoryData }) {
                   <li key={entry.id}>
                     <GlassPanel className="flex items-center justify-between gap-3" padding="sm">
                       <div>
-                        <p className="text-sm text-silver-100">
-                          {zodiacLabel(entry.signId, locale)}
-                        </p>
+                        <p className="text-sm text-silver-100">{zodiacLabel(entry.signId, locale)}</p>
                         <p className="text-xs text-silver-500">{new Date(entry.createdAt).toLocaleDateString()}</p>
                       </div>
+                      {entry.sect && (
+                        <Badge variant="violet">{entry.sect === "day" ? t.astrologyPage.sectDayLabel : t.astrologyPage.sectNightLabel}</Badge>
+                      )}
                     </GlassPanel>
                   </li>
                 ))}

@@ -74,7 +74,7 @@ behind each decision referenced below.
       Expression/Soul Urge/Personality/Maturity numbers computed under both systems
       (`services/calculate-name-numbers.ts`, 8 hand-verified unit tests); result screen shows Life
       Path + Birthday always, plus a Pythagorean/Chaldean tab switcher when a name is given
-- [ ] Persisting the richer profile — `/api/numerology` still only stores birth date + Life Path; full name, both systems' numbers, and system choice are not yet saved (schema/route expansion not done, by scope choice for this pass)
+- [x] Persisting the richer profile — `NumerologyReading` now also stores `birthdayNumber`, `fullName` (when calculable), and all eight Pythagorean/Chaldean name-derived numbers; both systems are saved side by side, so there's no separate "system choice" to persist. `/readings` shows the saved name under the Life Path line. Schema change only — needs `prisma migrate dev` once a real `DATABASE_URL` exists (see Phase 4)
 
 ## Phase 8 — Astrology
 - [x] `modules/astrology` domain model — **sun sign only**; a full natal chart needs planetary ephemeris data (exact time + place of birth), a substantial sub-project of its own, deliberately out of scope here
@@ -85,7 +85,7 @@ behind each decision referenced below.
       profiles — favored planets, keynote, Mercury note); `AstrologyInputForm` asks Day/Night/Not
       sure directly rather than computing it; result screen shows a Sect section only when known,
       omitted cleanly for "Not sure"
-- [ ] Persisting sect — `/api/astrology` still only stores birth date + sun sign; sect is not yet saved (same scope choice as numerology above)
+- [x] Persisting sect — `AstrologyReading.sect` (nullable: "day"/"night"/unset for "Not sure"); `/readings` shows it as a badge next to the saved sign
 
 ## Cross-module: actor "fun fact"
 - [x] `modules/fun-facts` — matches a reading/numerology/astrology result to a real actor sharing the same computed zodiac sign, Life Path Number, or (for Tarot) a hand-curated archetype tag on the drawn Major Arcana card. **Data-based, not photo/facial-recognition** — confirmed with the user as the right call.
@@ -151,9 +151,9 @@ behind each decision referenced below.
 
 ## Not yet done for numerology/astrology (by scope choice, not oversight)
 - [ ] Reusing `User.birthDate` (schema field exists, forms don't pre-fill from it or offer to save it yet)
-- [ ] SEO content pages analogous to `/tarot/cards`, `/tarot/spreads` (e.g. `/numerology/1`, `/astrology/aries`)
+- [x] ~~SEO content pages analogous to `/tarot/cards`, `/tarot/spreads`~~ — done: `/numerology/[number]` and `/astrology/[sign]` exist with `generateStaticParams` (this line was stale)
 - [ ] A detail/reconstruction page for a saved numerology or astrology entry (`/readings` lists them inline instead — reasonable given how small the data is, but no dedicated page like `/readings/[id]` exists for them)
-- [ ] Persisting the numerology depth pass (full name + both systems' numbers) and astrology sect — see Phase 7/8 above
+- [x] ~~Persisting the numerology depth pass (full name + both systems' numbers) and astrology sect~~ — done, see Phase 7/8 above
 - [ ] Real ephemeris-based sect calculation from birth time+place (would let "Not sure" go away entirely) — out of scope alongside the full-natal-chart work already noted for Phase 8
 
 ## Fixed in the follow-up bug pass

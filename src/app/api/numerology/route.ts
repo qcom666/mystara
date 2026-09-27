@@ -39,6 +39,10 @@ export async function POST(request: Request) {
     userId: session.user.id,
     birthDate: new Date(`${parsed.data.birthDate}T00:00:00`),
     lifePathNumber: parsed.data.lifePathNumber,
+    birthdayNumber: parsed.data.birthdayNumber,
+    fullName: parsed.data.fullName ?? null,
+    pythagorean: parsed.data.pythagorean ?? null,
+    chaldean: parsed.data.chaldean ?? null,
   });
 
   track({ name: "numerology_calculated", lifePathNumber: parsed.data.lifePathNumber });

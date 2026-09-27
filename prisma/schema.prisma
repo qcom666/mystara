@@ -196,7 +196,23 @@ model NumerologyReading {
   userId         String
   birthDate      DateTime
   lifePathNumber Int
-  createdAt      DateTime @default(now())
+  // Added alongside the depth pass (modules/numerology §17): the Birthday
+  // Number is always computed from birthDate alone, and fullName/the eight
+  // name-derived numbers are only present when the user typed a name with at
+  // least one calculable letter (see hasCalculableLetters). Both systems are
+  // stored side by side — the Pythagorean/Chaldean tab is a display choice,
+  // not a data one, so there's nothing to remember about "which system".
+  birthdayNumber         Int?
+  fullName               String?
+  pythagoreanExpression  Int?
+  pythagoreanSoulUrge    Int?
+  pythagoreanPersonality Int?
+  pythagoreanMaturity    Int?
+  chaldeanExpression     Int?
+  chaldeanSoulUrge       Int?
+  chaldeanPersonality    Int?
+  chaldeanMaturity       Int?
+  createdAt              DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -208,6 +224,9 @@ model AstrologyReading {
   userId    String
   birthDate DateTime
   sunSign   String // zodiac sign id, e.g. "aries" — references modules/astrology domain data
+  // "day" | "night" (see modules/astrology/domain/types.ts Sect) — null when
+  // the user picked "Not sure" in AstrologyInputForm, same as before this field existed.
+  sect      String?
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

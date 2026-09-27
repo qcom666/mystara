@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     userId: session.user.id,
     birthDate: new Date(`${parsed.data.birthDate}T00:00:00`),
     sunSign: parsed.data.sunSign,
+    sect: parsed.data.sect ?? null,
   });
 
   track({ name: "astrology_calculated", sunSign: parsed.data.sunSign });

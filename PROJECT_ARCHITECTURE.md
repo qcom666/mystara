@@ -204,14 +204,16 @@ Product models:
 - `AIInterpretation` (readingId unique, provider, summary, overall, themes[], advice[], challenges[], cardInterpretations Json, generatedAt)
 - `Favorite` (userId, type enum `CARD`|`SPREAD`, targetId string, createdAt) — one generic table instead of two, since "favorite card" and "favorite spread" are the same shape
 - `Subscription` (userId unique, tier enum `FREE`|`PREMIUM`, status enum, provider, externalId, currentPeriodEnd)
+- `NumerologyReading` (userId, birthDate, lifePathNumber, birthdayNumber, fullName *[nullable]*, plus all eight Pythagorean/Chaldean name-derived numbers *[nullable — set together, only when `fullName` is]*, createdAt) — stores the *entire* result shown on screen, both letter-value systems side by side, so nothing is lost by saving
+- `AstrologyReading` (userId, birthDate, sunSign, sect *[nullable: "day"/"night", unset for "Not sure"]*, createdAt)
 
 Daily free-tier usage is derived by counting `Reading` rows for the current
 user within the current day — no separate `UsageEvent` table needed.
 
 ### Future entities (not created yet — documented so the schema story is clear)
-`NumerologyProfile`, `AstrologyProfile`, `BirthChart`, `CompatibilityReading`,
-`DailyHoroscope`, `Notification`, `Payment`, all following the same
-"module owns its tables, shares `User`" pattern as Tarot.
+`BirthChart`, `CompatibilityReading`, `DailyHoroscope`, `Notification`,
+`Payment`, all following the same "module owns its tables, shares `User`"
+pattern as Tarot.
 
 ## 11. API Design
 
@@ -487,10 +489,16 @@ a pure calculation function + a guest-friendly flow, no AI call needed
     person's own knowledge, not a computed guess; "Not sure" (or no
     selection) simply omits the sect section from the result rather than
     guessing.
-- Both are reachable standalone (`/numerology`, `/astrology`) and don't yet
-  persist the richer per-system/per-number/sect data —
-  `NumerologyReading`/`AstrologyReading` still only store birth date +
-  Life Path / sun sign (see TODO.md).
+- Both are reachable standalone (`/numerology`, `/astrology`). Saving persists
+  the full result shown on screen: `NumerologyReading` stores the Birthday
+  Number, the name (when calculable), and all eight Pythagorean/Chaldean
+  name-derived numbers side by side — both systems are saved regardless of
+  which tab was open, since the tab is a display choice, not a data one.
+  `AstrologyReading` stores the sect ("day"/"night", or unset for "Not sure").
+  `/readings` surfaces the saved name and sect alongside each entry. This is a
+  schema-only change so far — applying it to a real database still needs
+  `prisma migrate dev` once `DATABASE_URL` exists (Decision Log #13's
+  data-localization question applies here too).
 
 ## 18. Cross-Module Actor "Fun Fact"
 
@@ -705,3 +713,11 @@ an optional card names a real actor who shares something with it.
 18. **Share preview:** `app/opengraph-image.tsx` generates a 1200×630 card
     (Latin-only — `ImageResponse`'s built-in font has no Cyrillic; adding a
     font would spend its 500KB bundle budget).
+16. **Numerology/astrology now persist the full result, not just the headline
+    number.** `NumerologyReading` gained `birthdayNumber`, `fullName`, and all
+    eight Pythagorean/Chaldean name-derived numbers; `AstrologyReading` gained
+    `sect`. Both systems are always saved together (the tab switcher is
+    display-only), so there's no "which system was chosen" to track. This
+    closes a real gap: `/readings` used to show less than what the result
+    screen showed at save time. Schema-only until a real `DATABASE_URL`
+    exists — see §17 and TODO.md.

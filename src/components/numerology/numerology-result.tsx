@@ -86,7 +86,28 @@ export function NumerologyResult({ fullName, birthDate, onReset }: NumerologyRes
       const response = await fetch("/api/numerology", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ birthDate: birthDate.toISOString().slice(0, 10), lifePathNumber }),
+        body: JSON.stringify({
+          birthDate: birthDate.toISOString().slice(0, 10),
+          lifePathNumber,
+          birthdayNumber,
+          fullName: hasName ? fullName.trim() : null,
+          pythagorean: pythagorean
+            ? {
+                expressionNumber: pythagorean.expressionNumber,
+                soulUrgeNumber: pythagorean.soulUrgeNumber,
+                personalityNumber: pythagorean.personalityNumber,
+                maturityNumber: pythagorean.maturityNumber,
+              }
+            : null,
+          chaldean: chaldean
+            ? {
+                expressionNumber: chaldean.expressionNumber,
+                soulUrgeNumber: chaldean.soulUrgeNumber,
+                personalityNumber: chaldean.personalityNumber,
+                maturityNumber: chaldean.maturityNumber,
+              }
+            : null,
+        }),
       });
       if (!response.ok) throw new Error("save_failed");
       setSaveStatus("saved");
