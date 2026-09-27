@@ -58,6 +58,7 @@
   --animate-float: float 6s ease-in-out infinite;
   --animate-shimmer: shimmer 2.5s linear infinite;
   --animate-fade-in-up: fade-in-up 0.7s ease-out both;
+  --animate-star-float: star-float 40s ease-in-out infinite alternate;
 }
 
 @keyframes fade-in-up {
@@ -99,6 +100,23 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Each star drifts along its own path (see StarField, which sets --drift-x/
+   --drift-y/--drift-duration/--drift-delay per star, scaled by size so
+   "closer" — bigger — stars travel farther and faster than distant ones, a
+   simple parallax). This lives on a wrapper element around each star, not
+   the star's own <span> (which independently animates `transform` for the
+   twinkle scale) — two elements each animating their own `transform` compose
+   naturally through normal DOM nesting, whereas two animations fighting over
+   one element's `transform` would just have the second silently win. */
+@keyframes star-float {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(var(--drift-x, 0), var(--drift-y, 0));
   }
 }
 

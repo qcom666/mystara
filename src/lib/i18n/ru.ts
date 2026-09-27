@@ -251,6 +251,7 @@ export const ru: Dictionary = {
     generateAnotherCta: "Построить другую карту",
     savedNotice: "Сохранено в истории натальных карт.",
     learnMoreCta: "Подробнее",
+    testingModeNotice: "Бесплатно, пока мы тестируем: результат пока не сохраняется в историю, и входить в аккаунт не нужно.",
   },
   lifePathPage: {
     back: "Рассчитать своё число",

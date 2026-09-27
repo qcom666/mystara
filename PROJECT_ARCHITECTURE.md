@@ -847,3 +847,36 @@ an optional card names a real actor who shares something with it.
     was checked against real astronomical facts rather than trusted by
     inspection alone, and why houses/Ascendant are only shown when the birth
     time is known.
+21. **Natal Chart's paywall is temporarily bypassed for hands-on testing**:
+    `NATAL_CHART_FREE_FOR_TESTING` in `lib/pricing/natal-chart-pricing.ts`
+    (currently `true`) makes `POST /api/natal-chart` skip auth, credits, and
+    saving entirely and just return the computed chart — checked by both the
+    server route and `NatalChartFlow` (which then skips the sign-in/credits
+    screens too). This was the explicit ask, and it's also, incidentally, the
+    only way to exercise the feature at all in an environment with no
+    `DATABASE_URL`. Everything the real paywall needs (credit spend + save in
+    one transaction, the 402 response, the sign-in gate) is untouched behind
+    that one flag — flipping it to `false` is the entire job of turning the
+    paywall back on before launch. See TODO.md "Natal Chart" (flagged there
+    with a ⚠️ so it isn't missed).
+22. **The header's nav was quietly overflowing before this pass** — six links
+    (after Natal Chart was added) plus the account/CTA cluster measured out
+    to *zero* pixels of gap at 1280px with the original `gap-6`/`max-w-6xl`,
+    confirmed with `getBoundingClientRect()`, not just eyeballed. Fixed by
+    widening the container (`max-w-7xl`, extra `xl:px-8`) and moving the
+    inline-nav breakpoint from `md` (768px) to `xl` (1280px) — six links were
+    never going to fit at tablet width no matter the gap, so the hamburger
+    menu now owns everything below a genuine desktop width instead of almost
+    working and then visibly breaking. The mobile/tablet dropdown itself was
+    also split: it's now services-and-pricing only, with "Sign in" pulled out
+    to a persistent link next to the language switcher, so the menu never
+    mixes "what can I do here" with "who am I".
+23. **Stars drift individually now, not as one static field** — each of the
+    80 stars gets its own CSS-custom-property-driven path
+    (`--drift-x`/`--drift-y` consumed by a shared `star-float` keyframe, see
+    `globals.css`), with size used as a depth cue (bigger/"closer" stars move
+    farther and faster) for a simple parallax. This lives on a wrapper `<div>`
+    per star, separate from the star's own twinkle-`<span>`, because two
+    animations on one element that both animate `transform` don't compose —
+    the later one simply wins each frame; nesting two elements, each
+    animating its own `transform`, composes them naturally instead.

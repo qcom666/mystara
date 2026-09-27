@@ -30,12 +30,16 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-midnight-950/70 backdrop-blur-lg">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 xl:px-8">
         <Link href="/" className="font-display text-xl text-gold-300">
           Mystara
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        {/* Six links plus the account/CTA cluster genuinely don't fit
+            comfortably before a real desktop width — shown inline only from
+            `xl` (1280px); everything from tablet down to a narrow laptop
+            uses the hamburger menu below instead of cramming or wrapping. */}
+        <nav className="hidden items-center gap-8 xl:flex">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="text-sm text-silver-300 transition-colors hover:text-gold-300">
               {link.label}
@@ -44,7 +48,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-3 xl:flex">
             {status === "authenticated" ? (
               <>
                 <Link href="/readings" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
@@ -69,11 +73,17 @@ export function SiteHeader() {
             )}
           </div>
 
+          {status !== "authenticated" && (
+            <Link href="/login" className="text-sm text-silver-300 transition-colors hover:text-gold-300 xl:hidden">
+              {t.common.signIn}
+            </Link>
+          )}
+
           <LanguageSwitcher />
 
           <button
             type="button"
-            className="focus-ring rounded-md p-1 text-silver-200 md:hidden"
+            className="focus-ring rounded-md p-1 text-silver-200 xl:hidden"
             onClick={() => setOpen((current) => !current)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
@@ -84,31 +94,31 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div className="border-t border-white/5 px-4 py-4 md:hidden">
+        <div className="border-t border-white/5 px-4 py-4 xl:hidden">
+          {/* Our services and pricing only — deliberately not the place for
+              account actions like signing in (that's the persistent link next
+              to the language switcher above), so this list stays focused on
+              "what can I do here" rather than mixing in "who am I". */}
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="text-sm text-silver-300" onClick={() => setOpen(false)}>
                 {link.label}
               </Link>
             ))}
-            {status === "authenticated" ? (
-              <>
-                <Link href="/readings" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
-                  {t.nav.readings}
-                </Link>
-                <Link href="/favorites" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
-                  {t.nav.favorites}
-                </Link>
-                <button type="button" className="text-left text-sm text-silver-300" onClick={() => signOut()}>
-                  {t.common.signOut}
-                </button>
-              </>
-            ) : (
-              <Link href="/login" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
-                {t.common.signIn}
-              </Link>
-            )}
           </nav>
+          {status === "authenticated" && (
+            <nav className="mt-4 flex flex-col gap-4 border-t border-white/5 pt-4">
+              <Link href="/readings" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
+                {t.nav.readings}
+              </Link>
+              <Link href="/favorites" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
+                {t.nav.favorites}
+              </Link>
+              <button type="button" className="text-left text-sm text-silver-300" onClick={() => signOut()}>
+                {t.common.signOut}
+              </button>
+            </nav>
+          )}
         </div>
       )}
     </header>

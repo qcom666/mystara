@@ -252,6 +252,7 @@ export const en = {
     generateAnotherCta: "Generate another chart",
     savedNotice: "Saved to your Natal Chart history.",
     learnMoreCta: "Learn more",
+    testingModeNotice: "Free while we're testing this — not saved to your history yet, and no sign-in needed.",
   },
   lifePathPage: {
     back: "Calculate your own",

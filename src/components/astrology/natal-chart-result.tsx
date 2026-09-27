@@ -11,6 +11,8 @@ import { localizeZodiacSign, requireZodiacSignById } from "@/modules/astrology/d
 
 interface NatalChartResultProps {
   chart: NatalChart;
+  /** False while NATAL_CHART_FREE_FOR_TESTING is on — nothing was written to the database. */
+  saved: boolean;
   onGenerateAnother: () => void;
 }
 
@@ -51,7 +53,7 @@ function PlanetRow({ placement, locale }: { placement: PlanetPlacement; locale: 
   );
 }
 
-export function NatalChartResult({ chart, onGenerateAnother }: NatalChartResultProps) {
+export function NatalChartResult({ chart, saved, onGenerateAnother }: NatalChartResultProps) {
   const t = useTranslation();
   const { locale } = useLocale();
 
@@ -117,7 +119,7 @@ export function NatalChartResult({ chart, onGenerateAnother }: NatalChartResultP
       </div>
 
       <p className="mt-8 text-center text-xs text-silver-500">{t.natalChartPage.disclaimer}</p>
-      <p className="mt-2 text-center text-sm text-gold-300">{t.natalChartPage.savedNotice}</p>
+      <p className="mt-2 text-center text-sm text-gold-300">{saved ? t.natalChartPage.savedNotice : t.natalChartPage.testingModeNotice}</p>
 
       <div className="mt-6 text-center">
         <Button variant="ghost" onClick={onGenerateAnother}>
