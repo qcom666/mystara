@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AstrologyFlow } from "@/components/astrology/astrology-flow";
 import { ExploreSigns } from "@/components/astrology/explore-signs";
+import { NatalChartTeaser } from "@/components/astrology/natal-chart-teaser";
 
 export const metadata: Metadata = {
   title: "Astrology — Sun Sign",
@@ -11,6 +12,7 @@ export default function AstrologyPage() {
   return (
     <>
       <AstrologyFlow />
+      <NatalChartTeaser />
       <ExploreSigns />
     </>
   );

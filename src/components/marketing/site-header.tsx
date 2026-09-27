@@ -23,6 +23,7 @@ export function SiteHeader() {
     { href: "/reading", label: t.nav.newReading },
     { href: "/numerology", label: t.nav.numerology },
     { href: "/astrology", label: t.nav.astrology },
+    { href: "/astrology/natal-chart", label: t.nav.natalChart },
     { href: "/tarot", label: t.nav.learn },
     { href: "/pricing", label: t.nav.pricing },
   ];

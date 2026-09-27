@@ -500,6 +500,115 @@ a pure calculation function + a guest-friendly flow, no AI call needed
   `prisma migrate dev` once `DATABASE_URL` exists (Decision Log #13's
   data-localization question applies here too).
 
+## 17b. Natal Chart (Premium, paid-only)
+
+A real natal chart — not a shortcut dressed up as one. Unlike sun-sign
+astrology, this is **never free**: it's the one feature in the app with a
+price on it from day one (see Decision Log #19).
+
+**Astronomy** (`modules/astrology/services/`), server-only — this pulls in a
+real ephemeris library and has no business in a client bundle:
+- `ephemeris.ts` wraps [`astronomia`](https://github.com/commenthol/astronomia)
+  (a JS port of Jean Meeus' *Astronomical Algorithms*, MIT-licensed, no
+  bundled TypeScript types — see `src/types/astronomia.d.ts` for the small
+  hand-written ambient declarations covering only what's actually called).
+  Sun and Moon use the library's own `solar.apparentVSOP87` /
+  `moonposition.position`; the seven other planets use
+  `geocentricEclipticOfDate()`, which mirrors astronomia's own
+  `elliptic.position()` algorithm (rectangular heliocentric subtraction → one
+  light-time iteration → annual aberration → FK5 frame correction → nutation
+  in longitude) but stops at ecliptic coordinates instead of converting on to
+  equatorial, since a zodiac sign is an ecliptic-longitude concept. Pluto uses
+  Meeus ch. 37's dedicated periodic series (VSOP87 doesn't cover it), which is
+  J2000-frame only, so it's precessed to the ecliptic of date the same way
+  astronomia's own VSOP87B path does internally (`precess.eclipticPosition`);
+  outside the series' documented ~1885–2099 validity window Pluto is **omitted
+  from the chart, not guessed** — the same "omit rather than fabricate"
+  philosophy sect's "Not sure" already established.
+- `chart-angles.ts` computes the Ascendant and Midheaven from RAMC
+  (local sidereal time in degrees), the obliquity of the ecliptic, and
+  latitude — standard closed-form spherical-astronomy formulas, independently
+  re-derived and checked against the degenerate case (no ecliptic tilt, zero
+  latitude ⇒ Ascendant = RAMC + 90°) in `chart-angles.test.ts`.
+- `calculate-natal-chart.ts` is the pure orchestration entry point: real body
+  positions always; houses/Ascendant/Midheaven/chart-ruler only when
+  `hasExactTime` is true (a real chart needs a real birth time — an unknown
+  time means those are left out, not estimated, exactly like sect's "Not
+  sure"). **Whole-sign houses** (house 1 = the Ascendant's whole sign, house 2
+  = the next sign, etc.) — the simplest historically-legitimate house system,
+  fitting the app's existing Hellenistic/traditional framing (Decision Log
+  #8's sect) far better than iteratively-solved systems like Placidus would.
+  Aspects use a flat table of 5 major types with a fixed orb per type (8°
+  conjunction/opposition, 7° square/trine, 5° sextile) — real practice varies
+  orb by planet; this is a deliberate simplification for a natal-chart
+  teaser, not an astrologer's working tool.
+- **Precision trade-offs, made deliberately and documented in code:** ΔT
+  (TT−UT) is treated as zero — over the last ~150 years that's at most a
+  couple of minutes, moving the sky a fraction of a degree, smaller than the
+  uncertainty most people already have in their recorded birth *time*.
+  Correctness was checked three ways rather than trusted on read-through
+  alone: (1) the Sun's computed longitude lands within 2° of 0°/90°/180°/270°
+  at the actual 2024 equinoxes/solstices — a fact those instants are
+  *defined* by; (2) the Sun's sign agrees with the existing simple
+  calendar-based `calculateSunSign()` for five dates spread across the year;
+  (3) manually running the full pipeline for 1990-05-14 in Moscow reproduced
+  the well-known real "Saturn–Uranus–Neptune in Capricorn" stellium of that
+  era. See `ephemeris.test.ts`, `chart-angles.test.ts`,
+  `calculate-natal-chart.test.ts`.
+- **Interpretation text is composed, not hand-authored per combination** —
+  the same trick `numerology/domain/number-type-framing.ts` uses: a planet's
+  one-line "nature" (`planets.data.ts`) combined at render time with the
+  existing zodiac sign keywords, a house's classical theme
+  (`houses.data.ts`), and an aspect's one-line meaning
+  (`aspects.data.ts`) — instead of hand-writing the planet×sign×house
+  combinatorial explosion. Deliberately plain composed text, not "AI
+  interpretation" — see Decision Log #16.
+
+**Time and place, without a geocoding API** — birth date+time+place is
+sensitive personal data, and calling a third-party geocoding/timezone service
+would be exactly the cross-border transfer §14b already flags as unresolved.
+Instead:
+- `domain/cities.data.ts` is a small **hand-curated** city list (~85 entries:
+  the Russian cities and CIS/world cities whose current IANA timezone id was
+  confidently known when this was written — Russia's regional timezone
+  history is genuinely quirky, so cities that couldn't be verified with
+  confidence were left out rather than guessed). Anyone whose city isn't
+  listed enters coordinates and picks a timezone by hand.
+- `services/resolve-birth-instant.ts` uses `luxon` with an IANA zone id
+  (never a raw UTC-offset number) so the *historical* offset for that exact
+  date is applied automatically — including old DST rules. This is not a
+  theoretical concern: the test suite's own Moscow fixture (1990-05-14) is
+  UTC+4 that day, not today's year-round UTC+3, because the USSR/Russia
+  observed seasonal DST from 1981–2011.
+
+**Pricing & credits** (`lib/pricing/natal-chart-pricing.ts`,
+`lib/repositories/natal-chart.repository.ts`) — a pack of
+`NATAL_CHART_PACK_CREDITS` (3) charts for ₽1000; `NATAL_CHART_PRICE_USD` (10)
+is a manually-set "same price" number shown to English-locale readers, **not**
+a live currency conversion (there's no FX feed wired in — a single
+round number is more honest than a precise-looking but stale exchange rate).
+`User.natalChartCredits` is a running balance, spent atomically inside a
+Prisma transaction alongside saving the chart (`spendCreditAndSaveNatalChart`)
+so two concurrent requests can't both spend the same last credit.
+`NatalChartPurchase` exists so a future payment webhook has somewhere to
+record a completed purchase and grant credits — **nothing calls it yet**,
+because no payment provider is wired up (see Decision Log #19 and TODO.md).
+The `POST /api/natal-chart` route is the one place credits are checked,
+spent, and the chart is generated and saved, all together; there's no
+separate "save" step the way Tarot/numerology/astrology have one, since
+generating *is* the paid action here.
+
+**UI** (`components/astrology/natal-chart-*`): `NatalChartFlow` gates on
+sign-in, then on credits (fetched once via `GET /api/natal-chart`), then
+shows the form or the result — mirroring the numerology/astrology
+form/result split (each step owns at most one `useTelegramMainButton()`).
+`NatalChartPricingPanel` is shown wherever generation isn't currently
+possible (no account, or zero credits): it shows the real price with a
+disabled "Buy — Coming soon" button rather than a checkout flow that would
+pretend to charge money. Entry points: a teaser panel on `/astrology`
+(between the sun-sign flow and the sign index), a card on `/pricing`, and
+`/astrology/natal-chart` in the top nav.
+
 ## 18. Cross-Module Actor "Fun Fact"
 
 A lightweight, clearly-entertainment feature layered across all three
@@ -713,7 +822,7 @@ an optional card names a real actor who shares something with it.
 18. **Share preview:** `app/opengraph-image.tsx` generates a 1200×630 card
     (Latin-only — `ImageResponse`'s built-in font has no Cyrillic; adding a
     font would spend its 500KB bundle budget).
-16. **Numerology/astrology now persist the full result, not just the headline
+19. **Numerology/astrology now persist the full result, not just the headline
     number.** `NumerologyReading` gained `birthdayNumber`, `fullName`, and all
     eight Pythagorean/Chaldean name-derived numbers; `AstrologyReading` gained
     `sect`. Both systems are always saved together (the tab switcher is
@@ -721,3 +830,20 @@ an optional card names a real actor who shares something with it.
     closes a real gap: `/readings` used to show less than what the result
     screen showed at save time. Schema-only until a real `DATABASE_URL`
     exists — see §17 and TODO.md.
+20. **Natal Chart is a real ephemeris computation, and the one paid-only
+    feature from day one** — ₽1000 for a pack of 3, no free tier (unlike
+    Tarot/numerology/sun-sign astrology, which all have one). The USD price
+    shown to English-locale readers is a manually-chosen "same price" number,
+    not a live conversion — there's no FX feed in this app, and a single
+    round number is more honest than a precise-looking but stale rate.
+    Credits are spent atomically alongside saving the chart, in one Prisma
+    transaction, so generating a chart *is* the paid action — there's no
+    separate free-calculate-then-paid-save split the way Tarot/numerology/
+    astrology have one. Buying a pack is priced and gated in the code but not
+    actually purchasable yet (the button says "Coming soon" and is disabled)
+    because no payment provider is connected — see TODO.md "Natal Chart" for
+    what that needs (a provider that works in Russia, e.g. ЮKassa; Stripe
+    doesn't). See §17b for the astronomy itself, including how correctness
+    was checked against real astronomical facts rather than trusted by
+    inspection alone, and why houses/Ascendant are only shown when the birth
+    time is known.

@@ -43,6 +43,13 @@ model User {
   privacyConsentAt      DateTime?
   privacyPolicyVersion  String?
 
+  // Natal Chart is paid-only (see lib/pricing/natal-chart-pricing.ts) — a
+  // running balance, decremented by 1 per chart generated, incremented by
+  // NATAL_CHART_PACK_CREDITS once a purchase is recorded as paid. Zero by
+  // default: there is no free trial today (a product decision the codebase
+  // makes easy to change — see TODO.md "Natal Chart").
+  natalChartCredits Int @default(0)
+
   createdAt DateTime @updatedAt @default(now())
   updatedAt DateTime @updatedAt
 
@@ -53,6 +60,8 @@ model User {
   subscription       Subscription?
   numerologyReadings NumerologyReading[]
   astrologyReadings  AstrologyReading[]
+  natalChartReadings NatalChartReading[]
+  natalChartPurchases NatalChartPurchase[]
 }
 
 model Account {
@@ -234,6 +243,40 @@ model AstrologyReading {
   @@index([userId, createdAt])
 }
 
-// Future: BirthChart (full natal chart — needs an ephemeris data source, not
-// just a birthdate), CompatibilityReading, DailyHoroscope, Notification,
-// Payment — intentionally not modeled yet. See PROJECT_ARCHITECTURE.md §10.
+// --- Natal Chart (Premium, paid-only — see PROJECT_ARCHITECTURE.md §17b) ---
+
+model NatalChartReading {
+  id         String   @id @default(cuid())
+  userId     String
+  birthDate  DateTime // the resolved UTC instant of birth
+  hasExactTime Boolean // false = birth time unknown; houses/ascendant/MC were skipped, not guessed
+  birthPlace String? // display label, e.g. "Moscow, Russia" — null for manual lat/lon entry
+  latitude   Float
+  longitude  Float
+  timezone   String // IANA zone id used to resolve local time -> UTC, e.g. "Europe/Moscow"
+  chart      Json // the full computed NatalChart (see modules/astrology/domain/types.ts) — versioned content, not worth a relational model
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model NatalChartPurchase {
+  id             String   @id @default(cuid())
+  userId         String
+  creditsGranted Int
+  amount         Int // whole units of `currency` — 1000 for a ₽1000 pack, no fractional currency needed at this price point
+  currency       String // "RUB" | "USD" — see lib/pricing/natal-chart-pricing.ts
+  provider       String? // e.g. "yookassa" — null until a real payment provider is wired (see TODO.md "Natal Chart")
+  externalId     String? // the payment provider's transaction id, for webhook idempotency
+  status         String // "pending" | "paid" | "failed"
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// Future: CompatibilityReading, DailyHoroscope, Notification — intentionally
+// not modeled yet. See PROJECT_ARCHITECTURE.md §10.

@@ -255,6 +255,34 @@ export function requireZodiacSignById(id: ZodiacSignId): ZodiacSign {
 }
 
 /**
+ * Fixed astronomical fact (tropical zodiac): 0°–30° ecliptic longitude is
+ * Aries, 30°–60° Taurus, and so on — independent of `ZODIAC_SIGNS`' own
+ * array order, which is why this is its own small lookup table rather than
+ * indexing into that array directly.
+ */
+const ZODIAC_LONGITUDE_ORDER: ZodiacSignId[] = [
+  "aries",
+  "taurus",
+  "gemini",
+  "cancer",
+  "leo",
+  "virgo",
+  "libra",
+  "scorpio",
+  "sagittarius",
+  "capricorn",
+  "aquarius",
+  "pisces",
+];
+
+/** Used by the natal chart (services/calculate-natal-chart.ts) to turn a computed ecliptic longitude into a sign + degree-in-sign. */
+export function getZodiacSignByLongitude(longitudeDeg: number): { sign: ZodiacSign; degreeInSign: number } {
+  const normalized = ((longitudeDeg % 360) + 360) % 360;
+  const index = Math.floor(normalized / 30) % 12;
+  return { sign: requireZodiacSignById(ZODIAC_LONGITUDE_ORDER[index]), degreeInSign: normalized - index * 30 };
+}
+
+/**
  * The sign with its translatable fields swapped for the requested language.
  * Same shape in, same shape out, so callers just pipe a sign through this
  * and keep rendering `sign.name`, `sign.description`, etc. as before.

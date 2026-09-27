@@ -1,16 +1,18 @@
 "use client";
 
-import { Check, Sparkles } from "lucide-react";
+import { Check, Moon, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatReadingsPerDay, useLocale, useTranslation } from "@/lib/i18n";
+import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
 import { PLAN_POLICIES } from "@/modules/subscriptions/usage-limit.service";
 
 export function PricingContent() {
   const t = useTranslation();
   const { locale } = useLocale();
+  const natalChartPrice = getNatalChartPrice(locale);
   const maxReadingsPerDay = PLAN_POLICIES.free.maxReadingsPerDay;
   const freeFeatures = [
     ...(maxReadingsPerDay !== null ? [formatReadingsPerDay(maxReadingsPerDay, locale)] : []),
@@ -59,6 +61,25 @@ export function PricingContent() {
           </ul>
           <Button disabled className="mt-8">
             {t.pricingPage.notifyMeCta}
+          </Button>
+        </GlassPanel>
+      </div>
+
+      <div className="mx-auto mt-6 max-w-4xl">
+        <GlassPanel className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold-500/30 bg-gold-500/10">
+            <Moon className="h-5 w-5 text-gold-400" />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-display text-lg text-silver-100">{t.natalChartPage.title}</h2>
+            <p className="mt-1 text-sm text-silver-400">{t.natalChartPage.subtitle}</p>
+          </div>
+          <div className="text-center sm:text-right">
+            <p className="font-display text-2xl text-gradient-gold">{natalChartPrice.formatted}</p>
+            <p className="text-xs text-silver-500">{t.natalChartPage.packSize}</p>
+          </div>
+          <Button asChild variant="secondary">
+            <Link href="/astrology/natal-chart">{t.natalChartPage.learnMoreCta}</Link>
           </Button>
         </GlassPanel>
       </div>
