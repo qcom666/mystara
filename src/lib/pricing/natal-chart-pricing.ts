@@ -1,21 +1,16 @@
 /**
  * Natal Chart is a paid-only feature (no free tier, unlike Tarot/numerology/
  * astrology's sun sign) — a real ephemeris computation, priced per the
- * product decision: a pack of 3 for ₽1000.
- *
- * USD_PRICE is a manually-set "same price" equivalent, NOT a live currency
- * conversion — there is no FX feed wired into this app, and one flat number
- * a Russian-market digital product's English-speaking customers see is more
- * defensible than a precise-looking but stale exchange rate. Revisit this
- * number occasionally as RUB/USD drifts; see TODO.md "Natal Chart".
+ * product decision: a pack of 3 for ₽1000. Prices are shown in rubles in every
+ * language: the only currencies the seller can take are rubles (ЮKassa) and
+ * Telegram Stars.
  */
 export const NATAL_CHART_PACK_CREDITS = 3;
 export const NATAL_CHART_PRICE_RUB = 1000;
-export const NATAL_CHART_PRICE_USD = 10;
 /**
  * Telegram Stars price of the same pack. Stars are what Telegram requires for
  * digital goods bought inside its apps; a buyer pays roughly $0.02 per Star, so
- * 500 ⭐ lands near the $10 / ₽1000 price. Tune it here, nowhere else.
+ * 500 ⭐ lands near the ₽1000 price. Tune it here, nowhere else.
  */
 export const NATAL_CHART_PRICE_STARS = 500;
 
@@ -34,9 +29,6 @@ export const NATAL_CHART_PRICE_STARS = 500;
  */
 export const NATAL_CHART_FREE_FOR_TESTING = true;
 
-export function getNatalChartPrice(locale: "en" | "ru"): { amount: number; currency: "RUB" | "USD"; formatted: string } {
-  if (locale === "ru") {
-    return { amount: NATAL_CHART_PRICE_RUB, currency: "RUB", formatted: `${NATAL_CHART_PRICE_RUB} ₽` };
-  }
-  return { amount: NATAL_CHART_PRICE_USD, currency: "USD", formatted: `$${NATAL_CHART_PRICE_USD}` };
+export function getNatalChartPrice(): { amount: number; currency: "RUB"; formatted: string } {
+  return { amount: NATAL_CHART_PRICE_RUB, currency: "RUB", formatted: `${NATAL_CHART_PRICE_RUB} ₽` };
 }

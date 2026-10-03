@@ -28,7 +28,7 @@ export async function markPurchaseFailed(purchaseId: string): Promise<void> {
 export interface PaidPayment {
   purchaseId: string;
   provider: PaymentProviderId;
-  /** The provider's own transaction id (Stars charge id, ЮKassa payment id, Crypto Pay invoice id). */
+  /** The provider's own transaction id (Stars charge id, ЮKassa payment id). */
   externalId: string;
   /** What the provider says was actually paid — checked against what we asked for. */
   amount: number;

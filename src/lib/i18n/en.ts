@@ -225,7 +225,6 @@ export const en = {
     offerNoticeLink: "public offer",
     methodStars: "Telegram Stars",
     methodCard: "Card or SBP (₽)",
-    methodCrypto: "Crypto — USDT / TON",
     signInToBuy: "Sign in to buy",
     checkoutFailed: "Couldn't start the payment. Please try again in a moment.",
     confirmingPayment: "Confirming your payment…",

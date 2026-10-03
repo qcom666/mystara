@@ -17,8 +17,7 @@ interface PaymentMethod {
 
 function formatMethodPrice(price: ProviderPrice): string {
   if (price.currency === "XTR") return `${price.amount} ⭐`;
-  if (price.currency === "RUB") return `${price.amount} ₽`;
-  return `$${price.amount}`;
+  return `${price.amount} ₽`;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -43,7 +42,7 @@ async function waitForCredits(): Promise<boolean> {
  * Shown wherever someone can't generate a chart right now (no account, or an
  * account with zero credits). Offers whichever payment methods are configured:
  * inside Telegram only Stars (Telegram's rule for digital goods), on the website
- * Stars plus cards/SBP (ЮKassa) and crypto (Crypto Pay).
+ * Stars plus cards/SBP (ЮKassa).
  */
 export function NatalChartPricingPanel({
   title,
@@ -57,7 +56,7 @@ export function NatalChartPricingPanel({
   const t = useTranslation();
   const { locale } = useLocale();
   const { status } = useSession();
-  const price = getNatalChartPrice(locale);
+  const price = getNatalChartPrice();
 
   const [methods, setMethods] = useState<PaymentMethod[] | null>(null);
   const [busy, setBusy] = useState<PaymentProviderId | "confirming" | null>(null);
@@ -82,7 +81,6 @@ export function NatalChartPricingPanel({
   const labels: Record<PaymentProviderId, string> = {
     stars: t.natalChartPage.methodStars,
     yookassa: t.natalChartPage.methodCard,
-    cryptobot: t.natalChartPage.methodCrypto,
   };
 
   async function confirmPayment() {

@@ -27,7 +27,7 @@ export function NatalChartFlow() {
     if (NATAL_CHART_FREE_FOR_TESTING) return;
     if (status !== "authenticated") return;
     let cancelled = false;
-    // Coming back from a card/crypto payment page the webhook may still be a moment behind — give it a few tries.
+    // Coming back from the card payment page the webhook may still be a moment behind — give it a few tries.
     const returningFromPayment = new URLSearchParams(window.location.search).get("payment") === "return";
     const attempts = returningFromPayment ? 8 : 1;
 

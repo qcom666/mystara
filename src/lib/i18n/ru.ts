@@ -223,7 +223,6 @@ export const ru: Dictionary = {
     offerNoticeLink: "публичной оферты",
     methodStars: "Звёзды Telegram",
     methodCard: "Карта или СБП (₽)",
-    methodCrypto: "Криптовалюта — USDT / TON",
     signInToBuy: "Войдите, чтобы купить",
     checkoutFailed: "Не удалось начать оплату. Попробуйте ещё раз чуть позже.",
     confirmingPayment: "Подтверждаем оплату…",

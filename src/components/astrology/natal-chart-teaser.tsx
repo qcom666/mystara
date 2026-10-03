@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
-import { useLocale, useTranslation } from "@/lib/i18n";
+import { useTranslation } from "@/lib/i18n";
 import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
 
 /** Sits between the sun-sign flow and the sign index on /astrology — the on-ramp to the paid Natal Chart. */
 export function NatalChartTeaser() {
   const t = useTranslation();
-  const { locale } = useLocale();
-  const price = getNatalChartPrice(locale);
+  const price = getNatalChartPrice();
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-16">

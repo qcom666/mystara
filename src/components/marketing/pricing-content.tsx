@@ -13,8 +13,8 @@ import { PLAN_POLICIES } from "@/modules/subscriptions/usage-limit.service";
 export function PricingContent() {
   const t = useTranslation();
   const { locale } = useLocale();
-  const natalChartPrice = getNatalChartPrice(locale);
-  const premiumPrice = getPremiumPrice(locale);
+  const natalChartPrice = getNatalChartPrice();
+  const premiumPrice = getPremiumPrice();
   const maxReadingsPerDay = PLAN_POLICIES.free.maxReadingsPerDay;
   const freeFeatures = [
     ...(maxReadingsPerDay !== null ? [formatReadingsPerDay(maxReadingsPerDay, locale)] : []),
@@ -32,7 +32,7 @@ export function PricingContent() {
         <GlassPanel className="flex flex-col">
           <h2 className="font-display text-2xl text-silver-100">{t.pricingPage.freeTitle}</h2>
           <p className="mt-1 text-sm text-silver-400">{t.pricingPage.freeSubtitle}</p>
-          <p className="mt-4 text-3xl text-silver-50">{locale === "ru" ? "0 ₽" : "$0"}</p>
+          <p className="mt-4 text-3xl text-silver-50">0 ₽</p>
           <ul className="mt-6 flex-1 space-y-3 text-sm text-silver-300">
             {freeFeatures.map((feature) => (
               <li key={feature} className="flex items-start gap-2">

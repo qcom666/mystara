@@ -583,10 +583,9 @@ Instead:
 
 **Pricing & credits** (`lib/pricing/natal-chart-pricing.ts`,
 `lib/repositories/natal-chart.repository.ts`) — a pack of
-`NATAL_CHART_PACK_CREDITS` (3) charts for ₽1000; `NATAL_CHART_PRICE_USD` (10)
-is a manually-set "same price" number shown to English-locale readers, **not**
-a live currency conversion (there's no FX feed wired in — a single
-round number is more honest than a precise-looking but stale exchange rate).
+`NATAL_CHART_PACK_CREDITS` (3) charts for ₽1000, shown in rubles in every
+language (there is no USD price: the seller can only take rubles via ЮKassa and
+Telegram Stars, see TODO.md "Payments").
 `User.natalChartCredits` is a running balance, spent atomically inside a
 Prisma transaction alongside saving the chart (`spendCreditAndSaveNatalChart`)
 so two concurrent requests can't both spend the same last credit.
@@ -832,10 +831,8 @@ an optional card names a real actor who shares something with it.
     exists — see §17 and TODO.md.
 20. **Natal Chart is a real ephemeris computation, and the one paid-only
     feature from day one** — ₽1000 for a pack of 3, no free tier (unlike
-    Tarot/numerology/sun-sign astrology, which all have one). The USD price
-    shown to English-locale readers is a manually-chosen "same price" number,
-    not a live conversion — there's no FX feed in this app, and a single
-    round number is more honest than a precise-looking but stale rate.
+    Tarot/numerology/sun-sign astrology, which all have one). Priced and shown
+    in rubles in every language — no USD price (see TODO.md "Payments").
     Credits are spent atomically alongside saving the chart, in one Prisma
     transaction, so generating a chart *is* the paid action — there's no
     separate free-calculate-then-paid-save split the way Tarot/numerology/

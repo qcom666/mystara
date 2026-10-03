@@ -3,13 +3,12 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { NATAL_CHART_PRICES, enabledProviders } from "@/lib/payments/catalog";
-import { createCryptoBotInvoice } from "@/lib/payments/providers/cryptobot";
 import { createStarsInvoiceLink } from "@/lib/payments/providers/stars";
 import { createYooKassaPayment } from "@/lib/payments/providers/yookassa";
 import { createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
 
 const checkoutSchema = z.object({
-  provider: z.enum(["stars", "yookassa", "cryptobot"]),
+  provider: z.enum(["stars", "yookassa"]),
   locale: z.enum(["en", "ru"]).default("en"),
 });
 
@@ -65,20 +64,11 @@ export async function POST(request: Request) {
       });
       return NextResponse.json({ provider, url });
     }
-    if (provider === "yookassa") {
-      const payment = await createYooKassaPayment(
-        { shopId: process.env.YOOKASSA_SHOP_ID as string, secretKey: process.env.YOOKASSA_SECRET_KEY as string },
-        { purchaseId: purchase.id, amountRub: price.amount, description: copy.title, returnUrl },
-      );
-      return NextResponse.json({ provider, url: payment.confirmationUrl });
-    }
-    const invoice = await createCryptoBotInvoice(process.env.CRYPTOBOT_API_TOKEN as string, {
-      purchaseId: purchase.id,
-      amountUsd: price.amount,
-      description: copy.title,
-      returnUrl,
-    });
-    return NextResponse.json({ provider, url: invoice.url });
+    const payment = await createYooKassaPayment(
+      { shopId: process.env.YOOKASSA_SHOP_ID as string, secretKey: process.env.YOOKASSA_SECRET_KEY as string },
+      { purchaseId: purchase.id, amountRub: price.amount, description: copy.title, returnUrl },
+    );
+    return NextResponse.json({ provider, url: payment.confirmationUrl });
   } catch {
     await markPurchaseFailed(purchase.id);
     return NextResponse.json({ error: "provider_error" }, { status: 502 });

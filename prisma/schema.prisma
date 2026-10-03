@@ -267,7 +267,7 @@ model NatalChartPurchase {
   userId         String
   creditsGranted Int
   amount         Int // whole units of `currency` — 1000 for a ₽1000 pack, no fractional currency needed at this price point
-  currency       String // "XTR" (Telegram Stars) | "RUB" | "USD" — see lib/payments/catalog.ts
+  currency       String // "XTR" (Telegram Stars) | "RUB" — see lib/payments/catalog.ts
   provider       String? // "stars" | "yookassa" | "cryptobot" (lib/payments/catalog.ts)
   externalId     String? // the provider's transaction id, set when the purchase is paid
   status         String // "pending" | "paid" | "failed"
