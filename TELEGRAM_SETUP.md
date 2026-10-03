@@ -130,3 +130,24 @@ TELEGRAM_BOT_TOKEN="токен_из_шага_1"
 - Вход не работает → проверь `TELEGRAM_BOT_TOKEN` совпадает с токеном от
   BotFather, и что `DATABASE_URL` настроен (иначе вход по дизайну отключён,
   см. `PROJECT_ARCHITECTURE.md` §24).
+
+## Ответы бота в чате (вебхук)
+
+Mini App открывается и без этого, но чтобы бот отвечал на `/start` и `/help`
+кнопкой «Открыть Mystara», нужен вебхук — `src/app/api/telegram/webhook/route.ts`
+(тексты ответов — `src/lib/telegram/bot-reply.ts`). Токен ему не нужен: ответ
+уходит прямо в ответе на запрос Telegram.
+
+1. Придумай длинный случайный секрет (буквы и цифры, до 256 символов) и добавь
+   в Vercel переменную `TELEGRAM_WEBHOOK_SECRET` с этим значением. Сделай redeploy.
+2. Один раз зарегистрируй вебхук (подставь свои значения — токен и секрет не
+   публикуй и не отправляй в чаты):
+
+   ```
+   https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://taroproject.vercel.app/api/telegram/webhook&secret_token=<SECRET>
+   ```
+
+   Ответ должен быть `{"ok":true,...}`. Проверить: `.../bot<TOKEN>/getWebhookInfo`.
+3. Напиши боту `/start`.
+
+Без секрета вебхук отвечает 503, с неверным — 403: посторонние управлять ботом не могут.
