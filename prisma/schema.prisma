@@ -267,14 +267,16 @@ model NatalChartPurchase {
   userId         String
   creditsGranted Int
   amount         Int // whole units of `currency` — 1000 for a ₽1000 pack, no fractional currency needed at this price point
-  currency       String // "RUB" | "USD" — see lib/pricing/natal-chart-pricing.ts
-  provider       String? // e.g. "yookassa" — null until a real payment provider is wired (see TODO.md "Natal Chart")
-  externalId     String? // the payment provider's transaction id, for webhook idempotency
+  currency       String // "XTR" (Telegram Stars) | "RUB" | "USD" — see lib/payments/catalog.ts
+  provider       String? // "stars" | "yookassa" | "cryptobot" (lib/payments/catalog.ts)
+  externalId     String? // the provider's transaction id, set when the purchase is paid
   status         String // "pending" | "paid" | "failed"
   createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // A provider transaction can only ever be recorded once (Postgres allows many NULLs, so pending rows are fine).
+  @@unique([provider, externalId])
   @@index([userId, createdAt])
 }
 

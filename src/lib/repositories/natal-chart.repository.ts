@@ -1,6 +1,5 @@
 import type { NatalChart } from "@/modules/astrology/domain/types";
 import { prisma } from "@/lib/db";
-import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
 
 export async function getNatalChartCredits(userId: string): Promise<number> {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { natalChartCredits: true } });
@@ -50,30 +49,4 @@ export async function listNatalChartReadingsForUser(userId: string, limit = 10) 
   return prisma.natalChartReading.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: limit });
 }
 
-/**
- * Records a completed purchase and grants its credits. Called from a payment
- * webhook once a real provider exists (see TODO.md "Natal Chart") — not
- * called from anywhere yet, since there is no such webhook today.
- */
-export async function recordPaidNatalChartPurchase(input: {
-  userId: string;
-  amount: number;
-  currency: "RUB" | "USD";
-  provider: string;
-  externalId: string;
-}) {
-  return prisma.$transaction([
-    prisma.natalChartPurchase.create({
-      data: {
-        userId: input.userId,
-        creditsGranted: NATAL_CHART_PACK_CREDITS,
-        amount: input.amount,
-        currency: input.currency,
-        provider: input.provider,
-        externalId: input.externalId,
-        status: "paid",
-      },
-    }),
-    prisma.user.update({ where: { id: input.userId }, data: { natalChartCredits: { increment: NATAL_CHART_PACK_CREDITS } } }),
-  ]);
-}
+// Purchases and credit grants live in purchase.repository.ts (fulfillPurchase).

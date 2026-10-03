@@ -12,6 +12,12 @@
 export const NATAL_CHART_PACK_CREDITS = 3;
 export const NATAL_CHART_PRICE_RUB = 1000;
 export const NATAL_CHART_PRICE_USD = 10;
+/**
+ * Telegram Stars price of the same pack. Stars are what Telegram requires for
+ * digital goods bought inside its apps; a buyer pays roughly $0.02 per Star, so
+ * 500 ⭐ lands near the $10 / ₽1000 price. Tune it here, nowhere else.
+ */
+export const NATAL_CHART_PRICE_STARS = 500;
 
 /**
  * TEMPORARY (requested by the product owner to try the feature out): while

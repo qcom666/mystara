@@ -77,6 +77,8 @@ export interface TelegramWebApp {
   ready: () => void;
   expand: () => void;
   close: () => void;
+  /** Opens a Stars invoice link; the callback gets the outcome once the sheet closes. */
+  openInvoice: (url: string, callback?: (status: "paid" | "cancelled" | "failed" | "pending") => void) => void;
   enableClosingConfirmation: () => void;
   disableClosingConfirmation: () => void;
   setHeaderColor: (color: string) => void;

@@ -247,6 +247,9 @@ CREATE INDEX "NatalChartReading_userId_createdAt_idx" ON "NatalChartReading"("us
 -- CreateIndex
 CREATE INDEX "NatalChartPurchase_userId_createdAt_idx" ON "NatalChartPurchase"("userId", "createdAt");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "NatalChartPurchase_provider_externalId_key" ON "NatalChartPurchase"("provider", "externalId");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

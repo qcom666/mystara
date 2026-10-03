@@ -27,10 +27,24 @@ export function NatalChartFlow() {
     if (NATAL_CHART_FREE_FOR_TESTING) return;
     if (status !== "authenticated") return;
     let cancelled = false;
-    fetch("/api/natal-chart")
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("failed"))))
-      .then((data: { credits: number }) => {
-        if (!cancelled) setStage(data.credits > 0 ? "form" : "no-credits");
+    // Coming back from a card/crypto payment page the webhook may still be a moment behind — give it a few tries.
+    const returningFromPayment = new URLSearchParams(window.location.search).get("payment") === "return";
+    const attempts = returningFromPayment ? 8 : 1;
+
+    async function loadCredits() {
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        const response = await fetch("/api/natal-chart");
+        if (!response.ok) throw new Error("failed");
+        const data = (await response.json()) as { credits: number };
+        if (data.credits > 0 || attempt === attempts - 1) return data.credits;
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+      return 0;
+    }
+
+    loadCredits()
+      .then((credits) => {
+        if (!cancelled) setStage(credits > 0 ? "form" : "no-credits");
       })
       .catch(() => {
         if (!cancelled) setStage("error");
@@ -106,7 +120,11 @@ export function NatalChartFlow() {
   if (stage === "no-credits") {
     return (
       <div className="px-4 py-16 sm:py-24">
-        <NatalChartPricingPanel title={t.natalChartPage.noCreditsTitle} body={t.natalChartPage.noCreditsBody} />
+        <NatalChartPricingPanel
+          title={t.natalChartPage.noCreditsTitle}
+          body={t.natalChartPage.noCreditsBody}
+          onPurchased={() => setStage("form")}
+        />
       </div>
     );
   }

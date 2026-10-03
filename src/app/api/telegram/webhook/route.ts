@@ -1,6 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { isDatabaseConfigured } from "@/lib/db";
+import { NATAL_CHART_PRICES } from "@/lib/payments/catalog";
+import { fulfillPurchase, isPurchasePayable } from "@/lib/repositories/purchase.repository";
 import { buildBotReply, type TelegramUpdate } from "@/lib/telegram/bot-reply";
+import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
 
 /**
  * Telegram bot webhook. Telegram POSTs every update here once it's registered with
@@ -8,8 +12,10 @@ import { buildBotReply, type TelegramUpdate } from "@/lib/telegram/bot-reply";
  * `X-Telegram-Bot-Api-Secret-Token` header — without a match the request is rejected,
  * so only Telegram can drive the bot. Fails closed when the secret isn't configured.
  *
- * The reply goes back as the response body (Telegram runs a `method` returned there),
- * so this route needs no bot token and makes no outgoing requests.
+ * Replies go back as the response body (Telegram runs a `method` returned there),
+ * so this route needs no bot token and makes no outgoing requests. It handles:
+ *  - chat messages (/start, /help) → a greeting with a Mini App button;
+ *  - Telegram Stars payments: `pre_checkout_query` (approve) and `successful_payment` (grant credits).
  */
 
 function secretMatches(received: string | null, expected: string): boolean {
@@ -28,7 +34,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  const update = (await request.json().catch(() => null)) as TelegramUpdate | null;
+  const update = (await request.json().catch(() => null)) as (TelegramUpdate & TelegramPaymentUpdate) | null;
+
+  const stars = parseStarsEvent(update);
+  if (stars?.kind === "pre_checkout") {
+    const expected = NATAL_CHART_PRICES.stars;
+    const payable =
+      isDatabaseConfigured() &&
+      stars.currency === expected.currency &&
+      (await isPurchasePayable({
+        purchaseId: stars.purchaseId,
+        provider: "stars",
+        amount: stars.amount,
+        currency: "XTR",
+      }));
+    return NextResponse.json(buildPreCheckoutAnswer(stars.queryId, payable));
+  }
+  if (stars?.kind === "paid") {
+    if (stars.currency === "XTR" && isDatabaseConfigured()) {
+      // A thrown error becomes a 500, so Telegram redelivers the update instead of the payment being lost.
+      const result = await fulfillPurchase({
+        purchaseId: stars.purchaseId,
+        provider: "stars",
+        externalId: stars.chargeId,
+        amount: stars.amount,
+        currency: "XTR",
+      });
+      if (result === "mismatch" || result === "not_found") {
+        console.error("[stars] paid purchase could not be matched", { purchaseId: stars.purchaseId, result });
+      }
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   // The Mini App opens from the same origin Telegram just called, so the button always points at this deployment.
   const reply = update ? buildBotReply(update, new URL(request.url).origin) : null;
 
