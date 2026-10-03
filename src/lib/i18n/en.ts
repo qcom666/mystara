@@ -430,8 +430,9 @@ export const en = {
       "Priority access to new modules (numerology, astrology)",
     ],
     notifyMeCta: "Notify me",
+    perMonth: "per month",
     billingNote:
-      "Payments aren't live yet — Premium is still in development. Everything marked Free is available now.",
+      "Premium payments are opening soon — until then, everything marked Free is available now.",
   },
   readingsPage: {
     title: "My Readings",

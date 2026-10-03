@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatReadingsPerDay, useLocale, useTranslation } from "@/lib/i18n";
 import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
+import { getPremiumPrice } from "@/lib/pricing/premium-pricing";
 import { PLAN_POLICIES } from "@/modules/subscriptions/usage-limit.service";
 
 export function PricingContent() {
   const t = useTranslation();
   const { locale } = useLocale();
   const natalChartPrice = getNatalChartPrice(locale);
+  const premiumPrice = getPremiumPrice(locale);
   const maxReadingsPerDay = PLAN_POLICIES.free.maxReadingsPerDay;
   const freeFeatures = [
     ...(maxReadingsPerDay !== null ? [formatReadingsPerDay(maxReadingsPerDay, locale)] : []),
@@ -50,7 +52,9 @@ export function PricingContent() {
           </Badge>
           <h2 className="font-display text-2xl text-gold-300">{t.pricingPage.premiumTitle}</h2>
           <p className="mt-1 text-sm text-silver-400">{t.pricingPage.premiumSubtitle}</p>
-          <p className="mt-4 text-3xl text-silver-50">{t.pricingPage.comingSoon}</p>
+          <p className="mt-4 text-3xl text-silver-50">
+            {premiumPrice.formatted} <span className="text-sm text-silver-400">{t.pricingPage.perMonth}</span>
+          </p>
           <ul className="mt-6 flex-1 space-y-3 text-sm text-silver-300">
             {t.pricingPage.premiumFeatures.map((feature) => (
               <li key={feature} className="flex items-start gap-2">
@@ -60,7 +64,7 @@ export function PricingContent() {
             ))}
           </ul>
           <Button disabled className="mt-8">
-            {t.pricingPage.notifyMeCta}
+            {t.pricingPage.comingSoon}
           </Button>
         </GlassPanel>
       </div>
