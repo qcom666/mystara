@@ -490,6 +490,7 @@ export const en = {
       },
     },
     copyrightSuffix: "Mystara. For reflection and entertainment purposes — not a substitute for professional advice.",
+    sellerLabel: "Seller: self-employed (NPD taxpayer)",
     disclaimer:
       "This service is provided for entertainment and personal reflection only. Tarot spreads, numerology and astrology calculations and all interpretations — including those generated automatically or by artificial intelligence — are symbolic. They are not fortune-telling or a prediction of the future, do not guarantee that any event will occur, and are not medical, psychological, legal, financial or other professional advice.",
   },

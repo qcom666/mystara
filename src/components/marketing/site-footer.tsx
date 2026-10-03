@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useTelegram } from "@/components/telegram/telegram-provider";
 import { useTranslation } from "@/lib/i18n";
+import { OPERATOR } from "@/lib/legal/operator";
 
 export function SiteFooter() {
   const t = useTranslation();
@@ -74,6 +75,12 @@ export function SiteFooter() {
           <p className="mt-3">
             © {new Date().getFullYear()} {t.footer.copyrightSuffix}
           </p>
+          {/* Seller details: shown only once real ones are configured — never the [placeholder] text. */}
+          {!OPERATOR.name.startsWith("[") && !OPERATOR.registration.startsWith("[") && (
+            <p className="mt-2">
+              {t.footer.sellerLabel} {OPERATOR.name}, {OPERATOR.registration}
+            </p>
+          )}
           {/* Deliberately fine print: small and muted so it doesn't shout, but real text at a
               legible contrast — an unreadable disclaimer would defeat its own purpose. */}
           <p className="mt-4 max-w-3xl text-[11px] leading-snug text-silver-500/80">{t.footer.disclaimer}</p>
