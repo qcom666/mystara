@@ -2,30 +2,42 @@
 
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { CONSENT_SECTIONS } from "@/lib/legal/consent";
-import { hasUnfilledOperatorDetails, PRIVACY_POLICY_EFFECTIVE_DATE, PRIVACY_POLICY_VERSION } from "@/lib/legal/operator";
+import { OFFER_SECTIONS } from "@/lib/legal/offer";
+import {
+  hasUnfilledOperatorDetails,
+  OFFER_EFFECTIVE_DATE,
+  OFFER_VERSION,
+  PRIVACY_POLICY_EFFECTIVE_DATE,
+  PRIVACY_POLICY_VERSION,
+} from "@/lib/legal/operator";
 import { PRIVACY_POLICY_SECTIONS, type LegalSection } from "@/lib/legal/privacy-policy";
 
-const DOCUMENTS: Record<"privacy" | "consent", LegalSection[]> = {
+type DocumentKind = "privacy" | "consent" | "offer";
+
+const DOCUMENTS: Record<DocumentKind, LegalSection[]> = {
   privacy: PRIVACY_POLICY_SECTIONS,
   consent: CONSENT_SECTIONS,
+  offer: OFFER_SECTIONS,
 };
 
 /**
  * Renders a legal document in the active language. Russian is authoritative:
  * an English reader gets the English text plus a note saying so.
  */
-export function LegalDocumentView({ kind }: { kind: "privacy" | "consent" }) {
+export function LegalDocumentView({ kind }: { kind: DocumentKind }) {
   const t = useTranslation();
   const { locale } = useLocale();
   const sections = DOCUMENTS[kind];
-  const title = kind === "privacy" ? t.legal.policyTitle : t.legal.consentTitle;
+  const title = { privacy: t.legal.policyTitle, consent: t.legal.consentTitle, offer: t.legal.offerTitle }[kind];
+  const effectiveDate = kind === "offer" ? OFFER_EFFECTIVE_DATE : PRIVACY_POLICY_EFFECTIVE_DATE;
+  const version = kind === "offer" ? OFFER_VERSION : PRIVACY_POLICY_VERSION;
   const showDevWarning = process.env.NODE_ENV !== "production" && hasUnfilledOperatorDetails();
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="font-display text-3xl text-silver-50 sm:text-4xl">{title}</h1>
       <p className="mt-2 text-xs text-silver-500">
-        {t.legal.inForceSince} {PRIVACY_POLICY_EFFECTIVE_DATE[locale]} · {t.legal.versionLabel} {PRIVACY_POLICY_VERSION}
+        {t.legal.inForceSince} {effectiveDate[locale]} · {t.legal.versionLabel} {version}
       </p>
       {locale === "en" && <p className="mt-3 rounded-xl border border-gold-500/25 bg-gold-500/5 p-3 text-xs text-gold-300">{t.legal.translationNote}</p>}
       {showDevWarning && <p className="mt-3 rounded-xl border border-red-400/30 bg-red-400/5 p-3 text-xs text-red-300">{t.legal.unfilledWarning}</p>}

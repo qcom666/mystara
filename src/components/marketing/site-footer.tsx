@@ -71,6 +71,12 @@ export function SiteFooter() {
             <Link href="/consent" className="transition-colors hover:text-gold-300">
               {t.legal.consentLink}
             </Link>
+            <Link href="/offer" className="transition-colors hover:text-gold-300">
+              {t.legal.offerLink}
+            </Link>
+            <Link href="/contacts" className="transition-colors hover:text-gold-300">
+              {t.legal.contactsLink}
+            </Link>
           </div>
           <p className="mt-3">
             © {new Date().getFullYear()} {t.footer.copyrightSuffix}

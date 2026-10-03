@@ -1,4 +1,4 @@
-import { OPERATOR } from "./operator";
+import { ADDRESS_CLAUSE, OPERATOR } from "./operator";
 
 /**
  * Privacy policy content. The Russian text is the authoritative one (it's what
@@ -50,11 +50,11 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
     body: {
       ru: [
         "Оператором персональных данных (лицом, определяющим цели и состав обработки) является:",
-        [`Наименование / ФИО: ${op.name}`, `Регистрационные данные: ${op.registration}`, `Адрес: ${op.address}`, `Электронная почта для обращений: ${op.email}`],
+        [`Наименование / ФИО: ${op.name}`, `Регистрационные данные: ${op.registration}`, ...(op.address ? [`Адрес: ${op.address}`] : []), `Электронная почта для обращений: ${op.email}`, ...(op.phone ? [`Телефон: ${op.phone}`] : [])],
       ],
       en: [
         "The personal-data operator (the party that determines the purposes and scope of processing) is:",
-        [`Name: ${op.name}`, `Registration details: ${op.registration}`, `Address: ${op.address}`, `Contact e-mail: ${op.email}`],
+        [`Name: ${op.name}`, `Registration details: ${op.registration}`, ...(op.address ? [`Address: ${op.address}`] : []), `Contact e-mail: ${op.email}`, ...(op.phone ? [`Phone: ${op.phone}`] : [])],
       ],
     },
   },
@@ -246,7 +246,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "отозвать согласие на обработку персональных данных;",
           "обжаловать действия или бездействие Оператора в уполномоченном органе по защите прав субъектов персональных данных (Роскомнадзор) или в суде.",
         ],
-        `Обращение направляется на ${op.email} или по адресу: ${op.address}. Чтобы мы могли найти ваши данные, укажите адрес электронной почты учётной записи или иные сведения, позволяющие вас идентифицировать.`,
+        `Обращение направляется на ${op.email}${ADDRESS_CLAUSE.ru}. Чтобы мы могли найти ваши данные, укажите адрес электронной почты учётной записи или иные сведения, позволяющие вас идентифицировать.`,
         "Мы ответим на обращение в срок, установленный законом (как правило, в течение 10 рабочих дней; этот срок может быть продлён не более чем на 5 рабочих дней с мотивированным уведомлением). При отзыве согласия обработка прекращается, а данные уничтожаются в срок, не превышающий 30 дней, если иное не предусмотрено законом. После отзыва согласия доступ к функциям, требующим учётной записи, может быть прекращён.",
       ],
       en: [
@@ -257,7 +257,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "withdraw your consent to the processing of personal data;",
           "appeal the operator’s actions or inaction to the authorised body for the protection of data-subject rights (Roskomnadzor) or in court.",
         ],
-        `Send a request to ${op.email} or to: ${op.address}. So that we can find your data, include the e-mail address of your account or other details that identify you.`,
+        `Send a request to ${op.email}${ADDRESS_CLAUSE.en}. So that we can find your data, include the e-mail address of your account or other details that identify you.`,
         "We will respond within the period set by law (as a rule, within 10 working days, extendable by no more than 5 working days with a reasoned notice). When consent is withdrawn, processing stops and the data is destroyed within no more than 30 days unless the law provides otherwise. After consent is withdrawn, access to features that require an account may be discontinued.",
       ],
     },

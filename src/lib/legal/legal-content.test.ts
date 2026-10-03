@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { CONSENT_SECTIONS } from "./consent";
+import { OFFER_SECTIONS } from "./offer";
 import { hasUnfilledOperatorDetails, OPERATOR, PRIVACY_POLICY_VERSION } from "./operator";
 import { PRIVACY_POLICY_SECTIONS, type LegalBlock, type LegalSection } from "./privacy-policy";
 
 const DOCUMENTS: [string, LegalSection[]][] = [
   ["privacy policy", PRIVACY_POLICY_SECTIONS],
   ["consent", CONSENT_SECTIONS],
+  ["public offer", OFFER_SECTIONS],
 ];
 
 function flatten(blocks: LegalBlock[]): string[] {
@@ -68,7 +70,7 @@ describe("privacy policy content", () => {
 describe("operator details", () => {
   it("shows an obvious bracketed placeholder instead of an invented detail while unset", () => {
     if (!hasUnfilledOperatorDetails()) return;
-    for (const value of [OPERATOR.name, OPERATOR.registration, OPERATOR.address, OPERATOR.email]) {
+    for (const value of [OPERATOR.name, OPERATOR.registration, OPERATOR.email]) {
       expect(value.startsWith("[")).toBe(true);
     }
   });
@@ -77,3 +79,4 @@ describe("operator details", () => {
     expect(PRIVACY_POLICY_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
+

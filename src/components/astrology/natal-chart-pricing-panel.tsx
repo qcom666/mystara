@@ -169,6 +169,15 @@ export function NatalChartPricingPanel({
           </div>
         )}
 
+        {methods !== null && methods.length > 0 && (
+          <p className="mt-3 text-xs text-silver-500">
+            {t.natalChartPage.offerNoticePrefix}{" "}
+            <Link href="/offer" className="text-gold-300 underline-offset-2 hover:underline">
+              {t.natalChartPage.offerNoticeLink}
+            </Link>
+          </p>
+        )}
+
         {message && <p className="mt-3 text-xs text-gold-300">{message}</p>}
       </div>
     </GlassPanel>

@@ -19,6 +19,8 @@ const STATIC_PATHS = [
   "/login",
   "/signup",
   "/privacy",
+  "/offer",
+  "/contacts",
   "/consent",
 ];
 

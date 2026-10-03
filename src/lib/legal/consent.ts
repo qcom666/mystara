@@ -1,4 +1,4 @@
-import { OPERATOR } from "./operator";
+import { ADDRESS_CLAUSE, OPERATOR } from "./operator";
 import type { LegalSection } from "./privacy-policy";
 
 /**
@@ -21,10 +21,10 @@ export const CONSENT_SECTIONS: LegalSection[] = [
     title: { ru: "Согласие", en: "Consent" },
     body: {
       ru: [
-        `Я, пользователь сервиса «${op.serviceName}», действуя свободно, своей волей и в своём интересе, в соответствии со статьёй 9 Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных» даю согласие оператору — ${op.name} (${op.registration}; адрес: ${op.address}; e-mail: ${op.email}) — на обработку моих персональных данных на условиях, изложенных ниже.`,
+        `Я, пользователь сервиса «${op.serviceName}», действуя свободно, своей волей и в своём интересе, в соответствии со статьёй 9 Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных» даю согласие оператору — ${op.name} (${op.registration}${op.address ? `; адрес: ${op.address}` : ""}; e-mail: ${op.email}) — на обработку моих персональных данных на условиях, изложенных ниже.`,
       ],
       en: [
-        `I, a user of the “${op.serviceName}” service, acting freely, of my own will and in my own interest, in accordance with Article 9 of Russian Federal Law No. 152-FZ of 27 July 2006 “On Personal Data”, consent to the processing of my personal data by the operator — ${op.name} (${op.registration}; address: ${op.address}; e-mail: ${op.email}) — on the terms set out below.`,
+        `I, a user of the “${op.serviceName}” service, acting freely, of my own will and in my own interest, in accordance with Article 9 of Russian Federal Law No. 152-FZ of 27 July 2006 “On Personal Data”, consent to the processing of my personal data by the operator — ${op.name} (${op.registration}${op.address ? `; address: ${op.address}` : ""}; e-mail: ${op.email}) — on the terms set out below.`,
       ],
     },
   },
@@ -122,12 +122,12 @@ export const CONSENT_SECTIONS: LegalSection[] = [
     body: {
       ru: [
         "Согласие действует с момента его предоставления до момента его отзыва либо удаления моей учётной записи — в зависимости от того, что наступит раньше.",
-        `Я могу отозвать согласие в любой момент, направив соответствующее заявление на ${op.email} или по адресу: ${op.address}. Мне известно, что после отзыва обработка будет прекращена, а данные уничтожены в срок, не превышающий 30 дней, если иное не предусмотрено законом, и что доступ к функциям, требующим учётной записи, может быть прекращён.`,
+        `Я могу отозвать согласие в любой момент, направив соответствующее заявление на ${op.email}${ADDRESS_CLAUSE.ru}. Мне известно, что после отзыва обработка будет прекращена, а данные уничтожены в срок, не превышающий 30 дней, если иное не предусмотрено законом, и что доступ к функциям, требующим учётной записи, может быть прекращён.`,
         "Согласие даётся отдельным действием (проставлением отметки) и не является условием пользования той частью сервиса, которая не требует учётной записи: без согласия можно получать расклады и расчёты как гость, без сохранения истории.",
       ],
       en: [
         "This consent is valid from the moment it is given until it is withdrawn or my account is deleted, whichever happens first.",
-        `I may withdraw consent at any time by sending a written statement to ${op.email} or to: ${op.address}. I understand that after withdrawal processing will stop and the data will be destroyed within no more than 30 days unless the law provides otherwise, and that access to features requiring an account may be discontinued.`,
+        `I may withdraw consent at any time by sending a written statement to ${op.email}${ADDRESS_CLAUSE.en}. I understand that after withdrawal processing will stop and the data will be destroyed within no more than 30 days unless the law provides otherwise, and that access to features requiring an account may be discontinued.`,
         "Consent is given by a separate action (ticking a box) and is not a condition of using the part of the service that does not need an account: without consent you can receive spreads and calculations as a guest, without saved history.",
       ],
     },
