@@ -20,6 +20,9 @@ function formatMethodPrice(price: ProviderPrice): string {
   return `${price.amount} ₽`;
 }
 
+/** True inside the Telegram bot / Mini App — Stars there, ЮKassa on the website. */
+const inTelegram = () => Boolean(getTelegramWebApp()?.initData);
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
@@ -40,9 +43,9 @@ async function waitForCredits(): Promise<boolean> {
 
 /**
  * Shown wherever someone can't generate a chart right now (no account, or an
- * account with zero credits). Offers whichever payment methods are configured:
- * inside Telegram only Stars (Telegram's rule for digital goods), on the website
- * Stars plus cards/SBP (ЮKassa).
+ * account with zero credits). Offers the payment method for where the buyer is:
+ * Telegram Stars inside the Telegram bot / Mini App (Telegram's rule for digital
+ * goods), cards/SBP through ЮKassa on the website.
  */
 export function NatalChartPricingPanel({
   title,
@@ -63,9 +66,8 @@ export function NatalChartPricingPanel({
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const context = getTelegramWebApp()?.initData ? "telegram" : "web";
     let cancelled = false;
-    fetch(`/api/payments/methods?context=${context}`)
+    fetch(`/api/payments/methods?context=${inTelegram() ? "telegram" : "web"}`)
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error("failed"))))
       .then((data: { methods: PaymentMethod[] }) => {
         if (!cancelled) setMethods(data.methods);
@@ -98,24 +100,17 @@ export function NatalChartPricingPanel({
       const response = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider, locale }),
+        body: JSON.stringify({ provider, locale, context: inTelegram() ? "telegram" : "web" }),
       });
       if (!response.ok) throw new Error("checkout_failed");
       const { url } = (await response.json()) as { url: string };
 
       const telegram = getTelegramWebApp();
-      if (provider === "stars" && telegram?.initData && typeof telegram.openInvoice === "function") {
+      if (provider === "stars" && typeof telegram?.openInvoice === "function") {
         telegram.openInvoice(url, (outcome) => {
           if (outcome === "paid") void confirmPayment();
           else setBusy(null);
         });
-        return;
-      }
-      if (provider === "stars") {
-        // On the website a Stars invoice opens in the Telegram app; the buyer comes back and reopens this page.
-        window.open(url, "_blank", "noopener");
-        setBusy(null);
-        setMessage(t.natalChartPage.paymentPending);
         return;
       }
       window.location.assign(url);

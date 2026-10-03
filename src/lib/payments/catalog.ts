@@ -3,9 +3,9 @@ import { NATAL_CHART_PRICE_RUB, NATAL_CHART_PRICE_STARS } from "@/lib/pricing/na
 /**
  * Payment methods for the Natal Chart pack and what each one costs.
  *
- *  - stars     Telegram Stars (XTR). The only method allowed for digital goods
- *              inside Telegram (bots and Mini Apps) — Telegram's own rule.
- *  - yookassa  Bank cards / SBP in rubles through ЮKassa (website only).
+ *  - stars     Telegram Stars (XTR) — inside the Telegram bot / Mini App ONLY. It is the
+ *              only method Telegram allows for digital goods there (its own rule).
+ *  - yookassa  Bank cards / SBP in rubles through ЮKassa — on the WEBSITE only.
  *
  * There is deliberately no crypto-currency and no foreign-currency method: accepting
  * (or advertising the acceptance of) digital currency for services is forbidden in
@@ -30,17 +30,14 @@ export const PAYMENT_PROVIDER_IDS = ["stars", "yookassa"] as const satisfies rea
 type Env = Record<string, string | undefined>;
 
 /**
- * Providers that can take a payment right now — a provider is on only when its
- * credentials are present, so adding a key in Vercel is all it takes to turn
- * one on. Inside Telegram only Stars are offered (see PaymentProviderId).
+ * The provider that can take a payment in this context right now: Stars inside
+ * Telegram, ЮKassa on the website — never both, never crossed. A provider is on
+ * only when its credentials are present, so adding a key in Vercel is all it
+ * takes to turn one on.
  */
 export function enabledProviders(env: Env, context: PaymentContext): PaymentProviderId[] {
-  const providers: PaymentProviderId[] = [];
-  if (env.TELEGRAM_BOT_TOKEN) providers.push("stars");
-  if (context === "web") {
-    if (env.YOOKASSA_SHOP_ID && env.YOOKASSA_SECRET_KEY) providers.push("yookassa");
-  }
-  return providers;
+  if (context === "telegram") return env.TELEGRAM_BOT_TOKEN ? ["stars"] : [];
+  return env.YOOKASSA_SHOP_ID && env.YOOKASSA_SECRET_KEY ? ["yookassa"] : [];
 }
 
 export function isPaymentProviderId(value: unknown): value is PaymentProviderId {

@@ -13,8 +13,9 @@ describe("enabledProviders", () => {
     expect(enabledProviders(all, "telegram")).toEqual(["stars"]);
   });
 
-  it("offers every configured method on the website", () => {
-    expect(enabledProviders(all, "web")).toEqual(["stars", "yookassa"]);
+  it("offers only ЮKassa on the website — Stars never appear there", () => {
+    expect(enabledProviders(all, "web")).toEqual(["yookassa"]);
+    expect(enabledProviders({ TELEGRAM_BOT_TOKEN: "t" }, "web")).toEqual([]);
   });
 
   it("turns a method on only when all its credentials are present", () => {

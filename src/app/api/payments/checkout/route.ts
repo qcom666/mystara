@@ -10,6 +10,8 @@ import { createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/pu
 const checkoutSchema = z.object({
   provider: z.enum(["stars", "yookassa"]),
   locale: z.enum(["en", "ru"]).default("en"),
+  // Where the buyer is: Stars are for Telegram, ЮKassa for the website (see lib/payments/catalog.ts).
+  context: z.enum(["telegram", "web"]).default("web"),
 });
 
 const COPY = {
@@ -36,10 +38,9 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
-  const { provider, locale } = parsed.data;
+  const { provider, locale, context } = parsed.data;
 
-  // Credentials decide what is on; the Telegram-only restriction is applied by the client (/api/payments/methods).
-  if (!enabledProviders(process.env, "web").includes(provider)) {
+  if (!enabledProviders(process.env, context).includes(provider)) {
     return NextResponse.json({ error: "provider_unavailable" }, { status: 400 });
   }
 
