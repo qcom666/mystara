@@ -21,7 +21,7 @@
 Посмотреть базу глазами (таблицы, схема связей, SQL-консоль) — откроется Prisma Studio на http://localhost:5555:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File dbstudio.ps1
+powershell -ExecutionPolicy Bypass -File db\studio.ps1
 ```
 
 Сделать резервную копию:
