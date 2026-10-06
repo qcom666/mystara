@@ -2,6 +2,7 @@
 
 import { type FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,7 +110,7 @@ export function NatalChartInputForm({ onSubmit }: NatalChartInputFormProps) {
   return (
     <GlassPanel className="mx-auto w-full max-w-md">
       <h1 className="font-display text-2xl text-silver-50">{t.natalChartPage.formTitle}</h1>
-      <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
+      <form id="natal-chart-form" onSubmit={handleFormSubmit} className="mt-6 space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="natal-name">{t.natalChartPage.nameLabel}</Label>
           <Input id="natal-name" value={name} onChange={(event) => setName(event.target.value)} />
@@ -204,9 +205,11 @@ export function NatalChartInputForm({ onSubmit }: NatalChartInputFormProps) {
 
         {error && <p className="text-xs text-red-400">{error}</p>}
 
-        <Button type="submit" className="w-full">
-          {t.natalChartPage.generateCta}
-        </Button>
+        <PrimaryActionBar>
+          <Button type="submit" form="natal-chart-form" className="w-full">
+            {t.natalChartPage.generateCta}
+          </Button>
+        </PrimaryActionBar>
       </form>
     </GlassPanel>
   );

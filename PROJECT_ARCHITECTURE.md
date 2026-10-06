@@ -414,12 +414,17 @@ what the API-first, framework-agnostic domain layer from day one was for.
   page for `TelegramHome`, a compact module picker; `TelegramBackButton`
   syncs Telegram's native back button to the Next.js router, hidden on the
   home screen and wired to `router.back()` everywhere else.
-- **Primary actions:** the Mini App uses the same in-page buttons as the website
-  (gold gradient `Button`s) — deliberately NOT Telegram's native blue MainButton
-  bar (owner's design decision, Oct 2026: the app should look like the site). The
-  old `useTelegramMainButton()` hook and the `!isTelegram` guards that hid the
-  in-page buttons were removed; `HapticFeedback` and the native BackButton are
-  still used. (History: the native button forced a "never two hooks mounted at
+- **Primary actions:** the Mini App uses the website's gold gradient `Button`s —
+  deliberately NOT Telegram's native blue MainButton bar (owner's design decision,
+  Oct 2026: the app should look like the site). Each screen's main action is wrapped
+  in `<PrimaryActionBar>` (`components/telegram/primary-action-bar.tsx`): on the
+  website it is a plain wrapper (button stays in the page flow); inside Telegram the
+  same buttons are portalled into a gold-on-dark glass bar pinned to the bottom, with
+  body padding so content isn't covered. It is a portal because `position: fixed`
+  breaks inside transformed/backdrop-filter ancestors (the glass panels), and a submit
+  button in the bar must carry `form="<id>"` since it is no longer inside its
+  `<form>` in the DOM. The old `useTelegramMainButton()` hook and the `!isTelegram`
+  guards were removed; `HapticFeedback` and the native BackButton are still used. (History: the native button forced a "never two hooks mounted at
   once" rule, which is why numerology/astrology split their form and result into
   separate components — that split is harmless and was kept.)
 - **Unchanged:** every API route, the domain/service layers, and the DB

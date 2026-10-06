@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { FlippableCard } from "@/components/tarot/flippable-card";
 import { SpreadLayout } from "@/components/tarot/spread-layout";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { useTelegram } from "@/components/telegram/telegram-provider";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getSpreadName } from "@/modules/tarot/domain/spreads.data";
@@ -58,7 +59,7 @@ export function RevealStep({ spread }: RevealStepProps) {
         />
       </div>
 
-      <div className="mt-10 flex flex-wrap justify-center gap-3">
+      <PrimaryActionBar className="mt-10 flex flex-wrap justify-center gap-3">
         {!allRevealed && (
           <Button variant="secondary" onClick={revealAll}>
             {t.reading.revealAllCta}
@@ -69,7 +70,7 @@ export function RevealStep({ spread }: RevealStepProps) {
             {t.common.continue}
           </Button>
         )}
-      </div>
+      </PrimaryActionBar>
     </div>
   );
 }

@@ -62,7 +62,7 @@ behind each decision referenced below.
 - [x] `User.telegramId/telegramUsername/telegramPhotoUrl` added to schema; `email` is now optional (Telegram-only users have none)
 - [x] Verified end-to-end in-browser with a mocked `window.Telegram.WebApp` (see "Verified this session")
 - [ ] **Needs a real bot** — create one via [@BotFather](https://t.me/BotFather) (`/newbot`), set `TELEGRAM_BOT_TOKEN`, register this app's deployed URL as the bot's Mini App. Nothing here can be tested against the real Telegram client without that.
-- [x] ~~`MainButton` integration~~ — **removed (Oct 2026, owner's request):** the Mini App now uses the website's gold in-page buttons instead of Telegram's native blue bottom button (`useTelegramMainButton()` and the `!isTelegram` guards are gone). Haptic feedback on shuffle/draw/card-reveal is unchanged.
+- [x] ~~`MainButton` integration~~ — **removed (Oct 2026, owner's request):** the Mini App now uses the website's gold buttons, pinned in a bottom `PrimaryActionBar`, instead of Telegram's native blue bottom button (`useTelegramMainButton()` and the `!isTelegram` guards are gone). Haptic feedback on shuffle/draw/card-reveal is unchanged.
 
 ## Phase 7 — Numerology
 - [x] `modules/numerology` domain model + Life Path Number meanings (1–9, 11, 22, 33)

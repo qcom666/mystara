@@ -2,6 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,7 +46,7 @@ export function NumerologyInputForm({ onSubmit }: NumerologyInputFormProps) {
     <GlassPanel className="mx-auto w-full max-w-sm">
       <h1 className="font-display text-2xl text-silver-50">{t.common.detailsFormTitle}</h1>
       <p className="mt-1 text-sm text-silver-400">{t.numerologyPage.formSubtitle}</p>
-      <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
+      <form id="numerology-form" onSubmit={handleFormSubmit} className="mt-6 space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="fullName">{t.numerologyPage.fullNameLabel}</Label>
           <Input
@@ -61,9 +62,11 @@ export function NumerologyInputForm({ onSubmit }: NumerologyInputFormProps) {
           <Input id="birthDate" type="date" required max={TODAY} value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
         </div>
         {error && <p className="text-xs text-red-400">{t.common.invalidDateError}</p>}
-        <Button type="submit" className="w-full">
-          {t.numerologyPage.calculateCta}
-        </Button>
+        <PrimaryActionBar>
+          <Button type="submit" form="numerology-form" className="w-full">
+            {t.numerologyPage.calculateCta}
+          </Button>
+        </PrimaryActionBar>
       </form>
       <p className="mt-4 text-xs text-silver-500">{t.numerologyPage.privacyHint}</p>
     </GlassPanel>

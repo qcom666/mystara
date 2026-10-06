@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { DeckShuffle } from "@/components/tarot/deck-shuffle";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { useTelegram } from "@/components/telegram/telegram-provider";
 import { track } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n";
@@ -49,9 +50,11 @@ export function ShuffleStep({ spread }: ShuffleStepProps) {
         {shuffling ? t.reading.shuffling : t.reading.focusHint}
       </motion.p>
       {!shuffling && (
-        <Button size="lg" className="mt-6" onClick={handleShuffle}>
-          {t.reading.shuffleCta}
-        </Button>
+        <PrimaryActionBar className="mt-6">
+          <Button size="lg" onClick={handleShuffle}>
+            {t.reading.shuffleCta}
+          </Button>
+        </PrimaryActionBar>
       )}
     </div>
   );

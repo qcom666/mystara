@@ -2,6 +2,7 @@
 
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,7 +53,7 @@ export function AstrologyInputForm({ onSubmit }: AstrologyInputFormProps) {
     <GlassPanel className="mx-auto w-full max-w-sm">
       <h1 className="font-display text-2xl text-silver-50">{t.common.detailsFormTitle}</h1>
       <p className="mt-1 text-sm text-silver-400">{t.astrologyPage.formSubtitle}</p>
-      <form onSubmit={handleFormSubmit} className="mt-6 space-y-4">
+      <form id="astrology-form" onSubmit={handleFormSubmit} className="mt-6 space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="birthDate">{t.common.dateOfBirthLabel}</Label>
           <Input id="birthDate" type="date" required max={TODAY} value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
@@ -77,9 +78,11 @@ export function AstrologyInputForm({ onSubmit }: AstrologyInputFormProps) {
           <p className="text-xs text-silver-500">{t.astrologyPage.sectHint}</p>
         </div>
         {error && <p className="text-xs text-red-400">{t.common.invalidDateError}</p>}
-        <Button type="submit" className="w-full">
-          {t.astrologyPage.revealCta}
-        </Button>
+        <PrimaryActionBar>
+          <Button type="submit" form="astrology-form" className="w-full">
+            {t.astrologyPage.revealCta}
+          </Button>
+        </PrimaryActionBar>
       </form>
     </GlassPanel>
   );

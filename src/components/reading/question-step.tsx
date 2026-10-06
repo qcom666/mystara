@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { Textarea } from "@/components/ui/input";
 import { track } from "@/lib/analytics";
 import { useLocale, useTranslation } from "@/lib/i18n";
@@ -52,11 +53,11 @@ export function QuestionStep({ spread }: QuestionStepProps) {
         />
       </GlassPanel>
 
-      <div className="mt-6 flex justify-center">
+      <PrimaryActionBar className="mt-6 flex justify-center">
         <Button size="lg" onClick={handleContinue}>
           {t.reading.shuffleCta}
         </Button>
-      </div>
+      </PrimaryActionBar>
     </motion.div>
   );
 }

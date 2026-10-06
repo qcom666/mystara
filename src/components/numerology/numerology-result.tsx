@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { FunFactCard } from "@/components/shared/fun-fact-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocale, useTranslation } from "@/lib/i18n";
@@ -195,16 +196,20 @@ export function NumerologyResult({ fullName, birthDate, onReset }: NumerologyRes
           saveStatus === "saved" ? (
             <p className="text-sm text-gold-300">{t.numerologyPage.savedNotice}</p>
           ) : (
-            <Button onClick={handleSave} disabled={saveStatus === "saving"}>
-              {saveStatus === "saving" ? t.common.loading : t.numerologyPage.saveResultCta}
-            </Button>
+            <PrimaryActionBar>
+              <Button onClick={handleSave} disabled={saveStatus === "saving"}>
+                {saveStatus === "saving" ? t.common.loading : t.numerologyPage.saveResultCta}
+              </Button>
+            </PrimaryActionBar>
           )
         ) : (
           <GlassPanel>
             <p className="text-sm text-silver-400">{t.numerologyPage.signInToSaveBody}</p>
-            <Button asChild variant="secondary" className="mt-3">
-              <Link href="/login">{t.numerologyPage.signInToSaveCta}</Link>
-            </Button>
+            <PrimaryActionBar className="mt-3">
+              <Button asChild variant="secondary">
+                <Link href="/login">{t.numerologyPage.signInToSaveCta}</Link>
+              </Button>
+            </PrimaryActionBar>
           </GlassPanel>
         )}
         {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
