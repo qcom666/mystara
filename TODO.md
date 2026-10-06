@@ -161,6 +161,7 @@ behind each decision referenced below.
 
 ## Deployment
 - [x] Live on Vercel: https://taroproject.vercel.app (project `taro_project`, team `qcom666`); public, no deployment protection; env: `AUTH_SECRET`, `TELEGRAM_BOT_TOKEN`, `NEXT_PUBLIC_SITE_URL`
+- [x] **Local dev database** (PostgreSQL 16 on the owner's laptop, db `mystara_dev`, role `mystara_app`): installed, migration applied (13 tables), sign-up verified end-to-end (row + consent + bcrypt hash), backup/restore scripts verified — see `db/README.md`. Local only: Vercel/Telegram can't reach it. Hardened: `listen_addresses = localhost` (takes effect after a PostgreSQL/Windows restart), pg_hba allows only 127.0.0.1/::1
 - [ ] Production has no `DATABASE_URL` (accounts/history off) — blocked on the localization decision above
 - [x] Git repo: private GitHub repo `qcom666/mystara` (branch `main`), CI in `.github/workflows/ci.yml` (typecheck → lint → tests → build)
 - [x] Vercel ↔ GitHub linked (project `taro_project` ↔ `qcom666/mystara`, production branch `main`): every push to `main` deploys to production, other branches/PRs get preview URLs. `npx vercel --prod` is now only needed for env-var-only changes

@@ -44,3 +44,6 @@ next-env.d.ts
 
 # keep the documented env template in the repo (it contains no secrets)
 !.env.example
+
+# Local database backups (db/backup.ps1) — never commit data dumps
+/db/backups/
