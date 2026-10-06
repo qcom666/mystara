@@ -37,7 +37,7 @@ describe("buildBotReply", () => {
   it("points anything else back to the app", () => {
     const reply = buildBotReply(privateMessage("что меня ждёт?", "ru"), APP_URL);
     expect(reply?.text).toContain("в приложении");
-    expect(reply?.reply_markup.inline_keyboard[0][0].web_app.url).toBe(APP_URL);
+    expect(reply?.reply_markup.inline_keyboard[0][0]).toMatchObject({ web_app: { url: APP_URL } });
   });
 
   it("stays silent for group chats, non-text messages and other updates", () => {
@@ -45,5 +45,24 @@ describe("buildBotReply", () => {
     expect(buildBotReply({ message: { chat: { id: 1, type: "private" } } }, APP_URL)).toBeNull();
     expect(buildBotReply({}, APP_URL)).toBeNull();
     expect(buildBotReply(null as unknown as TelegramUpdate, APP_URL)).toBeNull();
+  });
+
+  it("puts the legal documents one tap away in every reply", () => {
+    for (const text of ["/start", "/help", "hello", "/docs"]) {
+      const urls = buildBotReply(privateMessage(text, "ru"), APP_URL)!.reply_markup.inline_keyboard.flat().flatMap((b) => ("url" in b ? [b.url] : []));
+      expect(urls, text).toEqual([`${APP_URL}/privacy`, `${APP_URL}/offer`, `${APP_URL}/contacts`]);
+    }
+  });
+
+  it("answers the document commands with the documents, in the user's language", () => {
+    for (const command of ["/docs", "/terms", "/offer", "/privacy", "/contacts"]) {
+      expect(buildBotReply(privateMessage(command, "ru"), APP_URL)?.text, command).toContain("оферта");
+      expect(buildBotReply(privateMessage(command, "en"), APP_URL)?.text, command).toContain("public offer");
+    }
+  });
+
+  it("answers /support with the operator's contact details", () => {
+    expect(buildBotReply(privateMessage("/support", "ru"), APP_URL)?.text).toContain("Служба поддержки");
+    expect(buildBotReply(privateMessage("/support", "en"), APP_URL)?.text).toContain("Mystara support");
   });
 });

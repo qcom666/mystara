@@ -80,6 +80,12 @@ export function TelegramHome() {
           <Link href="/consent" className="hover:text-gold-300">
             {t.legal.consentLink}
           </Link>
+          <Link href="/offer" className="hover:text-gold-300">
+            {t.legal.offerLink}
+          </Link>
+          <Link href="/contacts" className="hover:text-gold-300">
+            {t.legal.contactsLink}
+          </Link>
         </p>
         <p className="mt-3">{t.footer.disclaimer}</p>
       </div>

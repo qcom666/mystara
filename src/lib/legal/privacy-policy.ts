@@ -50,11 +50,11 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
     body: {
       ru: [
         "Оператором персональных данных (лицом, определяющим цели и состав обработки) является:",
-        [`Наименование / ФИО: ${op.name}`, `Регистрационные данные: ${op.registration}`, ...(op.address ? [`Адрес: ${op.address}`] : []), `Электронная почта для обращений: ${op.email}`, ...(op.phone ? [`Телефон: ${op.phone}`] : [])],
+        [`Наименование / ФИО: ${op.name}`, `Регистрационные данные: ${op.registration}`, ...(op.address ? [`Адрес: ${op.address}`] : []), `Электронная почта для обращений: ${op.email}`, ...(op.telegram ? [`Telegram: ${op.telegram}`] : [])],
       ],
       en: [
         "The personal-data operator (the party that determines the purposes and scope of processing) is:",
-        [`Name: ${op.name}`, `Registration details: ${op.registration}`, ...(op.address ? [`Address: ${op.address}`] : []), `Contact e-mail: ${op.email}`, ...(op.phone ? [`Phone: ${op.phone}`] : [])],
+        [`Name: ${op.name}`, `Registration details: ${op.registration}`, ...(op.address ? [`Address: ${op.address}`] : []), `Contact e-mail: ${op.email}`, ...(op.telegram ? [`Telegram: ${op.telegram}`] : [])],
       ],
     },
   },
@@ -93,6 +93,12 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "выбранные расклады, вытянутые карты, полученные толкования и избранное — для учёта истории, если у вас есть учётная запись;",
           "полное имя, которое вы вводите для нумерологического расчёта, используется только для вычисления в вашем браузере и на серверах Оператора не сохраняется.",
         ],
+        "Данные о покупках и платежах (если вы что-то покупаете):",
+        [
+          "состав и стоимость заказа, дата, способ оплаты, статус платежа и идентификатор платежа у платёжного провайдера;",
+          "реквизиты банковской карты и иные платёжные данные вводятся только на стороне платёжного провайдера — мы их не получаем и не храним;",
+          "сведения для формирования чека (способ связи, на который он направляется).",
+        ],
         "Технические данные:",
         [
           "IP-адрес, сведения о браузере и устройстве, дата и время запросов — они попадают в технические журналы хостинг-провайдера, которые ведутся для работоспособности и безопасности;",
@@ -115,6 +121,12 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "chosen spreads, drawn cards, received interpretations and favorites — to keep your history, if you have an account;",
           "the full name you enter for the numerology calculation is used only to compute results in your browser and is not stored on the operator’s servers.",
         ],
+        "Purchase and payment data (if you buy something):",
+        [
+          "what was ordered and its price, the date, the payment method, the payment status and the payment ID at the payment provider;",
+          "bank-card details and other payment credentials are entered only on the payment provider’s side — we neither receive nor store them;",
+          "details for issuing a receipt (the contact it is sent to).",
+        ],
         "Technical data:",
         [
           "IP address, browser and device information, date and time of requests — these end up in the hosting provider’s technical logs, kept for reliability and security;",
@@ -135,6 +147,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "формирование раскладов, расчётов и толкований по вашим запросам, в том числе автоматизированное формирование текста толкования — на тех же основаниях;",
           "обеспечение работоспособности и безопасности Сервиса, предотвращение злоупотреблений — в целях реализации законных интересов Оператора, если при этом не нарушаются ваши права и свободы (п. 7 ч. 1 ст. 6);",
           "ответы на ваши обращения — на основании вашего обращения и согласия;",
+          "оформление и учёт покупок, оказание оплаченных услуг, возвраты и формирование чека — на основании договора (публичной оферты), стороной которого вы являетесь (п. 5 ч. 1 ст. 6), и требований законодательства;",
           "исполнение требований законодательства Российской Федерации (п. 2 ч. 1 ст. 6).",
         ],
         "Мы не используем персональные данные для рекламных рассылок, не продаём их и не передаём для маркетинговых целей. Если это изменится, мы запросим отдельное согласие.",
@@ -146,6 +159,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "producing spreads, calculations and interpretations at your request, including automated generation of interpretation text — on the same bases;",
           "keeping the Service working and secure and preventing abuse — for the operator’s legitimate interests, where this does not override your rights and freedoms (Art. 6(1)(7));",
           "replying to your enquiries — on the basis of your enquiry and consent;",
+          "placing and recording purchases, providing paid services, refunds and issuing receipts — on the basis of the contract (public offer) to which you are a party (Art. 6(1)(5)) and legal requirements;",
           "complying with the legislation of the Russian Federation (Art. 6(1)(2)).",
         ],
         "We do not use personal data for advertising mailings, we do not sell it, and we do not pass it on for marketing. If that changes, we will ask for separate consent.",
@@ -160,8 +174,10 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         "Обработка осуществляется с использованием средств автоматизации и включает сбор, запись, систематизацию, накопление, хранение, уточнение (обновление, изменение), извлечение, использование, передачу (предоставление, доступ) в случаях, указанных ниже, блокирование, удаление и уничтожение персональных данных.",
         "Для работы Сервиса мы привлекаем следующих исполнителей (поручение обработки по ч. 3 ст. 6 152-ФЗ) и иных получателей:",
         [
-          "хостинг-провайдер и провайдер базы данных — размещение Сервиса и хранение данных. Провайдеры: [указать фактических провайдеров и страну размещения];",
-          "провайдер языковой модели (если включена генерация толкований с помощью ИИ) — текст вопроса, сведения о выбранном раскладе и вытянутых картах передаются для формирования толкования. Ваше имя, адрес электронной почты и иные идентификаторы при этом не передаются. Если генерация с помощью внешнего ИИ не включена, толкование формируется встроенным алгоритмом без передачи данных вовне. Провайдер: [указать, например Anthropic PBC, США — или «не используется»];",
+          "хостинг-провайдер Vercel Inc. (США) — размещение и работа Сервиса; функции Сервиса выполняются в центре обработки данных во Франкфурте-на-Майне (Германия);",
+          "провайдер базы данных — хранение данных учётных записей и истории: [указать провайдера и место размещения базы данных на территории РФ];",
+          "платёжные провайдеры — приём оплаты и возвраты: на сайте банковские карты и СБП принимает подключённый к Сервису платёжный сервис (его наименование показывается при оформлении заказа), в Telegram оплата проходит звёздами Telegram (Telegram Stars) внутри Telegram;",
+          "провайдер языковой модели (если включена генерация толкований с помощью ИИ) — текст вопроса, сведения о выбранном раскладе и вытянутых картах передаются для формирования толкования. Ваше имя, адрес электронной почты и иные идентификаторы при этом не передаются. Если генерация с помощью внешнего ИИ не включена, толкование формируется встроенным алгоритмом без передачи данных вовне. Провайдер: в настоящее время внешний провайдер ИИ не используется;",
           "Google LLC — при входе через Google (передача осуществляется по вашему действию);",
           "Telegram — при использовании Сервиса как мини-приложения Telegram; Telegram самостоятельно определяет порядок обработки данных на своей стороне;",
           "государственные органы — в случаях и порядке, прямо предусмотренных законодательством Российской Федерации.",
@@ -172,8 +188,10 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         "Processing is carried out with the aid of automation and includes collection, recording, systematisation, accumulation, storage, clarification (updating, changing), retrieval, use, transfer (provision, access) in the cases listed below, blocking, deletion and destruction of personal data.",
         "To run the Service we engage the following processors (Art. 6(3) of 152-FZ) and other recipients:",
         [
-          "a hosting provider and a database provider — to host the Service and store data. Providers: [state the actual providers and country of hosting];",
-          "a language-model provider (if AI-generated interpretations are enabled) — the text of the question, the chosen spread and the drawn cards are sent to generate the interpretation. Your name, e-mail address and other identifiers are not sent. If external AI generation is not enabled, the interpretation is produced by a built-in algorithm and nothing leaves the Service. Provider: [state, e.g. Anthropic PBC, USA — or “not used”];",
+          "the hosting provider Vercel Inc. (USA) — to host and run the Service; the Service’s functions run in a data centre in Frankfurt am Main (Germany);",
+          "the database provider — to store account data and history: [state the provider and the location of the database in the Russian Federation];",
+          "payment providers — to take payments and make refunds: on the website bank cards and SBP are accepted by the payment service connected to the Service (its name is shown when the Order is placed); in Telegram payment is made in Telegram Stars inside Telegram;",
+          "a language-model provider (if AI-generated interpretations are enabled) — the text of the question, the chosen spread and the drawn cards are sent to generate the interpretation. Your name, e-mail address and other identifiers are not sent. If external AI generation is not enabled, the interpretation is produced by a built-in algorithm and nothing leaves the Service. Provider: currently no external AI provider is used;",
           "Google LLC — when you sign in with Google (the transfer occurs at your action);",
           "Telegram — when the Service is used as a Telegram Mini App; Telegram independently determines how it processes data on its side;",
           "public authorities — in cases and in the manner expressly provided for by the legislation of the Russian Federation.",
@@ -224,12 +242,12 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
     body: {
       ru: [
         "Данные учётной записи, история раскладов, сохранённые результаты и избранное хранятся, пока у вас есть учётная запись, либо до отзыва вами согласия или получения от вас требования об удалении — в зависимости от того, что наступит раньше. После этого данные удаляются или обезличиваются, если законодательство не требует их дальнейшего хранения.",
-        "Если вы пользуетесь Сервисом без учётной записи, текст вашего вопроса и вытянутые карты обрабатываются только для формирования ответа и в базе данных Сервиса не сохраняются. Технические журналы хостинг-провайдера хранятся в течение срока, установленного этим провайдером: [указать].",
+        "Если вы пользуетесь Сервисом без учётной записи, текст вашего вопроса и вытянутые карты обрабатываются только для формирования ответа и в базе данных Сервиса не сохраняются. Технические журналы хостинг-провайдера хранятся в течение срока, установленного этим провайдером: не более 30 дней.",
         "Оператор принимает правовые, организационные и технические меры защиты, предусмотренные ст. 18.1 и 19 152-ФЗ, в том числе: пароли хранятся только в виде хеша; передача данных между вашим устройством и Сервисом осуществляется по защищённому соединению (HTTPS); подлинность данных запуска Telegram проверяется по криптографической подписи; доступ к базе данных ограничен.",
       ],
       en: [
         "Account data, reading history, saved results and favorites are kept while you have an account, or until you withdraw consent or ask for deletion — whichever happens first. After that the data is deleted or anonymised, unless the law requires it to be kept.",
-        "If you use the Service without an account, the text of your question and the drawn cards are processed only to produce the response and are not stored in the Service’s database. The hosting provider’s technical logs are kept for the period set by that provider: [state].",
+        "If you use the Service without an account, the text of your question and the drawn cards are processed only to produce the response and are not stored in the Service’s database. The hosting provider’s technical logs are kept for the period set by that provider: no more than 30 days.",
         "The operator takes the legal, organisational and technical protection measures required by Arts. 18.1 and 19 of 152-FZ, including: passwords are stored only as a hash; data is transmitted between your device and the Service over a secure connection (HTTPS); the authenticity of Telegram launch data is verified by its cryptographic signature; access to the database is restricted.",
       ],
     },

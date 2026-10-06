@@ -10,17 +10,30 @@
  */
 const placeholder = (label: string) => `[${label}]`;
 
+/** "Mystara_Support" / "@Mystara_Support" / " @Mystara_Support " → "@Mystara_Support"; unset → "". */
+function normalizeTelegramHandle(raw: string | undefined): string {
+  const handle = (raw ?? "").trim().replace(/^@/, "");
+  return /^[A-Za-z0-9_]{4,32}$/.test(handle) ? `@${handle}` : "";
+}
+
+function telegramUrl(raw: string | undefined): string {
+  const handle = normalizeTelegramHandle(raw);
+  return handle ? `https://t.me/${handle.slice(1)}` : "";
+}
+
 export const OPERATOR = {
   /** ФИО (ИП / самозанятый / физлицо) или полное наименование юрлица. */
   name: process.env.NEXT_PUBLIC_OPERATOR_NAME || placeholder("ФИО или наименование оператора"),
   /** ИНН и, при наличии, ОГРН / ОГРНИП. */
   registration: process.env.NEXT_PUBLIC_OPERATOR_REGISTRATION || placeholder("ИНН / ОГРН(ИП)"),
-  /** Адрес для почтовых обращений — необязательный: пока не задан, нигде не показывается (достаточно e-mail и телефона). */
+  /** Адрес для почтовых обращений — необязательный: пока не задан, нигде не показывается (достаточно e-mail и Telegram поддержки). */
   address: process.env.NEXT_PUBLIC_OPERATOR_ADDRESS || "",
   /** Адрес электронной почты для обращений субъектов персональных данных. */
   email: process.env.NEXT_PUBLIC_OPERATOR_EMAIL || placeholder("e-mail для обращений"),
-  /** Телефон для обращений (необязательный). */
-  phone: process.env.NEXT_PUBLIC_OPERATOR_PHONE || "",
+  /** Telegram-аккаунт службы поддержки, например @Mystara_Support (необязательный). */
+  telegram: normalizeTelegramHandle(process.env.NEXT_PUBLIC_OPERATOR_TELEGRAM),
+  /** Ссылка на этот аккаунт (пусто, если он не задан). */
+  telegramUrl: telegramUrl(process.env.NEXT_PUBLIC_OPERATOR_TELEGRAM),
   /** Публичный адрес сайта. */
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   /** Название сервиса, как он называется в тексте документов. */
@@ -37,7 +50,7 @@ export function hasUnfilledOperatorDetails(): boolean {
  * next to each user's consent timestamp, so it's always possible to say which
  * version of the text a given person actually agreed to.
  */
-export const PRIVACY_POLICY_VERSION = "2026-09-26";
+export const PRIVACY_POLICY_VERSION = "2026-10-06";
 
 /** " или по адресу: …" — only when a postal address is configured, so the documents never print an empty or placeholder address. */
 export const ADDRESS_CLAUSE = {
@@ -46,8 +59,8 @@ export const ADDRESS_CLAUSE = {
 } as const;
 
 /** Version and effective date of the public offer (оферта) — bump on any material change, like the privacy policy. */
-export const OFFER_VERSION = "2026-10-03";
-export const OFFER_EFFECTIVE_DATE = { ru: "03.10.2026", en: "3 October 2026" } as const;
+export const OFFER_VERSION = "2026-10-06";
+export const OFFER_EFFECTIVE_DATE = { ru: "06.10.2026", en: "6 October 2026" } as const;
 
 /** Human-readable date the current version took effect (dd.mm.yyyy for the Russian text). */
-export const PRIVACY_POLICY_EFFECTIVE_DATE = { ru: "26.09.2026", en: "26 September 2026" } as const;
+export const PRIVACY_POLICY_EFFECTIVE_DATE = { ru: "06.10.2026", en: "6 October 2026" } as const;

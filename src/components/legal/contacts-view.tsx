@@ -9,13 +9,13 @@ export function ContactsView() {
   const t = useTranslation();
   const c = t.contactsPage;
 
-  const rows = [
-    [c.nameLabel, OPERATOR.name],
-    [c.statusLabel, c.sellerStatus],
-    [c.innLabel, OPERATOR.registration.replace(/^ИНН\s*/i, "")],
-    [c.emailLabel, OPERATOR.email],
-    ...(OPERATOR.phone ? [[c.phoneLabel, OPERATOR.phone]] : []),
-    ...(OPERATOR.address ? [[c.addressLabel, OPERATOR.address]] : []),
+  const rows: { label: string; value: string; href?: string }[] = [
+    { label: c.nameLabel, value: OPERATOR.name },
+    { label: c.statusLabel, value: c.sellerStatus },
+    { label: c.innLabel, value: OPERATOR.registration.replace(/^ИНН\s*/i, "") },
+    { label: c.emailLabel, value: OPERATOR.email },
+    ...(OPERATOR.telegram ? [{ label: c.telegramLabel, value: OPERATOR.telegram, href: OPERATOR.telegramUrl }] : []),
+    ...(OPERATOR.address ? [{ label: c.addressLabel, value: OPERATOR.address }] : []),
   ];
 
   return (
@@ -26,10 +26,18 @@ export function ContactsView() {
       <section className="mt-10">
         <h2 className="font-display text-xl text-silver-100">{c.sellerHeading}</h2>
         <dl className="mt-3 divide-y divide-white/5 rounded-xl border border-white/10 text-sm">
-          {rows.map(([label, value]) => (
+          {rows.map(({ label, value, href }) => (
             <div key={label} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:gap-6">
               <dt className="w-44 shrink-0 text-silver-500">{label}</dt>
-              <dd className="text-silver-200">{value}</dd>
+              <dd className="text-silver-200">
+                {href ? (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-gold-300 underline-offset-2 hover:underline">
+                    {value}
+                  </a>
+                ) : (
+                  value
+                )}
+              </dd>
             </div>
           ))}
         </dl>
