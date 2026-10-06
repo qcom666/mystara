@@ -14,7 +14,15 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
  */
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL ?? "postgresql://localhost:5432/not-configured";
-  const adapter = new PrismaPg({ connectionString });
+  // Serverless: every function instance opens its own pool, so many instances × a big pool
+  // quickly exhausts the database's connection limit. Keep each pool tiny and let idle
+  // connections go quickly (override with DATABASE_POOL_MAX if the plan allows more).
+  const adapter = new PrismaPg({
+    connectionString,
+    max: Number(process.env.DATABASE_POOL_MAX) || 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
+  });
   return new PrismaClient({ adapter });
 }
 
