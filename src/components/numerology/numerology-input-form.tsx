@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Input } from "@/components/ui/input";
@@ -41,7 +40,6 @@ export function NumerologyInputForm({ onSubmit }: NumerologyInputFormProps) {
     submit();
   }
 
-  const isTelegram = useTelegramMainButton({ text: t.numerologyPage.calculateCta, onClick: submit });
 
   return (
     <GlassPanel className="mx-auto w-full max-w-sm">
@@ -63,11 +61,9 @@ export function NumerologyInputForm({ onSubmit }: NumerologyInputFormProps) {
           <Input id="birthDate" type="date" required max={TODAY} value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
         </div>
         {error && <p className="text-xs text-red-400">{t.common.invalidDateError}</p>}
-        {!isTelegram && (
-          <Button type="submit" className="w-full">
-            {t.numerologyPage.calculateCta}
-          </Button>
-        )}
+        <Button type="submit" className="w-full">
+          {t.numerologyPage.calculateCta}
+        </Button>
       </form>
       <p className="mt-4 text-xs text-silver-500">{t.numerologyPage.privacyHint}</p>
     </GlassPanel>

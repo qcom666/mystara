@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, useMemo, useState } from "react";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Input } from "@/components/ui/input";
@@ -106,7 +105,6 @@ export function NatalChartInputForm({ onSubmit }: NatalChartInputFormProps) {
     submit();
   }
 
-  const isTelegram = useTelegramMainButton({ text: t.natalChartPage.generateCta, onClick: submit });
 
   return (
     <GlassPanel className="mx-auto w-full max-w-md">
@@ -206,11 +204,9 @@ export function NatalChartInputForm({ onSubmit }: NatalChartInputFormProps) {
 
         {error && <p className="text-xs text-red-400">{error}</p>}
 
-        {!isTelegram && (
-          <Button type="submit" className="w-full">
-            {t.natalChartPage.generateCta}
-          </Button>
-        )}
+        <Button type="submit" className="w-full">
+          {t.natalChartPage.generateCta}
+        </Button>
       </form>
     </GlassPanel>
   );

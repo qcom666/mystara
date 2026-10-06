@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Input } from "@/components/ui/input";
@@ -48,7 +47,6 @@ export function AstrologyInputForm({ onSubmit }: AstrologyInputFormProps) {
     submit();
   }
 
-  const isTelegram = useTelegramMainButton({ text: t.astrologyPage.revealCta, onClick: submit });
 
   return (
     <GlassPanel className="mx-auto w-full max-w-sm">
@@ -79,11 +77,9 @@ export function AstrologyInputForm({ onSubmit }: AstrologyInputFormProps) {
           <p className="text-xs text-silver-500">{t.astrologyPage.sectHint}</p>
         </div>
         {error && <p className="text-xs text-red-400">{t.common.invalidDateError}</p>}
-        {!isTelegram && (
-          <Button type="submit" className="w-full">
-            {t.astrologyPage.revealCta}
-          </Button>
-        )}
+        <Button type="submit" className="w-full">
+          {t.astrologyPage.revealCta}
+        </Button>
       </form>
     </GlassPanel>
   );

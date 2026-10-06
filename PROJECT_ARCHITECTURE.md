@@ -414,23 +414,14 @@ what the API-first, framework-agnostic domain layer from day one was for.
   page for `TelegramHome`, a compact module picker; `TelegramBackButton`
   syncs Telegram's native back button to the Next.js router, hidden on the
   home screen and wired to `router.back()` everywhere else.
-- **Primary actions:** `useTelegramMainButton({ text, onClick, visible, disabled })`
-  drives Telegram's native bottom bar and returns `isTelegram`, so a step's
-  regular in-page button can hide itself (`{!isTelegram && <Button .../>}`)
-  without duplicating the control. Telegram exposes exactly **one** MainButton
-  — a screen with more than one candidate primary action (e.g. Tarot's reveal
-  step: "Reveal all" *or* "Continue") passes whichever is currently salient,
-  switching dynamically as state changes, rather than trying to represent two.
-  **Load-bearing constraint this implies:** a screen must never have two
-  `useTelegramMainButton()` calls mounted at once, even if one is `visible:
-  false` — both still run their effects on every commit, and effect order is
-  child-before-parent, so an outer "hidden" hook's `hide()` reliably clobbers
-  an inner "visible" one's `show()`. This broke numerology/astrology once
-  (form + result lived in one component with a conditional return, so the
-  result's hook was always mounted alongside the form's); the fix was
-  splitting them into mutually-exclusive components, the same shape the
-  Tarot flow's separate step components already had. Keep that shape for any
-  new flow with more than one MainButton-driven screen.
+- **Primary actions:** the Mini App uses the same in-page buttons as the website
+  (gold gradient `Button`s) — deliberately NOT Telegram's native blue MainButton
+  bar (owner's design decision, Oct 2026: the app should look like the site). The
+  old `useTelegramMainButton()` hook and the `!isTelegram` guards that hid the
+  in-page buttons were removed; `HapticFeedback` and the native BackButton are
+  still used. (History: the native button forced a "never two hooks mounted at
+  once" rule, which is why numerology/astrology split their form and result into
+  separate components — that split is harmless and was kept.)
 - **Unchanged:** every API route, the domain/service layers, and the DB
   schema — a Telegram user is just a `User` row like any other, so
   `/api/readings`, `/api/ai/interpret`, favorites, etc. all work identically
@@ -600,7 +591,7 @@ generating *is* the paid action here.
 **UI** (`components/astrology/natal-chart-*`): `NatalChartFlow` gates on
 sign-in, then on credits (fetched once via `GET /api/natal-chart`), then
 shows the form or the result — mirroring the numerology/astrology
-form/result split (each step owns at most one `useTelegramMainButton()`).
+form/result split (separate, mutually-exclusive components).
 `NatalChartPricingPanel` is shown wherever generation isn't currently
 possible (no account, or zero credits): it shows the real price with a
 disabled "Buy — Coming soon" button rather than a checkout flow that would

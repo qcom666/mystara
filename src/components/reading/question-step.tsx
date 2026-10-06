@@ -5,7 +5,6 @@ import { useState } from "react";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { track } from "@/lib/analytics";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getSpreadName } from "@/modules/tarot/domain/spreads.data";
@@ -30,7 +29,6 @@ export function QuestionStep({ spread }: QuestionStepProps) {
     goToShuffle();
   }
 
-  const isTelegram = useTelegramMainButton({ text: t.reading.shuffleCta, onClick: handleContinue });
 
   return (
     <motion.div
@@ -54,13 +52,11 @@ export function QuestionStep({ spread }: QuestionStepProps) {
         />
       </GlassPanel>
 
-      {!isTelegram && (
-        <div className="mt-6 flex justify-center">
-          <Button size="lg" onClick={handleContinue}>
-            {t.reading.shuffleCta}
-          </Button>
-        </div>
-      )}
+      <div className="mt-6 flex justify-center">
+        <Button size="lg" onClick={handleContinue}>
+          {t.reading.shuffleCta}
+        </Button>
+      </div>
     </motion.div>
   );
 }

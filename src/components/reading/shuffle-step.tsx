@@ -5,7 +5,6 @@ import { useRef, useState } from "react";
 import { DeckShuffle } from "@/components/tarot/deck-shuffle";
 import { Button } from "@/components/ui/button";
 import { useTelegram } from "@/components/telegram/telegram-provider";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { track } from "@/lib/analytics";
 import { useTranslation } from "@/lib/i18n";
 import { drawForSpread } from "@/modules/tarot/services/draw-engine";
@@ -42,7 +41,6 @@ export function ShuffleStep({ spread }: ShuffleStepProps) {
     }, SHUFFLE_DURATION_MS);
   }
 
-  const isTelegram = useTelegramMainButton({ text: t.reading.shuffleCta, onClick: handleShuffle, visible: !shuffling });
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-4 text-center">
@@ -50,7 +48,7 @@ export function ShuffleStep({ spread }: ShuffleStepProps) {
       <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 text-sm text-silver-400">
         {shuffling ? t.reading.shuffling : t.reading.focusHint}
       </motion.p>
-      {!shuffling && !isTelegram && (
+      {!shuffling && (
         <Button size="lg" className="mt-6" onClick={handleShuffle}>
           {t.reading.shuffleCta}
         </Button>

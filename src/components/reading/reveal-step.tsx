@@ -5,7 +5,6 @@ import { FlippableCard } from "@/components/tarot/flippable-card";
 import { SpreadLayout } from "@/components/tarot/spread-layout";
 import { Button } from "@/components/ui/button";
 import { useTelegram } from "@/components/telegram/telegram-provider";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getSpreadName } from "@/modules/tarot/domain/spreads.data";
 import type { TarotSpread } from "@/modules/tarot/domain/types";
@@ -36,13 +35,6 @@ export function RevealStep({ spread }: RevealStepProps) {
     revealCard(positionId);
   }
 
-  // Only one MainButton slot exists — it mirrors whichever action is
-  // currently primary: "reveal all" until every card is flipped, then
-  // "continue" once they are.
-  const isTelegram = useTelegramMainButton({
-    text: allRevealed ? t.common.continue : t.reading.revealAllCta,
-    onClick: allRevealed ? goToResult : revealAll,
-  });
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
@@ -66,20 +58,18 @@ export function RevealStep({ spread }: RevealStepProps) {
         />
       </div>
 
-      {!isTelegram && (
-        <div className="mt-10 flex flex-wrap justify-center gap-3">
-          {!allRevealed && (
-            <Button variant="secondary" onClick={revealAll}>
-              {t.reading.revealAllCta}
-            </Button>
-          )}
-          {allRevealed && (
-            <Button size="lg" onClick={goToResult}>
-              {t.common.continue}
-            </Button>
-          )}
-        </div>
-      )}
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
+        {!allRevealed && (
+          <Button variant="secondary" onClick={revealAll}>
+            {t.reading.revealAllCta}
+          </Button>
+        )}
+        {allRevealed && (
+          <Button size="lg" onClick={goToResult}>
+            {t.common.continue}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -16,10 +16,6 @@ export function AstrologyFlow() {
     track({ name: "astrology_calculated", sunSign: calculateSunSign(value.birthDate).id });
   }
 
-  // See numerology-flow.tsx for why the form and the result are separate
-  // mutually-exclusive components rather than one with a conditional return
-  // — each owns a useTelegramMainButton() call, and having both mounted at
-  // once made them fight over Telegram's single MainButton.
   if (!input) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 sm:py-24">

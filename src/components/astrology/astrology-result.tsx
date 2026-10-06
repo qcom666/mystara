@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { FunFactCard } from "@/components/shared/fun-fact-card";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
@@ -52,12 +51,6 @@ export function AstrologyResult({ birthDate, sect, onReset }: AstrologyResultPro
     }
   }
 
-  const isTelegram = useTelegramMainButton({
-    text: isAuthenticated ? (saveStatus === "saving" ? t.common.loading : t.astrologyPage.saveResultCta) : t.astrologyPage.signInToSaveCta,
-    onClick: isAuthenticated ? handleSave : () => {},
-    visible: !(isAuthenticated && saveStatus === "saved"),
-    disabled: saveStatus === "saving",
-  });
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl px-4 py-16 sm:py-24">
@@ -127,20 +120,16 @@ export function AstrologyResult({ birthDate, sect, onReset }: AstrologyResultPro
           saveStatus === "saved" ? (
             <p className="text-sm text-gold-300">{t.astrologyPage.savedNotice}</p>
           ) : (
-            !isTelegram && (
-              <Button onClick={handleSave} disabled={saveStatus === "saving"}>
-                {saveStatus === "saving" ? t.common.loading : t.astrologyPage.saveResultCta}
-              </Button>
-            )
+            <Button onClick={handleSave} disabled={saveStatus === "saving"}>
+              {saveStatus === "saving" ? t.common.loading : t.astrologyPage.saveResultCta}
+            </Button>
           )
         ) : (
           <GlassPanel>
             <p className="text-sm text-silver-400">{t.astrologyPage.signInToSaveBody}</p>
-            {!isTelegram && (
-              <Button asChild variant="secondary" className="mt-3">
-                <Link href="/login">{t.astrologyPage.signInToSaveCta}</Link>
-              </Button>
-            )}
+            <Button asChild variant="secondary" className="mt-3">
+              <Link href="/login">{t.astrologyPage.signInToSaveCta}</Link>
+            </Button>
           </GlassPanel>
         )}
         {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}

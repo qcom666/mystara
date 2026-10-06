@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { FunFactCard } from "@/components/shared/fun-fact-card";
-import { useTelegramMainButton } from "@/components/telegram/use-telegram-main-button";
 import { track } from "@/lib/analytics";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getActorFunFactByReading } from "@/modules/fun-facts/services/actor-match.service";
@@ -82,16 +81,6 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
     router.push("/reading");
   }
 
-  // Only one MainButton slot — reserved for the single most important action
-  // (save, or sign-in-to-save). "Start a new reading" stays an in-page
-  // secondary control even inside Telegram.
-  const primaryVisible = !(isAuthenticated && savedReadingId);
-  const isTelegram = useTelegramMainButton({
-    text: isAuthenticated ? (saveStatus === "saving" ? t.common.loading : t.reading.saveReadingCta) : t.reading.signInToSaveCta,
-    onClick: isAuthenticated ? handleSave : () => router.push("/login"),
-    visible: primaryVisible,
-    disabled: saveStatus === "saving",
-  });
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
@@ -139,20 +128,16 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
               </Button>
             </GlassPanel>
           ) : (
-            !isTelegram && (
-              <Button size="lg" onClick={handleSave} disabled={saveStatus === "saving"}>
-                {saveStatus === "saving" ? t.common.loading : t.reading.saveReadingCta}
-              </Button>
-            )
+            <Button size="lg" onClick={handleSave} disabled={saveStatus === "saving"}>
+              {saveStatus === "saving" ? t.common.loading : t.reading.saveReadingCta}
+            </Button>
           )
         ) : (
           <GlassPanel>
             <p className="text-sm text-silver-400">{t.reading.guestNotice}</p>
-            {!isTelegram && (
-              <Button asChild variant="secondary" className="mt-3">
-                <Link href="/login">{t.reading.signInToSaveCta}</Link>
-              </Button>
-            )}
+            <Button asChild variant="secondary" className="mt-3">
+              <Link href="/login">{t.reading.signInToSaveCta}</Link>
+            </Button>
           </GlassPanel>
         )}
         {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}

@@ -16,10 +16,6 @@ export function NumerologyFlow() {
     track({ name: "numerology_calculated", lifePathNumber: calculateLifePathNumber(value.birthDate) });
   }
 
-  // See numerology-result.tsx / astrology-flow.tsx: the form and the result
-  // are separate mutually-exclusive components (not one with a conditional
-  // return) because each owns a useTelegramMainButton() call, and Telegram
-  // only has one MainButton — two such hooks mounted at once fight over it.
   if (!input) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 sm:py-24">
