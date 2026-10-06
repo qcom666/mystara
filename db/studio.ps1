@@ -1,4 +1,4 @@
-# Opens Prisma Studio — a visual browser for the local development database — on
+﻿# Opens Prisma Studio - a visual browser for the local development database - on
 # http://localhost:5555. Run from anywhere:
 #   powershell -ExecutionPolicy Bypass -File db\studio.ps1
 # Stop it with Ctrl+C. (Prisma doesn't read .env.local itself, so this loads it first.)

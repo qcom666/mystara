@@ -1,8 +1,10 @@
-# Restores a backup made by db/backup.ps1 into the local development database.
-# DESTRUCTIVE: it replaces the current contents of the database, so it only runs with -Yes.
+﻿# Restores a backup made by db/backup.ps1 into a local development database.
+# DESTRUCTIVE: it replaces the current contents of that database, so it only runs with -Yes.
 #   powershell -ExecutionPolicy Bypass -File db\restore.ps1 -File db\backups\<name>.dump -Yes
+#   powershell -ExecutionPolicy Bypass -File db\restore.ps1 -File db\backups\<name>.dump -DbName mystara -Yes
 param(
   [Parameter(Mandatory = $true)][string]$File,
+  [string]$DbName,
   [switch]$Yes
 )
 $ErrorActionPreference = 'Stop'
@@ -18,7 +20,10 @@ foreach ($line in Get-Content (Join-Path $root '.env.local')) {
 }
 if (-not $env:DATABASE_URL) { throw 'DATABASE_URL is not set in .env.local' }
 
-& "$pgBin\pg_restore.exe" --clean --if-exists --no-owner --dbname=$env:DATABASE_URL $File
+$url = $env:DATABASE_URL
+if ($DbName) { $url = $url -replace '(?<=/)[^/?]+(?=\?|$)', $DbName }
+
+& "$pgBin\pg_restore.exe" --clean --if-exists --no-owner --dbname=$url $File
 if ($LASTEXITCODE -ne 0) { throw "pg_restore failed (exit $LASTEXITCODE)" }
 
 $env:DATABASE_URL = $null
