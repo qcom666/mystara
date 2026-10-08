@@ -4,8 +4,8 @@ import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Generic surface/panel primitive — deliberately not named "Card" to avoid
- * collision with the domain concept of a Tarot card throughout the codebase.
+ * Универсальный примитив поверхности/панели; намеренно не назван «Card», чтобы не путать с доменным
+ * понятием карты Таро, которое встречается по всему коду.
  */
 const panelVariants = cva("rounded-2xl", {
   variants: {

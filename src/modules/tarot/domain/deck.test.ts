@@ -34,7 +34,7 @@ describe("deck", () => {
       for (const card of FULL_DECK) {
         expect(card.nameRu, card.id).toMatch(/[А-Яа-яЁё]/);
         expect(card.descriptionRu, card.id).toMatch(/[А-Яа-яЁё]/);
-        // A stray Latin letter would mean an untranslated fragment slipped through.
+        // Случайная латинская буква означала бы, что непереведённый фрагмент проскочил.
         expect(card.nameRu, card.id).not.toMatch(/[A-Za-z]/);
       }
     });

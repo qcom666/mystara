@@ -1,10 +1,10 @@
 /**
- * The payment-related updates Telegram sends the bot webhook for Stars.
+ * Платёжные обновления, которые Telegram присылает вебхуку бота при оплате Звёздами.
  * https://core.telegram.org/bots/payments-stars
  *
- *  - `pre_checkout_query` — the buyer pressed "Pay"; we must answer within 10
- *    seconds (answerPreCheckoutQuery) or the payment is cancelled.
- *  - `message.successful_payment` — the money has moved; this is the moment to grant credits.
+ *  - `pre_checkout_query`: покупатель нажал «Оплатить»; ответить нужно в течение 10 секунд
+ *    (answerPreCheckoutQuery), иначе платёж отменяется.
+ *  - `message.successful_payment`: деньги переведены; именно в этот момент начисляются кредиты.
  */
 
 export interface TelegramPaymentUpdate {
@@ -52,7 +52,7 @@ export function parseStarsEvent(update: TelegramPaymentUpdate | null | undefined
   return null;
 }
 
-/** The reply that goes back as the webhook response — Telegram executes the `method` it finds there. */
+/** Ответ, который возвращается как ответ вебхука: Telegram выполняет найденный там `method`. */
 export function buildPreCheckoutAnswer(queryId: string, ok: boolean) {
   return ok
     ? { method: "answerPreCheckoutQuery" as const, pre_checkout_query_id: queryId, ok: true as const }

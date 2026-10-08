@@ -1,15 +1,15 @@
 import { NATAL_CHART_PRICE_RUB, NATAL_CHART_PRICE_STARS } from "@/lib/pricing/natal-chart-pricing";
 
 /**
- * Payment methods for the Natal Chart pack and what each one costs.
+ * Способы оплаты пакета натальных карт и их стоимость.
  *
- *  - stars     Telegram Stars (XTR) — inside the Telegram bot / Mini App ONLY. It is the
- *              only method Telegram allows for digital goods there (its own rule).
- *  - yookassa  Bank cards / SBP in rubles through ЮKassa — on the WEBSITE only.
+ *  - stars     Telegram Stars (XTR): ТОЛЬКО внутри Telegram-бота и мини-приложения. Это единственный
+ *              способ, который Telegram разрешает для цифровых товаров там (его собственное правило).
+ *  - yookassa  Банковские карты и СБП в рублях через ЮKassa: ТОЛЬКО на САЙТЕ.
  *
- * There is deliberately no crypto-currency and no foreign-currency method: accepting
- * (or advertising the acceptance of) digital currency for services is forbidden in
- * Russia by 259-FZ art. 14, and a Russian resident can't take USD from residents.
+ * Криптовалюты и иностранной валюты здесь намеренно нет: приём цифровой валюты за услуги (и публикация
+ * информации о нём) запрещены в России статьёй 14 закона 259-ФЗ, а резидент РФ не может принимать
+ * доллары от резидентов.
  */
 export type PaymentProviderId = "stars" | "yookassa";
 export type PaymentCurrency = "XTR" | "RUB";
@@ -30,10 +30,9 @@ export const PAYMENT_PROVIDER_IDS = ["stars", "yookassa"] as const satisfies rea
 type Env = Record<string, string | undefined>;
 
 /**
- * The provider that can take a payment in this context right now: Stars inside
- * Telegram, ЮKassa on the website — never both, never crossed. A provider is on
- * only when its credentials are present, so adding a key in Vercel is all it
- * takes to turn one on.
+ * Провайдер, который может принять платёж в этом контексте сейчас: Звёзды внутри Telegram, ЮKassa на
+ * сайте: никогда оба сразу и никогда наоборот. Провайдер включается, только когда есть его учётные
+ * данные, поэтому чтобы включить его, достаточно добавить ключ в Vercel.
  */
 export function enabledProviders(env: Env, context: PaymentContext): PaymentProviderId[] {
   if (context === "telegram") return env.TELEGRAM_BOT_TOKEN ? ["stars"] : [];

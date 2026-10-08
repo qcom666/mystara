@@ -6,7 +6,7 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { useTranslation } from "@/lib/i18n";
 import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
 
-/** Sits between the sun-sign flow and the sign index on /astrology — the on-ramp to the paid Natal Chart. */
+/** Стоит между формой знака зодиака и списком знаков на /astrology: вход в платную натальную карту. */
 export function NatalChartTeaser() {
   const t = useTranslation();
   const price = getNatalChartPrice();

@@ -10,9 +10,8 @@ interface FunFactCardProps {
 }
 
 /**
- * Deliberately framed as trivia, not insight — see PROJECT_ARCHITECTURE.md
- * §8/§35: nothing in this product should read as a factual claim about a
- * real person, even in a lighthearted feature like this one.
+ * Намеренно подаётся как занимательный факт, а не как знание: ничто в продукте не должно читаться
+ * как утверждение о реальном человеке, даже в такой лёгкой функции.
  */
 export function FunFactCard({ fact }: FunFactCardProps) {
   const t = useTranslation();

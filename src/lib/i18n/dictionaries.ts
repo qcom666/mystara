@@ -19,9 +19,9 @@ export function isLocale(value: string): value is Locale {
 }
 
 /**
- * Russian has three plural forms (1 X / 2–4 Y / 5+ Z, with the usual 11–14
- * exception, e.g. 11 карт not 11 карта); English only has two. Kept here,
- * next to the dictionaries, rather than reimplemented at each call site.
+ * У русского три формы множественного числа (1 X / 2–4 Y / 5+ Z, с обычным исключением для 11–14,
+ * например 11 карт, а не 11 карта); у английского только две. Хранится здесь, рядом со словарями,
+ * а не реализуется заново в каждом месте вызова.
  */
 function pluralizeRu(count: number, [one, few, many]: [string, string, string]): string {
   const mod10 = count % 10;

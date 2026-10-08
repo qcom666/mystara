@@ -5,9 +5,9 @@ import { getInterpretationDisclaimer, type AIInterpretationProvider, type AIInte
 const mockProvider = new MockAIProvider();
 
 /**
- * The only place that decides which LLM (if any) backs interpretations.
- * Nothing else in the codebase imports @anthropic-ai/sdk directly — swapping
- * or adding a provider is a change confined to this file + `providers/`.
+ * Единственное место, где решается, какая LLM (если есть) стоит за толкованиями. Больше нигде в коде
+ * @anthropic-ai/sdk напрямую не импортируется: замена или добавление провайдера затрагивает только
+ * этот файл и `providers/`.
  */
 export function getAIInterpretationProvider(): AIInterpretationProvider {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -17,8 +17,8 @@ export function getAIInterpretationProvider(): AIInterpretationProvider {
   return mockProvider;
 }
 
-// Provider output that already carries a disclaimer (in either language) is
-// left alone; anything else gets the locale's standard one appended.
+// Вывод провайдера, который уже содержит оговорку (на любом языке), не трогаем; в остальных случаях
+// дописываем стандартную оговорку для этого языка.
 const DISCLAIMER_MARKERS = ["reflective", "not a guaranteed", "рефлексивн", "не гарантированн"];
 
 function withDisclaimer(result: AIInterpretationResult, locale: InterpretationLocale): AIInterpretationResult {
@@ -30,9 +30,8 @@ function withDisclaimer(result: AIInterpretationResult, locale: InterpretationLo
 }
 
 /**
- * Server-only entry point (called from /api/ai/interpret). Falls back to the
- * Mock provider if the configured provider throws, so a flaky/unavailable
- * LLM never fails the whole reading (see PROJECT_ARCHITECTURE.md §24).
+ * Серверная точка входа (вызывается из /api/ai/interpret). Если настроенный провайдер выбросил ошибку,
+ * переключается на Mock-провайдер, так что сбойная или недоступная LLM не ломает весь расклад.
  */
 export async function generateInterpretation(request: AIInterpretationRequest): Promise<AIInterpretationResult> {
   const provider = getAIInterpretationProvider();

@@ -1,10 +1,9 @@
 import type { Dictionary } from "./en";
 
 /**
- * Russian dictionary — mirrors `en.ts` key for key. Typed as `Dictionary`
- * (not `as const`) on purpose: TypeScript then rejects a missing, extra, or
- * mis-shaped key at compile time instead of silently falling back to
- * English at runtime.
+ * Русский словарь: повторяет `en.ts` ключ в ключ. Типизирован как `Dictionary` (не `as const`)
+ * намеренно: TypeScript отвергает пропущенный, лишний или неверно устроенный ключ при компиляции,
+ * а не молча подставляет английский во время работы.
  */
 export const ru: Dictionary = {
   common: {

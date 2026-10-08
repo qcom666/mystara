@@ -10,7 +10,7 @@ import { createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/pu
 const checkoutSchema = z.object({
   provider: z.enum(["stars", "yookassa"]),
   locale: z.enum(["en", "ru"]).default("en"),
-  // Where the buyer is: Stars are for Telegram, ЮKassa for the website (see lib/payments/catalog.ts).
+  // Где находится покупатель: Звёзды для Telegram, ЮKassa для сайта (см. lib/payments/catalog.ts).
   context: z.enum(["telegram", "web"]).default("web"),
 });
 
@@ -20,10 +20,9 @@ const COPY = {
 } as const;
 
 /**
- * Starts a purchase of the Natal Chart pack: records a pending purchase, asks the
- * chosen provider for a payment link and returns it. Credits are NOT granted here —
- * only the provider's webhook (after the money really moved) does that, see
- * purchase.repository.ts `fulfillPurchase`.
+ * Начинает покупку пакета натальных карт: записывает покупку со статусом pending, запрашивает у выбранного
+ * провайдера ссылку на оплату и возвращает её. Кредиты здесь НЕ начисляются: это делает только вебхук
+ * провайдера после реального перевода денег (см. fulfillPurchase в purchase.repository.ts).
  */
 export async function POST(request: Request) {
   if (!isDatabaseConfigured()) {

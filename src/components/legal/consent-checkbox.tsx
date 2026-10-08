@@ -11,8 +11,8 @@ interface ConsentCheckboxProps {
 }
 
 /**
- * Unticked by default and never pre-selected — consent has to be an active act.
- * The two documents open in a new tab so a half-filled form isn't lost.
+ * По умолчанию галочка снята и никогда не ставится заранее: согласие должно быть осознанным действием.
+ * Два документа открываются в новой вкладке, чтобы не потерять наполовину заполненную форму.
  */
 export function ConsentCheckbox({ id, checked, onChange, invalid = false }: ConsentCheckboxProps) {
   const t = useTranslation();

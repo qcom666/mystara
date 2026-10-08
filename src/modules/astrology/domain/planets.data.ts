@@ -5,7 +5,7 @@ export interface PlanetInfo {
   symbol: string;
   name: string;
   nameRu: string;
-  /** One-line "what this planet governs" — composed with a sign/house at render time, not a full essay. */
+  /** Одна строка «чем управляет планета»: складывается со знаком или домом при отображении, это не полноценное эссе. */
   nature: string;
   natureRu: string;
 }
@@ -65,12 +65,10 @@ export function localizePlanet(planet: PlanetInfo, locale: "en" | "ru"): PlanetI
 }
 
 /**
- * Traditional chart-ruler mapping, using the same *modern* rulerships this
- * codebase already uses as the primary value in zodiac-signs.data.ts
- * (Pluto/Uranus/Neptune for Scorpio/Aquarius/Pisces, not their classical
- * co-rulers) — kept as its own explicit table rather than parsed out of that
- * data's `rulingPlanet` string, which is prose ("Pluto (traditionally
- * Mars)") and not meant to be machine-read.
+ * Соответствие «управитель карты» по традиции, но с современными управителями, которые в коде уже основные
+ * в zodiac-signs.data.ts (Плутон/Уран/Нептун для Скорпиона/Водолея/Рыб, а не их классические
+ * со-управители): отдельная явная таблица, а не разбор строки `rulingPlanet` в тех данных, которая
+ * является прозой («Pluto (traditionally Mars)») и не предназначена для машинного чтения.
  */
 export const SIGN_RULER: Record<ZodiacSignId, PlanetId> = {
   aries: "mars",

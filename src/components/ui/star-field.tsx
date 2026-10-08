@@ -10,7 +10,7 @@ interface Star {
   delay: number;
   duration: number;
   opacity: number;
-  /** Drift path, in percent of the field — see the star-float keyframes in globals.css. */
+  /** Траектория дрейфа в процентах от поля; см. keyframes star-float в globals.css. */
   driftX: number;
   driftY: number;
   driftDuration: number;
@@ -19,17 +19,16 @@ interface Star {
 
 const STAR_COUNT = 80;
 
-// Fixed seed, computed once at module load — identical on server and client,
-// so this never causes a hydration mismatch despite "looking" random.
+// Фиксированное зерно, считается один раз при загрузке модуля: на сервере и на клиенте одинаково,
+// поэтому, несмотря на «случайный» вид, не вызывает ошибку гидратации.
 function generateStars(): Star[] {
   const random = createSeededRandom("mystara-star-field-v2");
   return Array.from({ length: STAR_COUNT }, (_, id) => {
     const size = random() * 1.6 + 0.5;
-    // Bigger stars read as "closer" — a simple parallax: they drift farther
-    // and faster than the small, distant-looking ones.
+    // Большие звёзды кажутся «ближе»: простой параллакс, они дрейфуют дальше и быстрее мелких, дальних.
     const depth = (size - 0.5) / 1.6;
     const angle = random() * Math.PI * 2;
-    const distance = 4 + depth * 12; // percent of the field
+    const distance = 4 + depth * 12; // в процентах от поля
     return {
       id,
       x: Number((random() * 100).toFixed(2)),
@@ -41,7 +40,7 @@ function generateStars(): Star[] {
       driftX: Number((Math.cos(angle) * distance).toFixed(2)),
       driftY: Number((Math.sin(angle) * distance).toFixed(2)),
       driftDuration: Number((55 - depth * 30 + random() * 10).toFixed(2)),
-      driftDelay: Number((random() * -40).toFixed(2)), // negative = already mid-flight on load, not all starting in sync
+      driftDelay: Number((random() * -40).toFixed(2)), // отрицательное значение: на момент загрузки звезда уже в полёте, а не все стартуют одновременно
     };
   });
 }

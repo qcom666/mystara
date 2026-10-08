@@ -1,16 +1,18 @@
 /**
- * Who the "operator" of personal data is, for the privacy policy and the
- * consent form (152-ФЗ requires both to name the operator and give a contact).
+ * Кто является «оператором» персональных данных, для политики конфиденциальности и формы согласия
+ * (152-ФЗ требует указать в обоих оператора и контакт).
  *
- * These come from environment variables so real details never live in the
- * repo — and until they're set, the legal pages show obvious `[…]`
- * placeholders instead of invented details. Publishing a policy with
- * placeholders still in it is a mistake, but it's a far safer mistake than
- * publishing one with fabricated legal identity. See TODO.md "Legal".
+ * Данные берутся из переменных окружения, чтобы настоящие реквизиты не хранились в репозитории: пока
+ * они не заданы, юридические страницы показывают заметные заглушки `[…]`, а не выдуманные данные.
+ * Опубликовать политику с заглушками — ошибка, но гораздо безопаснее, чем опубликовать выдуманную
+ * юридическую личность.
  */
 const placeholder = (label: string) => `[${label}]`;
 
-/** "Mystara_Support" / "@Mystara_Support" / " @Mystara_Support " → "@Mystara_Support"; unset → "". */
+/**
+ * «Mystara_Support», «@Mystara_Support» и « @Mystara_Support » превращаются в «@Mystara_Support»;
+ * если не задано, пустая строка.
+ */
 function normalizeTelegramHandle(raw: string | undefined): string {
   const handle = (raw ?? "").trim().replace(/^@/, "");
   return /^[A-Za-z0-9_]{4,32}$/.test(handle) ? `@${handle}` : "";
@@ -40,27 +42,36 @@ export const OPERATOR = {
   serviceName: "Mystara",
 } as const;
 
-/** True while any operator detail is still a placeholder — used to warn in dev and by the tests. */
+/**
+ * true, пока хотя бы одно из данных оператора остаётся заглушкой: используется для предупреждения
+ * при разработке и в тестах.
+ */
 export function hasUnfilledOperatorDetails(): boolean {
   return [OPERATOR.name, OPERATOR.registration, OPERATOR.email].some((value) => value.startsWith("["));
 }
 
 /**
- * Bump on any material change to the policy or the consent text. It's stored
- * next to each user's consent timestamp, so it's always possible to say which
- * version of the text a given person actually agreed to.
+ * Увеличивать при любом существенном изменении политики или текста согласия. Хранится рядом с отметкой
+ * времени согласия каждого пользователя, поэтому всегда можно сказать, на какую версию текста человек
+ * согласился.
  */
 export const PRIVACY_POLICY_VERSION = "2026-10-06";
 
-/** " или по адресу: …" — only when a postal address is configured, so the documents never print an empty or placeholder address. */
+/**
+ * « или по адресу: …» — только если задан почтовый адрес: документы никогда не выводят пустой адрес
+ * или заглушку.
+ */
 export const ADDRESS_CLAUSE = {
   ru: OPERATOR.address ? ` или по адресу: ${OPERATOR.address}` : "",
   en: OPERATOR.address ? ` or to: ${OPERATOR.address}` : "",
 } as const;
 
-/** Version and effective date of the public offer (оферта) — bump on any material change, like the privacy policy. */
+/**
+ * Версия и дата вступления в силу публичной оферты: повышать при любом существенном изменении,
+ * как и версию политики.
+ */
 export const OFFER_VERSION = "2026-10-06";
 export const OFFER_EFFECTIVE_DATE = { ru: "06.10.2026", en: "6 October 2026" } as const;
 
-/** Human-readable date the current version took effect (dd.mm.yyyy for the Russian text). */
+/** Дата вступления в силу текущей версии в читаемом виде (дд.мм.гггг для русского текста). */
 export const PRIVACY_POLICY_EFFECTIVE_DATE = { ru: "06.10.2026", en: "6 October 2026" } as const;

@@ -61,9 +61,9 @@ const LANGUAGE_INSTRUCTION: Record<"en" | "ru", string> = {
 };
 
 /**
- * Real LLM-backed provider. Only ever instantiated server-side by the
- * factory in ai-interpretation.service.ts when ANTHROPIC_API_KEY is set —
- * the key never reaches client code (see PROJECT_ARCHITECTURE.md §8).
+ * Провайдер на основе настоящей LLM. Создаётся только на сервере фабрикой из
+ * ai-interpretation.service.ts, когда задан ANTHROPIC_API_KEY: ключ никогда не попадает
+ * в клиентский код.
  */
 export class AnthropicAIProvider implements AIInterpretationProvider {
   readonly id = "anthropic";

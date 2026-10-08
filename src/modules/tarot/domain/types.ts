@@ -16,20 +16,23 @@ export interface TarotCardMeanings {
   yesNo: YesNoLeaning;
 }
 
-/** The six free-text meaning fields — `yesNo` is a language-independent enum, so a translation only needs these. */
+/**
+ * Шесть полей значений со свободным текстом: `yesNo` — перечисление, не зависящее от языка,
+ * поэтому переводу нужны только они.
+ */
 export type TarotCardMeaningTexts = Omit<TarotCardMeanings, "yesNo">;
 
 export interface TarotCard {
-  /** Stable slug, e.g. "the-fool", "ace-of-cups". Used as the DB reference id. */
+  /** Постоянный slug, например «the-fool», «ace-of-cups». Служит идентификатором-ссылкой в БД. */
   id: string;
   name: string;
-  /** Russian name — see PROJECT_ARCHITECTURE.md §14 for why only name/description (not the full `meanings`) are localized. */
+  /** Русское название; переводятся только название и описание (не весь объект `meanings`). */
   nameRu: string;
   arcana: Arcana;
   suit: Suit | null;
-  /** 0–21 for Major Arcana; 1–14 for Minor (11 Page, 12 Knight, 13 Queen, 14 King). */
+  /** 0–21 для старших арканов; 1–14 для младших (11 Паж, 12 Рыцарь, 13 Королева, 14 Король). */
   number: number;
-  /** Reserved for future real artwork (see Decision Log #3). Null renders a procedural card face. */
+  /** Зарезервировано под будущие настоящие иллюстрации. null означает, что рисуется сгенерированное лицо карты. */
   image: string | null;
   keywords: string[];
   keywordsRu: string[];

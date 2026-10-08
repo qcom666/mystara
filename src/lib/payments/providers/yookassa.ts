@@ -1,7 +1,7 @@
 /**
- * ЮKassa — card / SBP payments in rubles. The buyer is redirected to
- * `confirmation_url`; ЮKassa then POSTs `payment.succeeded` to our webhook,
- * which re-fetches the payment by id before trusting it (their recommended check).
+ * ЮKassa: оплата картой и СБП в рублях. Покупатель перенаправляется на `confirmation_url`; затем ЮKassa
+ * присылает `payment.succeeded` на наш вебхук, который перед доверием перезапрашивает платёж по id
+ * (рекомендуемая ими проверка).
  * https://yookassa.ru/developers/api
  */
 const API = "https://api.yookassa.ru/v3";
@@ -34,7 +34,7 @@ export async function createYooKassaPayment(
     headers: {
       Authorization: authHeader(credentials),
       "Content-Type": "application/json",
-      // One purchase = one payment, even if the request is retried.
+      // Одна покупка — один платёж, даже если запрос повторится.
       "Idempotence-Key": params.purchaseId,
     },
     body: JSON.stringify({

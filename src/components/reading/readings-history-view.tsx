@@ -35,7 +35,7 @@ interface NumerologySummary {
   id: string;
   number: LifePathNumber;
   createdAt: string;
-  /** Only present when a name with at least one calculable letter was given (see hasCalculableLetters). */
+  /** Есть, только если указано имя хотя бы с одной буквой, которую можно посчитать (см. hasCalculableLetters). */
   fullName: string | null;
 }
 
@@ -43,7 +43,7 @@ interface AstrologySummary {
   id: string;
   signId: ZodiacSignId;
   createdAt: string;
-  /** null when the user picked "Not sure" at the time. */
+  /** null, если пользователь тогда выбрал «Не уверен». */
   sect: Sect | null;
 }
 

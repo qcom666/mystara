@@ -1,10 +1,9 @@
 import { z } from "zod";
 
 /**
- * Either a curated city (see modules/astrology/domain/cities.data.ts) or a
- * manual place — both resolve to the same {latitude, longitude, timezone}
- * shape the natal-chart engine needs, so the route doesn't care which one
- * was used.
+ * Либо город из справочника (см. modules/astrology/domain/cities.data.ts), либо место, введённое
+ * вручную: оба варианта приводятся к одной форме {latitude, longitude, timezone}, которая нужна
+ * движку натальной карты, поэтому маршруту всё равно, какой из них использован.
  */
 export const createNatalChartSchema = z.object({
   year: z.number().int().min(1, "Year is required"),

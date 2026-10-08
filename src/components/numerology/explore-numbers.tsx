@@ -8,8 +8,8 @@ const ALL_NUMBERS = Object.values(LIFE_PATH_MEANINGS)
   .map((meaning) => meaning.number)
   .sort((a, b) => a - b);
 
-// A client component so the titles follow the chosen language, while the rest
-// of `numerology/page.tsx` stays a Server Component (and keeps its metadata).
+// Клиентский компонент, чтобы заголовки следовали выбранному языку, а остальная часть
+// `numerology/page.tsx` осталась серверным компонентом (и сохранила metadata).
 export function ExploreNumbers() {
   const t = useTranslation();
   const { locale } = useLocale();

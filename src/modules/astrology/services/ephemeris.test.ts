@@ -12,12 +12,11 @@ function angularDistance(a: number, b: number): number {
   return diff > 180 ? 360 - diff : diff;
 }
 
-// The equinoxes/solstices are *defined* by the Sun's apparent geocentric
-// ecliptic longitude — 0°/90°/180°/270° exactly at the instant. Using noon UTC
-// on the calendar day the event usually falls on can be up to ~1 day (~1°)
-// off the exact instant, so the tolerance below is generous on purpose: this
-// test exists to catch a fundamentally broken calculation (a wrong century,
-// swapped sign, wrong units), not to pin down the algorithm to arc-seconds.
+// Равноденствия и солнцестояния *определяются* видимой геоцентрической эклиптической долготой Солнца:
+// ровно 0°/90°/180°/270° в этот момент. Полдень по UTC в календарный день события может отличаться
+// от точного момента до ~1 суток (~1°), поэтому допуск ниже намеренно щедрый: этот тест нужен, чтобы
+// поймать принципиально сломанный расчёт (не тот век, перепутанный знак, не те единицы), а не
+// фиксировать алгоритм с точностью до угловых секунд.
 describe("getBodyPositions — Sun against known equinox/solstice longitudes", () => {
   it.each([
     ["March equinox", 2024, 3, 20, 0],
@@ -33,8 +32,8 @@ describe("getBodyPositions — Sun against known equinox/solstice longitudes", (
 });
 
 describe("getBodyPositions — Sun sign agrees with the simple calendar method", () => {
-  // Dates picked comfortably away from a sign boundary, so a few days' worth
-  // of "which exact instant is noon UTC" slack can never flip the sign.
+  // Даты выбраны заметно вдали от границы знака, чтобы неточность «какой именно момент считать
+  // полуднем по UTC» в несколько дней не могла сменить знак.
   it.each([
     [2000, 1, 10, "capricorn"],
     [1995, 4, 25, "taurus"],

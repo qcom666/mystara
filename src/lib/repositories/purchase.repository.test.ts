@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-/** A tiny in-memory stand-in for the two tables fulfillPurchase touches. */
+/** Небольшая замена в памяти для двух таблиц, которых касается fulfillPurchase. */
 const state = vi.hoisted(() => ({
   purchases: new Map<string, { id: string; userId: string; provider: string; amount: number; currency: string; status: string; creditsGranted: number; externalId: string | null }>(),
   credits: new Map<string, number>(),

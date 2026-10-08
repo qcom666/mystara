@@ -18,10 +18,10 @@ export interface SaveNatalChartInput {
 }
 
 /**
- * Atomically checks and spends one credit, then stores the generated chart —
- * a transaction so two concurrent requests can't both pass a "credits > 0"
- * check against the same last credit. Returns null if there were no credits
- * left (the caller turns that into a 402-style API response).
+ * Атомарно проверяет и списывает один кредит, затем сохраняет построенную карту: транзакция нужна,
+ * чтобы два одновременных запроса не прошли проверку «кредитов > 0» по одному и тому же последнему
+ * кредиту. Возвращает null, если кредитов не осталось (вызывающий код превращает это в ответ API
+ * в духе 402).
  */
 export async function spendCreditAndSaveNatalChart(input: SaveNatalChartInput) {
   return prisma.$transaction(async (tx) => {
@@ -49,4 +49,4 @@ export async function listNatalChartReadingsForUser(userId: string, limit = 10) 
   return prisma.natalChartReading.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: limit });
 }
 
-// Purchases and credit grants live in purchase.repository.ts (fulfillPurchase).
+// Покупки и начисление кредитов находятся в purchase.repository.ts (fulfillPurchase).

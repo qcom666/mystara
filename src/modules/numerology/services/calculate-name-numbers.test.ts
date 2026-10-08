@@ -10,9 +10,9 @@ import {
 
 const VALID_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33];
 
-// All hand-verified against the letter tables in letter-values.data.ts.
-// Pythagorean: J=1 O=6 H=8 N=5 -> 20 -> 2
-// Chaldean:    J=1 O=7 H=5 N=5 -> 18 -> 9
+// Всё проверено вручную по таблицам букв из letter-values.data.ts.
+// Пифагорейская: J=1 O=6 H=8 N=5 -> 20 -> 2
+// Халдейская:    J=1 O=7 H=5 N=5 -> 18 -> 9
 describe("calculateExpressionNumber", () => {
   it("matches a hand-verified Pythagorean example (JOHN -> 2)", () => {
     expect(calculateExpressionNumber("John", "pythagorean")).toBe(2);
@@ -47,13 +47,13 @@ describe("calculatePersonalityNumber", () => {
 describe("calculateMaturityNumber", () => {
   it("sums life path and expression, then reduces", () => {
     expect(calculateMaturityNumber(3, 2)).toBe(5);
-    expect(calculateMaturityNumber(3, 9)).toBe(3); // 12 -> 1+2=3
+    expect(calculateMaturityNumber(3, 9)).toBe(3); // 12 → 1+2=3
   });
 });
 
 describe("calculateNumerologyProfile", () => {
   it("keeps date-derived numbers identical across systems, but varies name-derived ones", () => {
-    const birthDate = new Date(1990, 0, 1); // life path 3 (hand-verified elsewhere)
+    const birthDate = new Date(1990, 0, 1); // число жизненного пути 3 (проверено вручную в другом месте)
     const pythagorean = calculateNumerologyProfile("John", birthDate, "pythagorean");
     const chaldean = calculateNumerologyProfile("John", birthDate, "chaldean");
 
@@ -65,11 +65,11 @@ describe("calculateNumerologyProfile", () => {
   });
 });
 
-// Russian names. Pythagorean uses the standard Russian table (А=1 Б=2 … З=9,
-// И=1 … Р=9, С=1 … Щ=9, Ъ=1 … Я=6); Chaldean sums the letter's Latin
-// transliteration. Hand-verified for «Анна»:
-//   Pythagorean: А=1 Н=6 Н=6 А=1 -> 14 -> 5 | vowels А+А=2 | consonants Н+Н=12 -> 3
-//   Chaldean:    A=1 N=5 N=5 A=1 -> 12 -> 3 | vowels 2       | consonants 10 -> 1
+// Русские имена. Пифагорейская система использует стандартную русскую таблицу (А=1 Б=2 … З=9,
+// И=1 … Р=9, С=1 … Щ=9, Ъ=1 … Я=6); халдейская складывает значения латинской транслитерации буквы.
+// Проверено вручную для «Анна»:
+//   Пифагорейская: А=1 Н=6 Н=6 А=1 -> 14 -> 5 | гласные А+А=2 | согласные Н+Н=12 -> 3
+//   Халдейская:    A=1 N=5 N=5 A=1 -> 12 -> 3 | гласные 2       | согласные 10 -> 1
 describe("Cyrillic names", () => {
   it("uses the standard Russian Pythagorean table", () => {
     expect(calculateExpressionNumber("Анна", "pythagorean")).toBe(5);
@@ -85,7 +85,7 @@ describe("Cyrillic names", () => {
 
   it("is case-insensitive and treats Ё like the other letters", () => {
     expect(calculateExpressionNumber("АННА", "pythagorean")).toBe(calculateExpressionNumber("анна", "pythagorean"));
-    // Ё is a distinct letter (index 6 -> 7), unlike Е (6).
+    // Ё — отдельная буква (индекс 6 -> 7), в отличие от Е (6).
     expect(calculateExpressionNumber("Ё", "pythagorean")).toBe(7);
     expect(calculateExpressionNumber("Е", "pythagorean")).toBe(6);
   });

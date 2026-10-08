@@ -31,9 +31,8 @@ export const createReadingSchema = z.object({
   question: z.string().trim().max(500).optional().nullable(),
   seed: z.string().min(1),
   cards: z.array(readingCardInputSchema).min(1).max(10),
-  // Optional: persists the interpretation already generated during the flow
-  // so history/reading-detail can show it without regenerating (and paying
-  // for) it again.
+  // Необязательно: сохраняет толкование, уже сгенерированное по ходу расклада, чтобы история и детали
+  // расклада показывали его без повторной генерации (и оплаты).
   aiInterpretation: aiInterpretationInputSchema.optional(),
 });
 
@@ -59,8 +58,8 @@ export const signupSchema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email(),
   password: z.string().min(8).max(72),
-  // Must be an explicit `true` — an absent or false value is rejected, so an
-  // account can't be created without the consent checkbox having been ticked.
+  // Должно быть именно `true`: отсутствующее или false отклоняется, поэтому аккаунт нельзя создать
+  // без отмеченной галочки согласия.
   acceptPrivacy: z.literal(true),
 });
 

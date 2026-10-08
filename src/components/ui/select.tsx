@@ -2,7 +2,7 @@ import type { SelectHTMLAttributes } from "react";
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-/** Plain native `<select>`, styled to match Input — no Radix Select needed for a handful of short option lists. */
+/** Обычный нативный `<select>`, оформленный как Input; Radix Select для пары коротких списков не нужен. */
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(({ className, ...props }, ref) => (
   <select
     ref={ref}

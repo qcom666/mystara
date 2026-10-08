@@ -1,13 +1,12 @@
 import type { ActorProfile } from "./types";
 
 /**
- * A small, curated set of well-known actors with real, publicly documented
- * birthdates — zodiac sign and life path number are computed from that date
- * at runtime (see actor-match.service.ts), never hand-entered, so they can
- * never silently drift out of sync with the calculation logic.
+ * Небольшой отобранный набор известных актёров с реальными, публично известными датами рождения: знак
+ * зодиака и число жизненного пути считаются из этой даты во время работы (см. actor-match.service.ts)
+ * и никогда не вводятся вручную, поэтому не могут незаметно разойтись с логикой расчёта.
  *
- * This is entertainment content ("fun fact"), not a factual claim about the
- * people listed — framed that way everywhere it's shown (see FunFactCard).
+ * Это развлекательное содержимое («занимательный факт»), а не утверждение о перечисленных людях:
+ * везде, где оно показано, оно так и подаётся (см. FunFactCard).
  */
 export const ACTORS: ActorProfile[] = [
   { name: "Leonardo DiCaprio", nameRu: "Леонардо ДиКаприо", birthDate: "1974-11-11", archetypeTags: ["visionary", "dreamer"] },

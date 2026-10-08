@@ -1,10 +1,9 @@
 import type { SpreadPosition, TarotSpread } from "./types";
 
 /**
- * Spreads are pure data. The draw engine and layout components both read
- * `cardCount`/`positions` generically — adding a new spread here is the only
- * step required; no engine or (at worst) layout code needs to change (see
- * PROJECT_ARCHITECTURE.md §5).
+ * Расклады — чистые данные. Движок выбора карт и компоненты раскладки читают `cardCount` и `positions`
+ * обобщённо: чтобы добавить расклад, достаточно добавить его здесь; менять движок (и, в худшем случае,
+ * вёрстку) не нужно.
  */
 export const SPREADS: TarotSpread[] = [
   {
@@ -336,7 +335,7 @@ export function requireSpreadById(id: string): TarotSpread {
   return spread;
 }
 
-/** Locale-aware accessors — see the matching note in `deck.ts`. */
+/** Доступ с учётом языка; см. такое же примечание в `deck.ts`. */
 export function getSpreadName(spread: TarotSpread, locale: "en" | "ru"): string {
   return locale === "ru" ? spread.nameRu : spread.name;
 }

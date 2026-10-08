@@ -1,11 +1,11 @@
-// Vercel build step: apply pending Prisma migrations, but only where a database
-// exists. Without DATABASE_URL (previews, local builds, the pre-database
-// production) it is a no-op, so the build never fails for lack of a DB.
+// Шаг сборки на Vercel: применяет ожидающие миграции Prisma, но только там, где есть база.
+// Без DATABASE_URL (превью, локальные сборки, прод до подключения базы) ничего не делает,
+// поэтому сборка не падает из-за отсутствия базы.
 //
-// Migrations must go over a DIRECT connection: through a pooler (PgBouncer, as in
-// Neon's pooled DATABASE_URL) Prisma's advisory lock can hang. When the provider
-// also supplies DATABASE_URL_UNPOOLED we use that for the migration only; the app
-// itself keeps using the pooled DATABASE_URL at runtime.
+// Миграции нужно выполнять по ПРЯМОМУ подключению: через пулер (PgBouncer, как в пулированном
+// DATABASE_URL у Neon) блокировка Prisma может зависнуть. Если провайдер отдаёт ещё и
+// DATABASE_URL_UNPOOLED, используем его только для миграции; само приложение в работе
+// использует пулированный DATABASE_URL.
 import { spawnSync } from "node:child_process";
 
 if (!process.env.DATABASE_URL) {

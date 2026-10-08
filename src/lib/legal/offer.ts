@@ -4,20 +4,18 @@ import { OPERATOR } from "./operator";
 import type { LegalSection } from "./privacy-policy";
 
 /**
- * Public offer (публичная оферта) for Mystara's paid digital services — the
- * contract a buyer accepts by paying (ГК РФ ст. 435, 437, 438). Russian is the
- * authoritative text; the English is a convenience translation.
+ * Публичная оферта на платные цифровые услуги Mystara: договор, который покупатель принимает оплатой
+ * (ГК РФ, ст. 435, 437, 438). Основной текст русский; английский — перевод для удобства.
  *
- * DRAFT — written from the Civil Code (ст. 437, 438, 450, 782) and the Consumer
- * Protection Law (ст. 16, 17, 26.1, 31, 32), and to match what the code really does
- * (credits granted by the payment webhook, see purchase.repository.ts). It is not
- * legal advice: have a lawyer review it before the first real sale.
+ * Составлена по Гражданскому кодексу (ст. 437, 438, 450, 782) и Закону о защите прав потребителей
+ * (ст. 16, 17, 26.1, 31, 32) и под то, как реально работает код (кредиты начисляет вебхук платёжной
+ * системы, см. purchase.repository.ts). Это не юридическая консультация: перед первой продажей нужна
+ * проверка юристом.
  *
- * Deliberately NOT here: any mention of paying with crypto-currency. Federal Law
- * 259-FZ art. 14 forbids accepting digital currency as payment for services in Russia
- * and also forbids publishing information offering to do so — see TODO.md.
+ * Намеренно НЕТ ничего об оплате криптовалютой: статья 14 закона 259-ФЗ запрещает принимать цифровую
+ * валюту в оплату услуг в России и запрещает публиковать информацию о таком предложении.
  *
- * Prices come from the pricing modules so the offer can never disagree with the site.
+ * Цены берутся из модулей цен, поэтому оферта не может разойтись с сайтом.
  */
 
 const op = OPERATOR;

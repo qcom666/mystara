@@ -18,8 +18,8 @@ type Stage = "loading-credits" | "no-credits" | "form" | "generating" | "result"
 export function NatalChartFlow() {
   const t = useTranslation();
   const { status } = useSession();
-  // Lazy initializer, not an effect: NATAL_CHART_FREE_FOR_TESTING is a fixed
-  // constant, not something to "synchronize" with after mount.
+  // Ленивая инициализация, а не эффект: NATAL_CHART_FREE_FOR_TESTING — константа, а не то, что нужно
+  // «синхронизировать» после монтирования.
   const [stage, setStage] = useState<Stage>(() => (NATAL_CHART_FREE_FOR_TESTING ? "form" : "loading-credits"));
   const [chart, setChart] = useState<NatalChart | null>(null);
 
@@ -27,7 +27,7 @@ export function NatalChartFlow() {
     if (NATAL_CHART_FREE_FOR_TESTING) return;
     if (status !== "authenticated") return;
     let cancelled = false;
-    // Coming back from the card payment page the webhook may still be a moment behind — give it a few tries.
+    // При возврате со страницы оплаты картой вебхук может ещё не отработать, поэтому даём несколько попыток.
     const returningFromPayment = new URLSearchParams(window.location.search).get("payment") === "return";
     const attempts = returningFromPayment ? 8 : 1;
 

@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { OPERATOR } from "@/lib/legal/operator";
 
-/** Seller details, payment/delivery facts and links to the legal documents — the page payment services and consumers look for. */
+/**
+ * Данные продавца, сведения об оплате и получении услуги и ссылки на юридические документы:
+ * страница, которую ищут платёжные сервисы и покупатели.
+ */
 export function ContactsView() {
   const t = useTranslation();
   const c = t.contactsPage;

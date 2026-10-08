@@ -1,12 +1,12 @@
 /**
- * Deterministic RNG. Domain logic (the draw engine) must never call
- * Math.random() directly — every shuffle/orientation roll needs to be
- * reproducible from a stored string seed (see PROJECT_ARCHITECTURE.md §6).
+ * Детерминированный генератор случайных чисел. Доменная логика (выбор карт) не должна вызывать
+ * Math.random() напрямую: каждое перемешивание и выбор положения карты должны воспроизводиться
+ * по сохранённому строковому зерну.
  */
 
 export type RandomSource = () => number;
 
-/** FNV-1a: turns an arbitrary string seed into a 32-bit integer. */
+/** FNV-1a: превращает произвольное строковое зерно в 32-битное целое. */
 function hashStringToInt(seed: string): number {
   let hash = 0x811c9dc5;
   for (let i = 0; i < seed.length; i++) {
@@ -16,7 +16,7 @@ function hashStringToInt(seed: string): number {
   return hash >>> 0;
 }
 
-/** mulberry32 — small, fast, good-enough-for-non-cryptographic-use PRNG. */
+/** mulberry32: небольшой быстрый ГПСЧ, достаточный для некриптографического применения. */
 export function createSeededRandom(seed: string): RandomSource {
   let state = hashStringToInt(seed);
   return () => {
@@ -32,7 +32,7 @@ export function generateSeed(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** Fisher–Yates, driven entirely by the supplied random source. */
+/** Тасование Фишера—Йетса, целиком зависящее от переданного источника случайности. */
 export function shuffle<T>(items: readonly T[], random: RandomSource): T[] {
   const result = [...items];
   for (let i = result.length - 1; i > 0; i--) {

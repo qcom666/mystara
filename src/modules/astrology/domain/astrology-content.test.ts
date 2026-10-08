@@ -44,7 +44,7 @@ describe("sect content (Russian)", () => {
       expect(ru.title).toMatch(CYRILLIC);
       expect(ru.description).toMatch(CYRILLIC);
       expect(ru.keynote).toMatch(CYRILLIC);
-      // Planet names are English ids here; the UI maps them through the dictionary.
+      // Здесь названия планет — английские идентификаторы; интерфейс переводит их через словарь.
       expect(ru.favoredPlanets).toEqual(profile.favoredPlanets);
     }
     expect(getSectMercuryNote("ru")).toMatch(CYRILLIC);

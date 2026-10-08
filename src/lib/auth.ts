@@ -15,8 +15,8 @@ const providers: NextAuthConfig["providers"] = [
       password: { label: "Password", type: "password" },
     },
     async authorize(credentials) {
-      // Fail closed (no session) rather than throwing a raw connection error
-      // when the app hasn't been given a DATABASE_URL yet.
+      // Закрываем доступ (сессии нет), а не бросаем «сырую» ошибку подключения, когда приложению
+      // ещё не задан DATABASE_URL.
       if (!isDatabaseConfigured()) return null;
 
       const email = typeof credentials?.email === "string" ? credentials.email : undefined;
@@ -32,10 +32,9 @@ const providers: NextAuthConfig["providers"] = [
       return { id: user.id, name: user.name, email: user.email, image: user.image };
     },
   }),
-  // Telegram Mini App auth: the client sends the raw `initData` string
-  // Telegram itself signed (window.Telegram.WebApp.initData) — never trust
-  // it without the HMAC check in validateTelegramInitData. There's no
-  // password here; the signature IS the credential.
+  // Вход из Telegram Mini App: клиент присылает исходную строку `initData`, подписанную самим Telegram
+  // (window.Telegram.WebApp.initData); без проверки HMAC в validateTelegramInitData ей доверять нельзя.
+  // Пароля здесь нет: учётными данными служит сама подпись.
   Credentials({
     id: "telegram",
     name: "Telegram",
@@ -78,8 +77,8 @@ const providers: NextAuthConfig["providers"] = [
   }),
 ];
 
-// Only registered when configured, so the app never crashes at import time
-// in environments (like this one) that haven't set up Google OAuth yet.
+// Регистрируется только если настроен, чтобы приложение не падало при импорте в окружениях,
+// где Google OAuth ещё не настроен.
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   providers.push(
     Google({
@@ -91,8 +90,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  // Credentials requires JWT sessions (Auth.js does not support the
-  // Credentials provider with database sessions).
+  // Credentials требует JWT-сессий (Auth.js не поддерживает провайдер Credentials с сессиями в базе).
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers,

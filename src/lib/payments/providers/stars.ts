@@ -1,8 +1,7 @@
 /**
- * Telegram Stars (XTR). An invoice link is created server-side with the bot
- * token; the Mini App opens it with WebApp.openInvoice. Telegram then calls our
- * bot webhook with `pre_checkout_query` and `successful_payment`
- * (see src/lib/telegram/payments.ts and /api/telegram/webhook).
+ * Telegram Stars (XTR). Ссылку на оплату создаём на сервере с токеном бота; мини-приложение открывает её
+ * через WebApp.openInvoice. Затем Telegram вызывает вебхук бота с `pre_checkout_query` и
+ * `successful_payment` (см. src/lib/telegram/payments.ts и /api/telegram/webhook).
  * https://core.telegram.org/bots/payments-stars
  */
 export async function createStarsInvoiceLink(

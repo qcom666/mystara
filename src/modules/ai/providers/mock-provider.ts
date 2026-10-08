@@ -11,8 +11,8 @@ import {
 
 type Focus = "love" | "career" | "finance" | "general";
 
-// Cyrillic has no `\b` word boundary in JS regexes, so the Russian patterns
-// match word stems instead (любов- → любовь/любви/любовный…).
+// В регулярных выражениях JS у кириллицы нет границы слова `\b`, поэтому русские шаблоны ищут
+// основания слов (любов- → любовь/любви/любовный…).
 const FOCUS_PATTERNS: Record<Exclude<Focus, "general">, RegExp> = {
   love: /love|relationship|partner|dating|marriage|\bex\b|любо|отношени|партн[её]р|свидани|брак|замуж|женит|бывш/,
   career: /job|career|work|business|promotion|boss|coworker|работ|карьер|бизнес|повышени|начальник|коллег|должност|увольн|проф/,
@@ -70,11 +70,9 @@ const TONE_TEXT: Record<InterpretationLocale, Record<Tone, string>> = {
 };
 
 /**
- * Deterministic, fully offline. This is the default provider so the product
- * works end to end with zero configuration — see PROJECT_ARCHITECTURE.md §8.
- * Writes in English or Russian depending on `request.locale`, composing from
- * the matching card meanings so the output is genuinely in that language
- * rather than a translated template wrapped around English text.
+ * Детерминированный, полностью офлайн. Провайдер по умолчанию, чтобы продукт работал целиком без
+ * настройки. Пишет по-английски или по-русски в зависимости от `request.locale`, составляя текст из
+ * значений карт на нужном языке, а не из переведённого шаблона вокруг английского текста.
  */
 export class MockAIProvider implements AIInterpretationProvider {
   readonly id = "mock";

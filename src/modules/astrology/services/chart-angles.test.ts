@@ -7,17 +7,16 @@ function jdUtFor(year: number, month: number, day: number, hourUtc: number): num
   return julian.CalendarGregorianToJD(year, month, day + hourUtc / 24);
 }
 
-/** The longitude (east-positive) that makes RAMC exactly 0° for this instant. */
+/** Долгота (на восток положительная), при которой RAMC в этот момент ровно 0°. */
 function longitudeForZeroRamc(jdUt: number): number {
   const gstDeg = sidereal.apparent(jdUt) / 240;
   return (((-gstDeg) % 360) + 360) % 360;
 }
 
 describe("calculateChartAngles — textbook degenerate case (equator, RAMC = 0°)", () => {
-  // With no ecliptic tilt the rising point would be exactly 90° from the
-  // meridian; with real obliquity (~23.4°) the formulas should still reduce
-  // to the well-known textbook values at the equator when the vernal-equinox
-  // point (RAMC 0°) is on the meridian: MC = 0° Aries, Ascendant = 90° (0° Cancer).
+  // Без наклона эклиптики восходящая точка была бы ровно в 90° от меридиана; при реальном наклоне (~23,4°)
+  // формулы всё равно должны давать известные учебные значения на экваторе, когда точка весеннего
+  // равноденствия (RAMC 0°) на меридиане: MC = 0° Овна, асцендент = 90° (0° Рака).
   const jdUt = jdUtFor(2024, 6, 1, 0);
   const longitudeDeg = longitudeForZeroRamc(jdUt);
   const { ascendantDeg, midheavenDeg } = calculateChartAngles(jdUt, 0, longitudeDeg);
@@ -40,9 +39,8 @@ describe("calculateChartAngles — sensitivity to birth time", () => {
     let delta = a2 - a1;
     if (delta < -180) delta += 360;
     if (delta > 180) delta -= 360;
-    // ~2.5° for 10 minutes at the equator; obliquity/latitude distort this,
-    // so the assertion just checks it's moving forward at a plausible rate,
-    // not the exact rate.
+    // ~2,5° за 10 минут на экваторе; наклон и широта искажают это значение, поэтому проверка лишь
+    // убеждается, что движение идёт вперёд с правдоподобной скоростью, а не с точной.
     expect(delta).toBeGreaterThan(0.5);
     expect(delta).toBeLessThan(6);
   });

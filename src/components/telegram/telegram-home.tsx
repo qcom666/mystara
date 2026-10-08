@@ -9,9 +9,9 @@ import { useTranslation } from "@/lib/i18n";
 import { setPrivacyConsent, usePrivacyConsent } from "@/lib/legal/use-privacy-consent";
 
 /**
- * The Mini App's home screen — replaces the marketing landing page, which
- * assumes a browser chrome Telegram doesn't provide. `SiteHeader` hides
- * itself inside Telegram, so the language switcher lives here instead.
+ * Главный экран мини-приложения: заменяет рекламную главную страницу, которая рассчитана на браузерную
+ * оболочку, которой в Telegram нет. `SiteHeader` внутри Telegram скрывается, поэтому переключатель языка
+ * находится здесь.
  */
 export function TelegramHome() {
   const t = useTranslation();

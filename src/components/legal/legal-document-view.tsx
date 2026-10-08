@@ -21,8 +21,8 @@ const DOCUMENTS: Record<DocumentKind, LegalSection[]> = {
 };
 
 /**
- * Renders a legal document in the active language. Russian is authoritative:
- * an English reader gets the English text plus a note saying so.
+ * Показывает юридический документ на выбранном языке. Основной текст русский: англоязычный
+ * читатель видит английский текст и пометку об этом.
  */
 export function LegalDocumentView({ kind }: { kind: DocumentKind }) {
   const t = useTranslation();

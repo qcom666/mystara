@@ -14,8 +14,8 @@ const ASPECT_ANGLES: { type: AspectType; angleDeg: number; orbDeg: number }[] = 
 ];
 
 function toJulianDay(date: Date): number {
-  // A plain UT-based Julian Day, used as JDE too (ΔT treated as negligible —
-  // see ephemeris.ts's module doc for why that's a reasonable simplification here).
+  // Обычная юлианская дата по UT, используется и как JDE (ΔT считаем пренебрежимой:
+  // обоснование в описании модуля ephemeris.ts).
   const day =
     date.getUTCDate() +
     (date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600) / 24;
@@ -51,9 +51,9 @@ function signIndex(signId: ZodiacSignId): number {
 }
 
 /**
- * The natal chart's one pure entry point: real body positions + (when the
- * birth time is known) real houses/angles, no network calls, fully
- * deterministic for a given input. See domain/types.ts NatalChart for the shape.
+ * Единственная чистая точка входа расчёта натальной карты: реальные положения тел и (если время
+ * рождения известно) реальные дома и углы, без сетевых вызовов, полностью детерминированно для одного
+ * входа. Форму результата см. в NatalChart (domain/types.ts).
  */
 export function calculateNatalChart(input: NatalChartInput): NatalChart {
   const jd = toJulianDay(input.birthDateUtc);

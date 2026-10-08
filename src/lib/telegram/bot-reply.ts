@@ -1,15 +1,14 @@
 import { OPERATOR } from "@/lib/legal/operator";
 
 /**
- * Chat-side replies of the Telegram bot (the Mini App itself lives in the web app).
+ * Ответы Telegram-бота в чате (само мини-приложение живёт в веб-приложении).
  *
- * Pure on purpose: `buildBotReply` takes the update Telegram POSTed to the webhook
- * and returns the reply (or null). The route handler answers with that object as the
- * HTTP response body — Telegram executes a `method` returned in a webhook response —
- * so the handler never needs the bot token or an outgoing request.
+ * Функция чистая намеренно: `buildBotReply` получает обновление, которое Telegram прислал на вебхук,
+ * и возвращает ответ (или null). Обработчик маршрута отдаёт этот объект телом ответа (Telegram выполняет
+ * `method`, возвращённый в ответе вебхука), поэтому ему не нужны ни токен бота, ни исходящие запросы.
  *
- * Every reply carries buttons for the legal documents (policy, offer/terms, contacts):
- * payment services and banks want them permanently one tap away inside the bot.
+ * В каждом ответе есть кнопки юридических документов (политика, оферта/соглашение, контакты):
+ * платёжные сервисы и банки хотят, чтобы они всегда были в одном нажатии внутри бота.
  */
 
 export interface TelegramUpdate {
@@ -74,20 +73,20 @@ const COPY: Record<BotLang, Copy> = {
   },
 };
 
-/** Commands that just show the documents / support info. */
+/** Команды, которые просто показывают документы или сведения о поддержке. */
 const DOCS_COMMANDS = new Set(["docs", "documents", "privacy", "policy", "terms", "offer", "contacts"]);
 
 function pickLang(languageCode: string | undefined): BotLang {
   return languageCode?.toLowerCase().startsWith("ru") ? "ru" : "en";
 }
 
-/** "/start@my_bot payload" → "start"; anything that isn't a command → null. */
+/** «/start@my_bot payload» → «start»; всё, что не команда → null. */
 function parseCommand(text: string): string | null {
   const match = /^\/([a-z_]+)(?:@\w+)?(?:\s|$)/i.exec(text.trim());
   return match ? match[1].toLowerCase() : null;
 }
 
-/** Rows of URL buttons to the legal documents. `appUrl` must be https — Telegram refuses anything else. */
+/** Ряды кнопок-ссылок на юридические документы. `appUrl` должен быть https: Telegram другое не принимает. */
 function documentRows(copy: Copy, appUrl: string): InlineButton[][] {
   return [
     [
@@ -99,8 +98,8 @@ function documentRows(copy: Copy, appUrl: string): InlineButton[][] {
 }
 
 /**
- * Reply to a private-chat text message, or null when there's nothing to say
- * (other update kinds, group chats, malformed payloads).
+ * Ответ на текстовое сообщение в личном чате или null, если сказать нечего (другие виды обновлений,
+ * групповые чаты, некорректные данные).
  */
 export function buildBotReply(update: TelegramUpdate, appUrl: string): BotReply | null {
   const message = update?.message;

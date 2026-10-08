@@ -1,18 +1,18 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 /**
- * Validates Telegram Mini App `initData` per Telegram's documented algorithm:
+ * Проверяет `initData` мини-приложения Telegram по документированному алгоритму Telegram:
  * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
  *
  *   secret_key    = HMAC_SHA256(key="WebAppData", data=<bot token>)
- *   data_check_string = all initData fields except `hash`, sorted by key,
- *                        formatted "key=value", joined with "\n"
+ *   data_check_string = все поля initData, кроме `hash`, отсортированные по ключу,
+ *                        в виде "key=value", через "\n"
  *   computed_hash = HMAC_SHA256(key=secret_key, data=data_check_string), hex
  *
- * `computed_hash` must equal the `hash` field, and `auth_date` must be recent
- * (otherwise a captured initData string could be replayed indefinitely).
- * This is the ONLY thing that proves a client-supplied initData string
- * actually came from Telegram — never trust it without this check.
+ * `computed_hash` должен совпасть с полем `hash`, а `auth_date` должна быть свежей (иначе перехваченную
+ * строку initData можно было бы воспроизводить бесконечно). Это ЕДИНСТВЕННОЕ, что доказывает, что
+ * присланная клиентом строка initData действительно пришла от Telegram: без этой проверки ей
+ * доверять нельзя.
  */
 
 const MAX_INIT_DATA_AGE_SECONDS = 24 * 60 * 60;

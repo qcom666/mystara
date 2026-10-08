@@ -33,13 +33,10 @@ export function FlippableCard({ card, orientation, revealed, onReveal, interacti
   const flipCard = (
     <motion.div
       className="relative h-full w-full [transform-style:preserve-3d]"
-      // `initial={false}` matters here: a card that mounts already
-      // `revealed` (result screen, history detail) should snap straight to
-      // its final state, not replay the flip-in animation on every mount —
-      // letting it "animate in" every time also left it visibly stuck
-      // mid-flip when the animation got interrupted by a backgrounded tab.
-      // A card that starts face-down and later gets revealed by a click
-      // still animates normally, since that's a post-mount prop change.
+      // `initial={false}` здесь важен: карта, которая монтируется уже открытой (экран результата, детали
+      // истории), должна сразу показываться в конечном состоянии, а не проигрывать переворот при каждом
+      // монтировании. Карта, которая начинает рубашкой вверх и открывается кликом, по-прежнему
+      // анимируется: это изменение пропса уже после монтирования.
       initial={false}
       animate={{ rotateY: revealed ? 180 : 0 }}
       transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -63,10 +60,9 @@ export function FlippableCard({ card, orientation, revealed, onReveal, interacti
 
   const sharedClassName = cn("group relative block aspect-[3/5] w-full [perspective:1200px]", className);
 
-  // Non-interactive cards (e.g. the already-revealed result screen, where a
-  // *different* outer button opens a detail dialog) must not themselves be a
-  // <button> — nesting <button> inside <button> is invalid HTML and triggers
-  // a hydration error. Render a plain <div> in that case.
+  // Неинтерактивные карты (например, уже открытые на экране результата, где детали открывает
+  // *другая*, внешняя кнопка) сами не должны быть <button>: вложенный <button> в <button> —
+  // невалидный HTML и вызывает ошибку гидратации. В таком случае рендерим обычный <div>.
   if (!interactive) {
     return (
       <div aria-hidden="true" className={sharedClassName}>

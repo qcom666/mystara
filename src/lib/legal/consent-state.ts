@@ -5,9 +5,9 @@ export type ConsentState = "unknown" | "accepted" | "declined";
 export const CONSENT_STORAGE_KEY = "mystara-privacy-consent";
 
 /**
- * Stored as "<state>:<policy version>". A choice made under an older policy
- * version reads back as "unknown", so publishing a new policy version asks
- * everyone again instead of silently carrying an old consent over.
+ * Хранится как «<состояние>:<версия политики>». Выбор, сделанный при старой версии политики, читается
+ * как «unknown», поэтому при публикации новой версии политики все спрашиваются заново, а старое
+ * согласие не переносится молча.
  */
 export function serializeConsent(state: Exclude<ConsentState, "unknown">, version: string = PRIVACY_POLICY_VERSION): string {
   return `${state}:${version}`;

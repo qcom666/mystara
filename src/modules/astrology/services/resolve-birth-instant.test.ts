@@ -3,11 +3,10 @@ import { resolveBirthInstantUtc } from "./resolve-birth-instant";
 
 describe("resolveBirthInstantUtc", () => {
   it("converts Moscow local time to UTC using the offset that actually applied on that date", () => {
-    // The USSR/Russia observed seasonal DST from 1981 to 2011 (and permanent
-    // "summer time" 2011–2014) — Moscow was UTC+4 in May 1990, not today's
-    // year-round UTC+3. This is exactly why resolveBirthInstantUtc takes an
-    // IANA zone id instead of a fixed offset: luxon applies the *historical*
-    // rule for the given date automatically.
+    // СССР и Россия применяли сезонный переход на летнее время с 1981 по 2011 год (а в 2011–2014 годах было
+    // постоянное «летнее» время): в мае 1990 года в Москве было UTC+4, а не сегодняшнее круглогодичное UTC+3.
+    // Именно поэтому resolveBirthInstantUtc принимает идентификатор пояса IANA, а не фиксированное смещение:
+    // luxon сам применяет *историческое* правило для заданной даты.
     const utc = resolveBirthInstantUtc({ year: 1990, month: 5, day: 14, hour: 9, minute: 30, timezone: "Europe/Moscow" });
     expect(utc.toISOString()).toBe("1990-05-14T05:30:00.000Z");
   });
@@ -18,7 +17,7 @@ describe("resolveBirthInstantUtc", () => {
   });
 
   it("applies historical DST correctly for a summer date in a zone that observed it", () => {
-    // New York in July observes EDT (UTC−4), historically as well as today.
+    // Нью-Йорк в июле живёт по EDT (UTC−4), и сейчас, и исторически.
     const utc = resolveBirthInstantUtc({ year: 1985, month: 7, day: 4, hour: 12, minute: 0, timezone: "America/New_York" });
     expect(utc.toISOString()).toBe("1985-07-04T16:00:00.000Z");
   });

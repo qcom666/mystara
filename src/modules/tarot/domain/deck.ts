@@ -2,7 +2,7 @@ import { MAJOR_ARCANA } from "./major-arcana.data";
 import { MINOR_ARCANA } from "./minor-arcana.data";
 import type { TarotCard, TarotCardMeanings } from "./types";
 
-/** The full, ordered 78-card deck. Domain data only — no shuffling/drawing here. */
+/** Полная упорядоченная колода из 78 карт. Только доменные данные: перемешивания и вытягивания здесь нет. */
 export const FULL_DECK: readonly TarotCard[] = Object.freeze([...MAJOR_ARCANA, ...MINOR_ARCANA]);
 
 const CARD_BY_ID: ReadonlyMap<string, TarotCard> = new Map(FULL_DECK.map((card) => [card.id, card]));
@@ -32,10 +32,9 @@ export function getCardsBySuit(suit: TarotCard["suit"]): readonly TarotCard[] {
 }
 
 /**
- * Locale-aware accessors for the two fields that ship a Russian translation
- * (see `TarotCard.nameRu`/`descriptionRu` and PROJECT_ARCHITECTURE.md §14).
- * Takes a plain `"en" | "ru"` rather than importing `Locale` from `lib/i18n`
- * — this module stays zero-dependency on the app/UI layer (see §3).
+ * Доступ к двум полям с русским переводом с учётом языка (см. `TarotCard.nameRu`/`descriptionRu`).
+ * Принимает обычное «en» | «ru», а не `Locale` из `lib/i18n`: модуль не зависит от слоя
+ * приложения и интерфейса.
  */
 export function getCardName(card: TarotCard, locale: "en" | "ru"): string {
   return locale === "ru" ? card.nameRu : card.name;
@@ -49,7 +48,7 @@ export function getCardKeywords(card: TarotCard, locale: "en" | "ru"): string[] 
   return locale === "ru" ? card.keywordsRu : card.keywords;
 }
 
-/** The full meanings object in the requested language — `yesNo` is language-independent and carried over as-is. */
+/** Полный объект значений на запрошенном языке; `yesNo` не зависит от языка и переносится как есть. */
 export function getCardMeanings(card: TarotCard, locale: "en" | "ru"): TarotCardMeanings {
   return locale === "ru" ? { ...card.meaningsRu, yesNo: card.meanings.yesNo } : card.meanings;
 }

@@ -11,7 +11,7 @@ import { localizeZodiacSign, requireZodiacSignById } from "@/modules/astrology/d
 
 interface NatalChartResultProps {
   chart: NatalChart;
-  /** False while NATAL_CHART_FREE_FOR_TESTING is on — nothing was written to the database. */
+  /** false, пока включён NATAL_CHART_FREE_FOR_TESTING: в базу ничего не записано. */
   saved: boolean;
   onGenerateAnother: () => void;
 }

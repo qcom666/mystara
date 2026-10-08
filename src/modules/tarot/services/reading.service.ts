@@ -1,7 +1,7 @@
 import { requireCardById } from "../domain/deck";
 import type { DrawnCard, DrawResult, ReadingCardRecord, TarotSpread } from "../domain/types";
 
-/** Flattens a fresh draw into the plain records that get persisted (`ReadingCard` rows). */
+/** Превращает свежевытянутые карты в простые записи для сохранения (строки `ReadingCard`). */
 export function toReadingCardRecords(drawResult: DrawResult): ReadingCardRecord[] {
   return drawResult.cards.map((drawn, index) => ({
     cardId: drawn.card.id,
@@ -12,10 +12,9 @@ export function toReadingCardRecords(drawResult: DrawResult): ReadingCardRecord[
 }
 
 /**
- * Rebuilds the exact set of drawn cards for a saved reading from its stored
- * records — this is what `/readings/[id]` uses. Deliberately does NOT replay
- * the RNG: a historical reading must render identically even if the draw
- * engine's algorithm changes later (see PROJECT_ARCHITECTURE.md §6).
+ * Восстанавливает точный набор вытянутых карт сохранённого расклада по его записям: это использует
+ * `/readings/[id]`. Генератор случайных чисел намеренно НЕ воспроизводится: исторический расклад должен
+ * отображаться одинаково, даже если алгоритм выбора позже изменится.
  */
 export function reconstructDrawnCards(spread: TarotSpread, records: readonly ReadingCardRecord[]): DrawnCard[] {
   const positionById = new Map(spread.positions.map((position) => [position.id, position]));

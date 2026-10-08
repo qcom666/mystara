@@ -4,18 +4,14 @@ import { getCardName } from "@/modules/tarot/domain/deck";
 import type { Orientation, Suit, TarotCard } from "@/modules/tarot/domain/types";
 
 /**
- * There's no licensed Rider-Waite-style artwork available to ship (see
- * PROJECT_ARCHITECTURE.md Decision Log #3), so card faces are generated
- * here. The layout follows the classic tarot template — numeral across the
- * top, one central symbol, a name plate at the bottom — but reads modern:
- * a dark twilight gradient instead of parchment, thin gold linework instead
- * of heavy ink, and the symbol set inside an arched "window" (an Art-Deco
- * echo of the arched frames many traditional decks use).
+ * Готовых лицензионных иллюстраций в стиле Райдера—Уэйта нет, поэтому лицо карты генерируется кодом.
+ * Композиция классическая: цифра сверху, один центральный символ, табличка с названием внизу, но
+ * выглядит современно: тёмный сумеречный градиент вместо пергамента, тонкие золотые линии вместо
+ * плотной туши, символ внутри арочного «окна» (отсылка к арочным рамкам многих традиционных колод).
  *
- * Major Arcana each get a distinct glyph loosely echoing their traditional
- * (RWS-lineage) iconography — an infinity for the Magician, an inverted
- * pentagram for the Devil, scales for Justice — rather than one shared
- * emblem for all 22. `TarotCard.image` is reserved for real artwork later.
+ * У каждого старшего аркана свой глиф, отсылающий к традиционной иконографии (линия Райдера—Уэйта):
+ * бесконечность у Мага, перевёрнутая пентаграмма у Дьявола, весы у Справедливости, а не один общий
+ * знак на все 22. Поле `TarotCard.image` зарезервировано под настоящие иллюстрации.
  */
 
 interface CardTheme {
@@ -73,13 +69,13 @@ function splitName(name: string): string[] {
   return [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
 }
 
-// Computed coordinates are rounded: Math.cos/sin can differ in the last
-// bit between the server's and the browser's JS engine, and an unrounded
-// `x2="40.58359213500126"` vs `"40.583592135001254"` is a hydration mismatch.
+// Вычисленные координаты округляются: Math.cos/sin могут отличаться в последнем бите в движках JS
+// на сервере и в браузере, а несовпадение «40.58359213500126» и «40.583592135001254» в `x2` —
+// это ошибка гидратации.
 const n = (value: number) => Math.round(value * 100) / 100;
 
-// Every glyph is drawn in a local frame centered on (60, 40), roughly ±28
-// units, then scaled up into the arched window by the card face.
+// Каждый глиф рисуется в локальной системе координат с центром в (60, 40), примерно ±28 единиц,
+// затем лицо карты масштабирует его в арочное окно.
 
 function radialPoints(count: number, radius: number, startAngle = -Math.PI / 2) {
   return Array.from({ length: count }, (_, i) => {
@@ -107,9 +103,8 @@ function pentagramPath(inverted: boolean): string {
 }
 
 /**
- * A crescent: the big circle (radius R at cx,cy) minus a "bite" circle
- * (radius r, shifted right by d). Built from the two circles' intersection
- * points so the arcs are never degenerate.
+ * Полумесяц: большой круг (радиус R с центром cx, cy) минус «откушенный» круг (радиус r, сдвинутый
+ * вправо на d). Строится по точкам пересечения двух кругов, поэтому дуги никогда не вырождаются.
  */
 function crescentPath(cx: number, cy: number, R: number, r: number, d: number): string {
   const a = (d * d + R * R - r * r) / (2 * d);
@@ -321,7 +316,7 @@ function SuitGlyph({ suit, color }: { suit: Suit; color: string }) {
   }
 }
 
-// The arched window the symbol sits in: 152 wide, springing at y=140.
+// Арочное окно, в котором стоит символ: шириной 152, дуга начинается на y=140.
 const WINDOW_PATH = "M44 262 V140 A76 76 0 0 1 196 140 V262 Z";
 const WINDOW_INNER_PATH = "M52 254 V140 A68 68 0 0 1 188 140 V254 Z";
 const GLYPH_CENTER = { x: 120, y: 172 };
@@ -340,7 +335,7 @@ const STARS: [number, number, number][] = [
 export interface TarotCardFaceProps {
   card: TarotCard;
   orientation?: Orientation;
-  /** Defaults to "en" — the SVG name text switches to `card.nameRu` for "ru". */
+  /** По умолчанию «en»; для «ru» подпись в SVG переключается на `card.nameRu`. */
   locale?: Locale;
   className?: string;
 }
@@ -400,7 +395,7 @@ export function TarotCardFace({ card, orientation = "upright", locale = "en", cl
         />
       ))}
 
-      {/* Numeral cartouche */}
+      {/* Картуш с цифрой */}
       <g stroke={theme.accent} strokeOpacity="0.45">
         <line x1="40" y1="40" x2="96" y2="40" />
         <line x1="144" y1="40" x2="200" y2="40" />
@@ -410,7 +405,7 @@ export function TarotCardFace({ card, orientation = "upright", locale = "en", cl
         {numeralLabel}
       </text>
 
-      {/* Arched window */}
+      {/* Арочное окно */}
       <path d={WINDOW_PATH} fill="var(--midnight-950)" fillOpacity="0.5" />
       <path d={WINDOW_PATH} fill={`url(#${windowGlowId})`} />
       <g clipPath={`url(#${clipId})`} stroke={theme.accent} fill="none">
@@ -440,7 +435,7 @@ export function TarotCardFace({ card, orientation = "upright", locale = "en", cl
         {card.arcana === "major" ? <MajorGlyph cardId={card.id} color={theme.accent} /> : <SuitGlyph suit={card.suit as Suit} color={theme.accent} />}
       </g>
 
-      {/* Name plate */}
+      {/* Табличка с названием */}
       <rect x="28" y="286" width="184" height="78" rx="8" fill="var(--midnight-950)" fillOpacity="0.5" stroke="var(--gold-400)" strokeOpacity="0.4" />
       <path d="M120 281 L126 287 L120 293 L114 287 Z" fill="var(--gold-300)" fillOpacity="0.9" />
       {nameLines.map((line, i) => (

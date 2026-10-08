@@ -1,9 +1,9 @@
 /**
- * Premium (unlimited readings, all spreads) is a monthly subscription priced at
- * ₽300, shown in rubles in every language (see natal-chart-pricing.ts).
+ * Premium (безлимитные расклады, все расклады) — подписка за 300 ₽ в месяц, цена в рублях на всех
+ * языках (см. natal-chart-pricing.ts).
  *
- * The price is shown on /pricing today; buying it isn't wired up yet (no
- * recurring-payment flow) — the page says so honestly.
+ * Цена показана на /pricing, а покупка пока не подключена (нет регулярных платежей): страница
+ * об этом сообщает.
  */
 export const PREMIUM_PRICE_RUB = 300;
 

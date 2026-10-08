@@ -1,8 +1,7 @@
 /**
- * Centralized analytics abstraction (see PROJECT_ARCHITECTURE.md §13).
- * Call sites use `track(...)` and never change when the sink does; today the
- * sink just logs in development. Swap in PostHog/Segment/GA by replacing
- * `defaultSink` — no call site changes.
+ * Единая абстракция аналитики. Места вызова используют `track(...)` и не меняются при смене приёмника;
+ * сейчас приёмник только пишет в консоль при разработке. PostHog/Segment/GA подключаются заменой
+ * `defaultSink` без правок в местах вызова.
  */
 export type AnalyticsEvent =
   | { name: "landing_viewed" }

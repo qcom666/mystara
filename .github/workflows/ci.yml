@@ -21,20 +21,20 @@ jobs:
           node-version: 24
           cache: npm
 
-      # postinstall runs `prisma generate`, which the typecheck and build both need.
+      # postinstall запускает `prisma generate`: клиент нужен и проверке типов, и сборке.
       - run: npm ci
 
-      - name: Typecheck
+      - name: Проверка типов
         run: npx tsc --noEmit
 
-      - name: Lint
+      - name: Линтер
         run: npm run lint
 
-      - name: Unit tests
+      - name: Тесты
         run: npm test
 
-      - name: Build
+      - name: Сборка
         run: npm run build
         env:
-          # Only so the build doesn't complain about a missing secret; not a real one.
+          # Нужен только для того, чтобы сборка не ругалась на отсутствие секрета; настоящим не является.
           AUTH_SECRET: ci-build-only-not-a-secret

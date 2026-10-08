@@ -1,54 +1,97 @@
 # Mystara
 
-A premium, mobile-first Tarot reading platform — built as the first module of a
-broader digital esotericism product (numerology and astrology are planned
-next; see [PROJECT_ARCHITECTURE.md](./PROJECT_ARCHITECTURE.md)).
+Мобильная платформа по эзотерике: расклады таро, нумерология, астрология и натальная карта.
+Один и тот же код работает как сайт и как мини-приложение Telegram (Mini App), к которому
+подключён бот.
 
-Full 78-card deck, a data-driven spread engine (One Card through the ten-card
-Celtic Cross), a seeded/reproducible draw engine, and AI-generated
-interpretations that fall back to a deterministic offline provider when no
-API key is configured — so the whole reading flow works with zero setup.
+- **Таро.** Полная колода из 78 карт, расклады от одной карты до Кельтского креста, воспроизводимая
+  раскладка по зерну (seed), ИИ-толкование с офлайн-запасным вариантом, история и избранное.
+- **Нумерология.** Число жизненного пути, число дня рождения и числа по имени (системы Пифагора
+  и халдейская).
+- **Астрология.** Знак Солнца, дневная или ночная карта и платная натальная карта по эфемеридам
+  (планеты, асцендент, MC, дома по знакам, аспекты).
+- **Оплата.** Звёзды Telegram — только в боте и Mini App; банковские карты и СБП через ЮKassa — только
+  на сайте. Цены показываются в рублях.
+- **Интерфейс** на русском и английском, переключается без перезагрузки страницы.
 
-## Getting started
+Устройство проекта подробно описано в [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md), настройка бота —
+в [TELEGRAM_SETUP.md](./TELEGRAM_SETUP.md), работа с локальной базой — в [db/README.md](./db/README.md).
+
+## Стек
+
+Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4, Prisma 7 (PostgreSQL),
+Auth.js v5, Zod, Zustand, Framer Motion, Vitest.
+
+## Быстрый старт
+
+Рекомендуется Node.js 24 (та же версия, что в CI).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The full reading flow
-(spread → question → shuffle → draw → reveal → AI interpretation) works
-immediately, as a guest, with no environment variables set.
+Откройте [http://localhost:3000](http://localhost:3000). Весь сценарий расклада (выбор расклада →
+вопрос → перемешивание → карты → толкование) работает сразу, гостем и без единой переменной окружения.
 
-Copy `.env.example` to `.env` to configure the optional pieces:
+Чтобы включить остальное, скопируйте `.env.example` в `.env` и заполните нужное:
 
-- `AUTH_SECRET` — required for sign-in to work at all (generate with `npx auth secret`).
-- `DATABASE_URL` — a Postgres connection string. Without it, sign-in/save/history
-  routes return a clear "not configured" error instead of crashing; guest
-  reading still works fully. Once set, run `npx prisma migrate dev --name init`.
-- `ANTHROPIC_API_KEY` — optional. Without it, AI interpretation uses a
-  deterministic offline provider built from the cards' real traditional
-  meanings.
-
-## Scripts
-
-| Command | Purpose |
+| Переменная | Для чего |
 |---|---|
-| `npm run dev` | Start the dev server (Turbopack) |
-| `npm run build` | Production build |
+| `AUTH_SECRET` | Обязательна для входа (сгенерировать: `npx auth secret`) |
+| `DATABASE_URL` | Строка подключения к PostgreSQL. Без неё вход, сохранение и история отвечают понятной ошибкой «не настроено», гостевой режим работает полностью. После настройки выполните `npx prisma migrate deploy` |
+| `ANTHROPIC_API_KEY` | Необязательно. Без ключа толкование строится офлайн из традиционных значений карт |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` | Бот, вход через Telegram, оплата Звёздами |
+| `YOOKASSA_SHOP_ID`, `YOOKASSA_SECRET_KEY` | Оплата картами и СБП на сайте |
+| `NEXT_PUBLIC_OPERATOR_*` | Реквизиты оператора персональных данных для политики и формы согласия |
+| `NEXT_PUBLIC_SITE_URL` | Публичный адрес сайта (метаданные, sitemap) |
+
+Полный список с пояснениями — в `.env.example`.
+
+## Команды
+
+| Команда | Что делает |
+|---|---|
+| `npm run dev` | Сервер разработки (Turbopack) |
+| `npm run build` | Продакшен-сборка |
+| `npm run vercel-build` | Миграции базы (если она настроена) и сборка; запускается на Vercel |
 | `npm run lint` | ESLint |
-| `npm run test` | Vitest — domain logic (deck, spreads, draw engine, usage limits) |
+| `npm run test` | Vitest: колода, расклады, генератор, лимиты, оплата, юридические тексты |
+| `npx tsc --noEmit` | Проверка типов |
 
-## Project docs
+На каждый пуш в `main` и каждый pull request CI (`.github/workflows/ci.yml`) последовательно
+выполняет проверку типов, линтер, тесты и сборку.
 
-- [PROJECT_ARCHITECTURE.md](./PROJECT_ARCHITECTURE.md) — architecture, domain
-  model, API design, and the reasoning behind every non-obvious decision.
-- [TODO.md](./TODO.md) — phase-by-phase implementation status.
+## Структура
 
-## Note on this environment
+```text
+src/
+  app/          страницы и API (app/api/**)
+  components/   интерфейс: ui, tarot, reading, numerology, astrology, telegram, legal, marketing
+  modules/      предметная область без зависимости от Next.js: tarot, numerology, astrology, ai, fun-facts, subscriptions
+  lib/          база, авторизация, оплата, Telegram, юридические тексты, репозитории, валидация, i18n
+  store/        состояние текущего расклада (Zustand)
+prisma/         схема и миграции приложения
+db/             локальная разработка и полная SQL-схема mystara (см. db/README.md)
+scripts/        миграции при сборке, выгрузка контента в SQL
+```
 
-This project directory is inside OneDrive sync. OneDrive touching files in
-the background can trigger spurious Next.js Fast Refresh cycles during dev —
-if HMR seems to fire on its own or `next dev` feels sluggish, exclude this
-folder from OneDrive sync (or move the project outside OneDrive) before
-assuming it's a code issue.
+## Развёртывание
+
+Сайт развёрнут на Vercel (проект `taro_project`), каждый пуш в `main` выкатывается в продакшен,
+остальные ветки получают ссылки предпросмотра. После смены переменных `NEXT_PUBLIC_*` нужен новый
+деплой: они подставляются на этапе сборки. Адрес Mini App в @BotFather должен быть публичным HTTPS-адресом
+(localhost Telegram не открывает), порядок настройки бота — в [TELEGRAM_SETUP.md](./TELEGRAM_SETUP.md).
+
+## Перед публичным запуском
+
+- Выключить временный режим бесплатной натальной карты: `NATAL_CHART_FREE_FOR_TESTING = false`
+  в `src/lib/pricing/natal-chart-pricing.ts`.
+- Развернуть базу данных на территории РФ (152-ФЗ, ст. 18, ч. 5), подать уведомление в Роскомнадзор
+  и заполнить недостающие сведения в политике конфиденциальности.
+- Показать юридические тексты (`/offer`, `/privacy`, `/consent`) юристу.
+- Подключить ЮKassa (ключи и адрес уведомлений) и проверить каждый способ оплаты реальным небольшим
+  платежом, включая возврат.
+- Вынести проект на собственный домен и перевыпустить токен бота, если он когда-либо попадал в
+  переписку или логи.
+- Добавить ограничение частоты запросов к API и мониторинг ошибок.

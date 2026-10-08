@@ -2,16 +2,14 @@ import { ADDRESS_CLAUSE, OPERATOR } from "./operator";
 import type { LegalSection } from "./privacy-policy";
 
 /**
- * "Согласие на обработку персональных данных" — deliberately a *separate*
- * document from the privacy policy: since the 2025 amendments, art. 9 of
- * 152-ФЗ requires consent to be given separately from other documents, not
- * embedded in a policy or user agreement. The signup form, the login page and
- * the Telegram first-run screen each link to this page and record acceptance
- * of `PRIVACY_POLICY_VERSION`.
+ * «Согласие на обработку персональных данных» — намеренно *отдельный* документ, не часть политики
+ * конфиденциальности: по ст. 9 152-ФЗ (с поправками 2025 года) согласие должно даваться отдельно
+ * от других документов, а не быть встроенным в политику или пользовательское соглашение. Форма
+ * регистрации, страница входа и первый экран в Telegram ведут на эту страницу и записывают принятие
+ * версии `PRIVACY_POLICY_VERSION`.
  *
- * DRAFT — same caveats as privacy-policy.ts: have it reviewed, fill the
- * placeholders, and keep it aligned with the policy's lists of data and
- * recipients (if one changes, change both, and bump the version).
+ * Требует юридической проверки, как и privacy-policy.ts: заполнить заглушки и держать согласованным
+ * с перечнями данных и получателей в политике (меняя одно, меняйте другое и повышайте версию).
  */
 const op = OPERATOR;
 

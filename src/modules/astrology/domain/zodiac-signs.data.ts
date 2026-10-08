@@ -1,10 +1,9 @@
 import type { ZodiacSign, ZodiacSignId } from "./types";
 
 /**
- * Sun-sign only for this MVP — a full natal chart needs planetary ephemeris
- * data (positions of the moon, rising sign, etc. at an exact time/place),
- * which is a real sub-project of its own. See PROJECT_ARCHITECTURE.md /
- * TODO.md Phase 8. Tropical zodiac date ranges (standard Western astrology).
+ * Диапазоны дат тропического зодиака (стандартная западная астрология) для определения солнечного знака.
+ * Полная натальная карта считается отдельно по эфемеридам (modules/astrology/services): для неё нужны
+ * положения Луны, восходящего знака и т.д. на точное время и место.
  */
 export const ZODIAC_SIGNS: ZodiacSign[] = [
   {
@@ -255,10 +254,9 @@ export function requireZodiacSignById(id: ZodiacSignId): ZodiacSign {
 }
 
 /**
- * Fixed astronomical fact (tropical zodiac): 0°–30° ecliptic longitude is
- * Aries, 30°–60° Taurus, and so on — independent of `ZODIAC_SIGNS`' own
- * array order, which is why this is its own small lookup table rather than
- * indexing into that array directly.
+ * Постоянный астрономический факт (тропический зодиак): эклиптическая долгота 0°–30° — Овен, 30°–60° —
+ * Телец и т.д. Не зависит от порядка массива `ZODIAC_SIGNS`, поэтому это отдельная небольшая таблица,
+ * а не индексация в этом массиве.
  */
 const ZODIAC_LONGITUDE_ORDER: ZodiacSignId[] = [
   "aries",
@@ -275,7 +273,10 @@ const ZODIAC_LONGITUDE_ORDER: ZodiacSignId[] = [
   "pisces",
 ];
 
-/** Used by the natal chart (services/calculate-natal-chart.ts) to turn a computed ecliptic longitude into a sign + degree-in-sign. */
+/**
+ * Используется натальной картой (services/calculate-natal-chart.ts), чтобы превратить вычисленную
+ * эклиптическую долготу в знак и градус внутри знака.
+ */
 export function getZodiacSignByLongitude(longitudeDeg: number): { sign: ZodiacSign; degreeInSign: number } {
   const normalized = ((longitudeDeg % 360) + 360) % 360;
   const index = Math.floor(normalized / 30) % 12;
@@ -283,9 +284,9 @@ export function getZodiacSignByLongitude(longitudeDeg: number): { sign: ZodiacSi
 }
 
 /**
- * The sign with its translatable fields swapped for the requested language.
- * Same shape in, same shape out, so callers just pipe a sign through this
- * and keep rendering `sign.name`, `sign.description`, etc. as before.
+ * Знак, у которого переводимые поля заменены на запрошенный язык. Форма на входе и на выходе одинаковая,
+ * поэтому вызывающий код просто пропускает знак через эту функцию и продолжает выводить `sign.name`,
+ * `sign.description` и т.д.
  */
 export function localizeZodiacSign(sign: ZodiacSign, locale: "en" | "ru"): ZodiacSign {
   if (locale !== "ru") return sign;

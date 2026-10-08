@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { LifePathNumber } from "@/modules/numerology/domain/types";
 
-/** Expression/Soul Urge/Personality/Maturity under one system — see NumerologyProfile. */
+/** Выражение/Душа/Личность/Зрелость в одной системе; см. NumerologyProfile. */
 export interface NumerologyProfileNumbers {
   expressionNumber: LifePathNumber;
   soulUrgeNumber: LifePathNumber;

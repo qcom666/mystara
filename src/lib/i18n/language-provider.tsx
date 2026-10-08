@@ -11,9 +11,9 @@ function readLocale(): Locale {
   return stored && isLocale(stored) ? stored : defaultLocale;
 }
 
-// Same-tab `setLocale` calls don't fire the native `storage` event (that only
-// reaches OTHER tabs) — dispatching this ourselves is what makes this tab's
-// own `useSyncExternalStore` subscribers re-read localStorage too.
+// Вызовы `setLocale` в той же вкладке не порождают нативное событие `storage` (оно приходит только
+// в ДРУГИЕ вкладки): мы отправляем его сами, чтобы подписчики `useSyncExternalStore` в этой вкладке
+// тоже перечитали localStorage.
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener(LOCALE_EVENT, callback);
@@ -37,7 +37,10 @@ const LanguageContext = createContext<LanguageContextValue>({
   setLocale: () => {},
 });
 
-/** The active dictionary, reactive to the user's chosen language. Replaces the old static `t` import — same `t.section.key` shape at every call site, just sourced from a hook now. */
+/**
+ * Активный словарь, реагирующий на выбранный пользователем язык. Заменяет прежний статический импорт
+ * `t`: структура `t.section.key` в местах вызова та же, но теперь источник — хук.
+ */
 export function useTranslation(): Dictionary {
   const { locale } = useContext(LanguageContext);
   return getDictionary(locale);
@@ -48,14 +51,12 @@ export function useLocale(): LanguageContextValue {
 }
 
 /**
- * Client-only persistence (localStorage via `useSyncExternalStore`),
- * deliberately not the `User.language` DB column — this needs to work
- * instantly for guests too, with no request round trip. The server always
- * renders `defaultLocale` (English, via `getServerSnapshot`); a stored
- * Russian preference applies right after hydration, so a returning RU reader
- * sees a brief English flash before their language kicks in. Acceptable
- * trade-off for a chrome-only switcher; true SSR-correct locale would need a
- * cookie read in the root layout, a bigger change than this warrants.
+ * Хранится только на клиенте (localStorage через `useSyncExternalStore`), а не в колонке БД
+ * `User.language`: выбор должен работать мгновенно и для гостей, без запроса к серверу. Сервер всегда
+ * рендерит `defaultLocale` (английский, через `getServerSnapshot`); сохранённый русский применяется
+ * сразу после гидратации, поэтому вернувшийся русскоязычный читатель видит короткую вспышку английского,
+ * прежде чем включится его язык. Для переключателя интерфейса это приемлемо; полноценный серверный
+ * выбор языка потребовал бы чтения cookie в корневом layout, а это более крупное изменение.
  */
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const locale = useSyncExternalStore(subscribe, readLocale, getServerSnapshot);

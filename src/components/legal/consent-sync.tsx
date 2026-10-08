@@ -19,14 +19,13 @@ function markSynced(): void {
   try {
     window.sessionStorage.setItem(SYNCED_KEY, PRIVACY_POLICY_VERSION);
   } catch {
-    // Not fatal: the endpoint is idempotent, we'd just call it again next page load.
+    // Не критично: маршрут идемпотентный, при следующей загрузке страницы просто вызовем его снова.
   }
 }
 
 /**
- * Bridges the device-side choice to the user's record: once someone is signed in
- * AND has accepted the current policy on this device, store that on their account.
- * Renders nothing.
+ * Связывает выбор на устройстве с записью пользователя: когда человек вошёл и принял текущую
+ * политику на этом устройстве, сохраняем это в его аккаунте. Ничего не отображает.
  */
 export function ConsentSync() {
   const { status } = useSession();
@@ -43,7 +42,7 @@ export function ConsentSync() {
         if (response.ok) markSynced();
       })
       .catch(() => {
-        // Offline or transient — retried on the next page load.
+        // Нет сети или временный сбой: повторим при следующей загрузке страницы.
       });
   }, [status, consent]);
 

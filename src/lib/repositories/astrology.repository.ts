@@ -5,7 +5,7 @@ export interface CreateAstrologyReadingInput {
   userId: string;
   birthDate: Date;
   sunSign: ZodiacSignId;
-  /** null when the user picked "Not sure" in AstrologyInputForm. */
+  /** null, если пользователь выбрал «Не уверен» в AstrologyInputForm. */
   sect?: Sect | null;
 }
 

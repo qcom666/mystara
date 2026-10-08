@@ -14,10 +14,9 @@ import { useTelegram } from "./telegram-provider";
 const LEGAL_PATHS = new Set(["/privacy", "/consent"]);
 
 /**
- * Inside Telegram the account is created automatically from the user's Telegram
- * profile, so consent has to be asked *before* that happens. Until a choice is
- * made this replaces the app; the legal documents themselves stay reachable so
- * the user can read what they're agreeing to.
+ * Внутри Telegram аккаунт создаётся автоматически из профиля Telegram, поэтому согласие нужно спросить
+ * ДО этого. Пока выбор не сделан, экран заменяет приложение; сами юридические документы остаются
+ * доступными, чтобы пользователь мог прочитать, с чем соглашается.
  */
 export function TelegramConsentGate({ children }: { children: ReactNode }) {
   const { isTelegram } = useTelegram();
@@ -35,7 +34,7 @@ function TelegramConsentScreen() {
 
   function handleDecline() {
     setPrivacyConsent("declined");
-    // A session left over from before consent was asked for must not keep saving data.
+    // Сессия, оставшаяся с тех времён, когда согласие не спрашивали, не должна продолжать сохранять данные.
     if (status === "authenticated") void signOut({ redirect: false });
   }
 

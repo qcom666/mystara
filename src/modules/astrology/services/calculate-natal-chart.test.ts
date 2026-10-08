@@ -21,8 +21,7 @@ describe("calculateNatalChart — with an exact time", () => {
   it("puts the Ascendant's own sign in house 1", () => {
     const ascendantSignPlanet = chart.planets.find((p) => p.sign === chart.ascendant!.sign);
     if (ascendantSignPlanet) expect(ascendantSignPlanet.house).toBe(1);
-    // Even if no planet happens to sit in that sign, the invariant to check
-    // is the house-numbering scheme itself:
+    // Даже если ни одна планета не оказалась в этом знаке, проверять нужно саму схему нумерации домов:
     expect(chart.ascendant).not.toBeNull();
   });
 
@@ -75,8 +74,8 @@ describe("calculateNatalChart — whole-sign houses stay correct for a very diff
   it("rotates house 1 to wherever the Ascendant falls, for a birth 12 hours later", () => {
     const morning = calculateNatalChart(KNOWN_BIRTH);
     const evening = calculateNatalChart({ ...KNOWN_BIRTH, birthDateUtc: new Date(Date.UTC(1990, 4, 14, 21, 30)) });
-    // A 12-hour shift moves the Ascendant roughly (but not exactly) halfway
-    // around the zodiac — the two Ascendant signs should differ.
+    // Сдвиг на 12 часов переносит асцендент примерно (но не точно) на полкруга зодиака:
+    // знаки асцендента должны различаться.
     expect(morning.ascendant!.sign).not.toBe(evening.ascendant!.sign);
   });
 });

@@ -12,11 +12,10 @@ interface SpreadLayoutProps {
   renderCard: (drawn: DrawnCard) => ReactNode;
 }
 
-// Traditional Celtic Cross arrangement: a cross (crown/present/challenge/foundation,
-// flanked by recentPast/nearFuture) plus a four-card "staff" column. This is the one
-// spread that earns a bespoke layout — everything else reads fine as a responsive
-// grid, which is also what any *future* spread gets automatically (see
-// PROJECT_ARCHITECTURE.md §5: new spreads never require layout code changes).
+// Традиционная раскладка Кельтского креста: крест (корона/настоящее/вызов/основа, по бокам прошлое
+// и ближайшее будущее) и колонка из четырёх карт «посох». Только этому раскладу нужна отдельная
+// вёрстка: остальные хорошо читаются адаптивной сеткой, и новые расклады получают её автоматически
+// без правок вёрстки.
 const CELTIC_CROSS_TEMPLATE = ['". crown . outcome"', '"recentPast present nearFuture hopesFears"', '". challenge . external"', '". foundation . stance"'].join(
   " ",
 );

@@ -173,7 +173,7 @@ export const LIFE_PATH_MEANINGS: Record<LifePathNumber, LifePathMeaningSource> =
   },
 };
 
-/** The entry in the requested language (English by default). */
+/** Запись на запрошенном языке (по умолчанию английский). */
 export function getLifePathMeaning(number: LifePathNumber, locale: "en" | "ru" = "en"): LifePathMeaning {
   const source = LIFE_PATH_MEANINGS[number];
   if (locale === "ru") {

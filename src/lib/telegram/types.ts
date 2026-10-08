@@ -1,9 +1,7 @@
 /**
- * Minimal typings for the subset of the Telegram WebApp JS API this app
- * actually uses. Full reference: https://core.telegram.org/bots/webapps
- * Deliberately hand-written instead of pulling in a wrapper package — the
- * surface we need is small, and this keeps us in direct control of exactly
- * what's loaded (see PROJECT_ARCHITECTURE.md §16/§19).
+ * Минимальные типы той части JS API Telegram WebApp, которую приложение реально использует.
+ * Полное описание: https://core.telegram.org/bots/webapps. Написаны вручную намеренно, а не через
+ * пакет-обёртку: нужная часть мала, и так мы напрямую контролируем, что именно подключено.
  */
 
 export interface TelegramWebAppUser {
@@ -77,7 +75,7 @@ export interface TelegramWebApp {
   ready: () => void;
   expand: () => void;
   close: () => void;
-  /** Opens a Stars invoice link; the callback gets the outcome once the sheet closes. */
+  /** Открывает ссылку на оплату Звёздами; колбэк получает результат после закрытия окна. */
   openInvoice: (url: string, callback?: (status: "paid" | "cancelled" | "failed" | "pending") => void) => void;
   enableClosingConfirmation: () => void;
   disableClosingConfirmation: () => void;

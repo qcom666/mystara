@@ -6,7 +6,7 @@ export interface AIInterpretationRequest {
   question: string | null;
   spread: TarotSpread;
   cards: DrawnCard[];
-  /** Language the interpretation is written in. Defaults to English. */
+  /** Язык, на котором пишется толкование. По умолчанию английский. */
   locale?: InterpretationLocale;
 }
 
@@ -33,9 +33,9 @@ export interface AIInterpretationProvider {
 }
 
 /**
- * Every provider's output must read as reflection, not prophecy. Enforced in
- * the Mock provider's templates and in the Anthropic provider's system
- * prompt — never relaxed just because a caller wants punchier copy.
+ * Вывод любого провайдера должен читаться как размышление, а не пророчество. Это обеспечивают шаблоны
+ * Mock-провайдера и системная инструкция провайдера Anthropic; не ослабляется только потому,
+ * что кому-то нужен более хлёсткий текст.
  */
 export const INTERPRETATION_DISCLAIMER =
   "This interpretation is a reflective, symbolic reading for entertainment and self-exploration — not a guaranteed prediction, and not financial, medical, or legal advice.";

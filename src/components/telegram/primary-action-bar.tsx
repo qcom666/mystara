@@ -5,23 +5,20 @@ import { createPortal } from "react-dom";
 import { useTelegram } from "./telegram-provider";
 
 /**
- * The screen's main action(s). On the website it is just a wrapper around the
- * in-page button(s), exactly as before. Inside the Telegram Mini App the same
- * buttons are lifted into a bar pinned to the bottom of the screen, so the main
- * action is always within reach — styled like the site (the gold `Button` on a
- * dark glass bar), not Telegram's native blue MainButton.
+ * Главное действие (или действия) экрана. На сайте это просто обёртка вокруг обычных кнопок страницы.
+ * Внутри мини-приложения Telegram те же кнопки выносятся в панель, прижатую к низу экрана, чтобы главное
+ * действие всегда было под рукой; оформление как на сайте (золотая `Button` на тёмной стеклянной панели),
+ * а не нативная синяя кнопка MainButton Telegram.
  *
- * Rendered through a portal into <body>: `position: fixed` is relative to the
- * nearest ancestor with a transform / backdrop-filter (the glass panels and the
- * animated step wrappers have both), which would otherwise pin the bar to the
- * panel instead of the screen. A submit button that lives in the bar is no
- * longer inside its <form> in the DOM, so such buttons must name their form with
- * the `form` attribute.
+ * Выводится через портал в <body>: `position: fixed` отсчитывается от ближайшего предка с transform или
+ * backdrop-filter (у стеклянных панелей и анимированных обёрток шагов есть и то и другое), и панель
+ * приклеилась бы к панели, а не к экрану. Кнопка отправки формы, оказавшись в этой панели, уже не лежит
+ * внутри своей <form> в DOM, поэтому такие кнопки должны указывать форму атрибутом `form`.
  */
 export function PrimaryActionBar({ children, className }: { children: ReactNode; className?: string }) {
   const { isTelegram } = useTelegram();
 
-  // Keep the last bit of page content from hiding behind the bar.
+  // Не даём последнему фрагменту страницы спрятаться за панелью.
   useEffect(() => {
     if (!isTelegram) return;
     const previous = document.body.style.paddingBottom;

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getAllZodiacSigns, localizeZodiacSign } from "@/modules/astrology/domain/zodiac-signs.data";
 
-// A client component so the sign names follow the chosen language, while the
-// rest of `astrology/page.tsx` stays a Server Component (and keeps its metadata).
+// Клиентский компонент, чтобы названия знаков следовали выбранному языку, а остальная часть
+// `astrology/page.tsx` осталась серверным компонентом (и сохранила metadata).
 export function ExploreSigns() {
   const t = useTranslation();
   const { locale } = useLocale();

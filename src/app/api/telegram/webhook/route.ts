@@ -7,15 +7,14 @@ import { buildBotReply, type TelegramUpdate } from "@/lib/telegram/bot-reply";
 import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
 
 /**
- * Telegram bot webhook. Telegram POSTs every update here once it's registered with
- * `setWebhook` (see TELEGRAM_SETUP.md) and echoes our secret in the
- * `X-Telegram-Bot-Api-Secret-Token` header — without a match the request is rejected,
- * so only Telegram can drive the bot. Fails closed when the secret isn't configured.
+ * Вебхук Telegram-бота. После регистрации через `setWebhook` Telegram присылает сюда каждое обновление
+ * и возвращает наш секрет в заголовке `X-Telegram-Bot-Api-Secret-Token`; без совпадения запрос
+ * отклоняется, так что управлять ботом может только Telegram. Если секрет не настроен, маршрут закрыт.
  *
- * Replies go back as the response body (Telegram runs a `method` returned there),
- * so this route needs no bot token and makes no outgoing requests. It handles:
- *  - chat messages (/start, /help) → a greeting with a Mini App button;
- *  - Telegram Stars payments: `pre_checkout_query` (approve) and `successful_payment` (grant credits).
+ * Ответ уходит телом ответа (Telegram выполняет возвращённый `method`), поэтому токен бота и исходящие
+ * запросы не нужны. Обрабатываются:
+ *  - сообщения в чате (/start, /help, /docs, /support) → приветствие с кнопками мини-приложения и документов;
+ *  - платежи Звёздами: `pre_checkout_query` (подтвердить) и `successful_payment` (начислить кредиты).
  */
 
 function secretMatches(received: string | null, expected: string): boolean {
@@ -52,7 +51,7 @@ export async function POST(request: Request) {
   }
   if (stars?.kind === "paid") {
     if (stars.currency === "XTR" && isDatabaseConfigured()) {
-      // A thrown error becomes a 500, so Telegram redelivers the update instead of the payment being lost.
+      // Исключение превращается в ответ 500, поэтому Telegram повторит доставку обновления, а платёж не потеряется.
       const result = await fulfillPurchase({
         purchaseId: stars.purchaseId,
         provider: "stars",
@@ -67,9 +66,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // The Mini App opens from the same origin Telegram just called, so the button always points at this deployment.
+  // Мини-приложение открывается с того же адреса, с которого только что пришёл запрос Telegram,
+  // поэтому кнопка всегда ведёт на этот деплой.
   const reply = update ? buildBotReply(update, new URL(request.url).origin) : null;
 
-  // Always 200 — a non-2xx makes Telegram retry the same update.
+  // Всегда 200: на любой другой код Telegram повторяет то же обновление.
   return NextResponse.json(reply ?? { ok: true });
 }

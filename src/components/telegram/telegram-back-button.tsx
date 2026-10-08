@@ -5,10 +5,9 @@ import { useEffect } from "react";
 import { useTelegram } from "./telegram-provider";
 
 /**
- * Syncs Telegram's native BackButton to Next.js's router: hidden on the
- * Mini App home screen, visible (and wired to router.back()) everywhere
- * else. Renders nothing — SiteHeader/SiteFooter already stay hidden inside
- * Telegram, so this is the only back-navigation affordance in that context.
+ * Синхронизирует нативную кнопку «Назад» Telegram с роутером Next.js: на главном экране мини-приложения
+ * она скрыта, на остальных видна и вызывает router.back(). Ничего не отображает: SiteHeader и SiteFooter
+ * внутри Telegram и так скрыты, поэтому это единственный способ вернуться назад в таком контексте.
  */
 export function TelegramBackButton() {
   const { webApp, isTelegram } = useTelegram();

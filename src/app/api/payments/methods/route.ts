@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { NATAL_CHART_PRICES, enabledProviders, type PaymentContext } from "@/lib/payments/catalog";
 
 /**
- * Which payment methods the buyer can use right now, and what each costs.
- * Inside Telegram only Stars are returned (Telegram's rule for digital goods).
- * Contains no secrets — only provider ids and prices.
+ * Какие способы оплаты доступны покупателю сейчас и сколько они стоят.
+ * Внутри Telegram возвращаются только Звёзды (правило Telegram для цифровых товаров).
+ * Секретов в ответе нет: только идентификаторы провайдеров и цены.
  */
 export async function GET(request: Request) {
   const context: PaymentContext = new URL(request.url).searchParams.get("context") === "telegram" ? "telegram" : "web";

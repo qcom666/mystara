@@ -22,8 +22,8 @@ export function LoginForm({ googleEnabled }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  // Only the Google button needs this: it creates an account on first use, whereas
-  // email + password sign-in is for an account whose owner already consented at sign-up.
+  // Нужно только для кнопки Google: она создаёт аккаунт при первом использовании, а вход по e-mail и
+  // паролю предназначен для аккаунта, владелец которого уже дал согласие при регистрации.
   const [googleConsent, setGoogleConsent] = useState(false);
   const [showConsentError, setShowConsentError] = useState(false);
 

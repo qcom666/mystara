@@ -1,10 +1,9 @@
 import type { ArchetypeTag } from "./types";
 
 /**
- * Maps each Major Arcana card to 1–2 tags from the same ARCHETYPE_TAGS
- * vocabulary used for actors (see types.ts) — kept here rather than on the
- * card data itself, since this is playful fun-fact content, not part of the
- * core Tarot domain model.
+ * Сопоставляет каждой карте старших арканов 1–2 тега из того же словаря ARCHETYPE_TAGS, что
+ * используется для актёров (см. types.ts). Хранится здесь, а не в данных самой карты: это игровое
+ * содержимое, а не часть основной модели таро.
  */
 export const MAJOR_ARCANA_ARCHETYPES: Record<string, ArchetypeTag[]> = {
   "the-fool": ["seeker", "pioneer"],

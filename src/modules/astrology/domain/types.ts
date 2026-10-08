@@ -34,8 +34,8 @@ export interface ZodiacSign {
   description: string;
   strengths: string[];
   challenges: string[];
-  // Russian twins of every translatable field. `element`/`modality` are
-  // language-independent ids — the UI labels them through the i18n dictionary.
+  // Русские пары всех переводимых полей. `element` и `modality` — не зависящие от языка идентификаторы:
+  // интерфейс подписывает их через словарь i18n.
   nameRu: string;
   rulingPlanetRu: string;
   keywordsRu: string[];
@@ -44,14 +44,14 @@ export interface ZodiacSign {
   challengesRu: string[];
 }
 
-/** Sect (Hellenistic astrology): diurnal (day) vs nocturnal (night) chart — see sect.data.ts. */
+/** Секта (эллинистическая астрология): дневная и ночная карта; см. sect.data.ts. */
 export type Sect = "day" | "night";
 
 export interface SectProfile {
   id: Sect;
   title: string;
   description: string;
-  /** English planet names — the UI maps them through the i18n `planets` dictionary. */
+  /** Английские названия планет: интерфейс сопоставляет их через словарь i18n `planets`. */
   favoredPlanets: string[];
   keynote: string;
   titleRu: string;
@@ -59,16 +59,16 @@ export interface SectProfile {
   keynoteRu: string;
 }
 
-// --- Natal chart (see services/calculate-natal-chart.ts) — Premium feature, see PROJECT_ARCHITECTURE.md §17b ---
+// --- Натальная карта (см. services/calculate-natal-chart.ts), платная функция ---
 
 export type PlanetId = "sun" | "moon" | "mercury" | "venus" | "mars" | "jupiter" | "saturn" | "uranus" | "neptune" | "pluto";
 
 export type AspectType = "conjunction" | "sextile" | "square" | "trine" | "opposition";
 
 export interface NatalChartInput {
-  /** UTC instant of birth — already resolved from local time + timezone by the caller. */
+  /** Момент рождения в UTC: вызывающий код уже привёл его из местного времени и часового пояса. */
   birthDateUtc: Date;
-  /** False when the user doesn't know their exact birth time — houses/Ascendant/MC are omitted rather than guessed. */
+  /** false, если пользователь не знает точное время рождения: дома, асцендент и MC тогда не считаются, а не угадываются. */
   hasExactTime: boolean;
   latitude: number;
   longitude: number;
@@ -78,9 +78,9 @@ export interface PlanetPlacement {
   planet: PlanetId;
   longitudeDeg: number;
   sign: ZodiacSignId;
-  /** Degrees into `sign`, 0–30. */
+  /** Градусы внутри знака `sign`, 0–30. */
   degreeInSign: number;
-  /** Whole-sign house number, 1–12 — only present when `hasExactTime` was true. */
+  /** Номер дома по системе целых знаков, 1–12; есть только если `hasExactTime` было true. */
   house: number | null;
   isRetrograde: boolean | null;
 }
@@ -95,16 +95,16 @@ export interface ChartAspect {
   a: PlanetId;
   b: PlanetId;
   type: AspectType;
-  /** How many degrees off an exact aspect this is (0 = exact). */
+  /** На сколько градусов аспект отклоняется от точного (0 = точный). */
   orb: number;
 }
 
 export interface NatalChart {
   planets: PlanetPlacement[];
-  /** Null when `hasExactTime` was false — an Ascendant needs a real birth time. */
+  /** null, если `hasExactTime` было false: для асцендента нужно настоящее время рождения. */
   ascendant: ChartAngle | null;
   midheaven: ChartAngle | null;
-  /** Traditional ruler of the Ascendant's sign — e.g. Mars rules Aries. Null alongside `ascendant`. */
+  /** Традиционный управитель знака асцендента, например Марс для Овна. null вместе с `ascendant`. */
   chartRuler: PlanetId | null;
   aspects: ChartAspect[];
 }

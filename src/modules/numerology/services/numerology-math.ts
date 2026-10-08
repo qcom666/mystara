@@ -8,7 +8,10 @@ export function sumDigits(value: number): number {
     .reduce((sum, digit) => sum + Number(digit), 0);
 }
 
-/** Reduces to a single digit, except master numbers (11/22/33) which are never reduced further — shared by every numerology calculation in this module. */
+/**
+ * Сводит к одной цифре, кроме мастер-чисел (11/22/33), которые никогда не сводятся дальше;
+ * общая функция для всех нумерологических расчётов модуля.
+ */
 export function reduceToNumerologyDigit(value: number): LifePathNumber {
   let current = value;
   while (current > 9 && !MASTER_NUMBERS.has(current)) {

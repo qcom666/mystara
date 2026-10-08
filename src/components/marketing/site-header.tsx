@@ -15,8 +15,8 @@ export function SiteHeader() {
   const { isTelegram } = useTelegram();
   const [open, setOpen] = useState(false);
 
-  // Telegram's own client chrome (back button, close, title) replaces this —
-  // a second nav bar inside the Mini App would just be redundant.
+  // Собственная оболочка клиента Telegram (кнопка «Назад», закрытие, заголовок) заменяет эту шапку:
+  // вторая панель навигации внутри мини-приложения была бы лишней.
   if (isTelegram) return null;
 
   const navLinks = [
@@ -35,10 +35,7 @@ export function SiteHeader() {
           Mystara
         </Link>
 
-        {/* Six links plus the account/CTA cluster genuinely don't fit
-            comfortably before a real desktop width — shown inline only from
-            `xl` (1280px); everything from tablet down to a narrow laptop
-            uses the hamburger menu below instead of cramming or wrapping. */}
+        {/* Шесть ссылок и блок аккаунта с кнопкой не помещаются в одну строку до настоящей ширины десктопа: в строку показываем только от `xl` (1280 px), а от планшета до узкого ноутбука используется меню-гамбургер ниже, без сжатия и переносов. */}
         <nav className="hidden items-center gap-8 xl:flex">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href} className="text-sm text-silver-300 transition-colors hover:text-gold-300">
@@ -95,10 +92,7 @@ export function SiteHeader() {
 
       {open && (
         <div className="border-t border-white/5 px-4 py-4 xl:hidden">
-          {/* Our services and pricing only — deliberately not the place for
-              account actions like signing in (that's the persistent link next
-              to the language switcher above), so this list stays focused on
-              "what can I do here" rather than mixing in "who am I". */}
+          {/* Здесь только наши услуги и тарифы; действия с аккаунтом, например вход, сюда не относятся (для них есть постоянная ссылка рядом с переключателем языка), поэтому список остаётся про «что здесь можно сделать», а не про «кто я». */}
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="text-sm text-silver-300" onClick={() => setOpen(false)}>

@@ -31,9 +31,9 @@ interface NatalChartInputFormProps {
 const TODAY = new Date().toISOString().slice(0, 10);
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const MINUTES = Array.from({ length: 60 }, (_, i) => i);
-// A manual-entry timezone list drawn from the same zones the curated cities
-// already use, plus UTC — deliberately not a full IANA zone list (this app
-// bundles no timezone database of its own; see cities.data.ts's module doc).
+// Список часовых поясов для ручного ввода: те же пояса, что у городов из справочника, плюс UTC.
+// Это намеренно не полный список IANA: собственной базы часовых поясов в приложении нет
+// (см. описание модуля в cities.data.ts).
 const MANUAL_TIMEZONES = Array.from(new Set(["UTC", ...CITIES.map((city) => city.timezone)])).sort();
 
 export function NatalChartInputForm({ onSubmit }: NatalChartInputFormProps) {

@@ -21,10 +21,9 @@ interface FavoriteButtonProps {
 }
 
 /**
- * Self-contained: reads its own session + favorite status client-side so the
- * card/spread detail pages that host it can stay statically generated
- * (see generateStaticParams in those pages) rather than becoming dynamic
- * just to check "is this favorited".
+ * Самодостаточная кнопка: сама читает сессию и статус избранного на клиенте, поэтому страницы деталей
+ * карты и расклада, где она стоит, остаются статически сгенерированными (см. generateStaticParams)
+ * и не становятся динамическими только ради проверки «в избранном ли это».
  */
 export function FavoriteButton({ type, targetId }: FavoriteButtonProps) {
   const t = useTranslation();

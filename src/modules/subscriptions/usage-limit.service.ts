@@ -3,7 +3,7 @@ import type { SpreadCategory, TarotSpread } from "@/modules/tarot/domain/types";
 export type PlanTier = "free" | "premium";
 
 export interface UsageLimitPolicy {
-  maxReadingsPerDay: number | null; // null = unlimited
+  maxReadingsPerDay: number | null; // null = без ограничения
   allowedSpreadCategories: SpreadCategory[] | "all";
   allowPremiumSpreads: boolean;
   allowAIInterpretation: boolean;
@@ -27,7 +27,7 @@ export const PLAN_POLICIES: Record<PlanTier, UsageLimitPolicy> = {
 export interface CanStartReadingInput {
   planTier: PlanTier;
   spread: Pick<TarotSpread, "isPremium" | "category">;
-  /** Number of readings the user has already started today (server-derived from `Reading` rows). */
+  /** Сколько раскладов пользователь уже начал сегодня (считается на сервере по строкам `Reading`). */
   readingsToday: number;
 }
 
@@ -37,8 +37,8 @@ export interface EntitlementResult {
 }
 
 /**
- * Pure function — no DB/session access — so monetization rules stay unit
- * testable and swapping in Stripe later never touches this signature.
+ * Чистая функция без доступа к БД и сессии, поэтому правила монетизации остаются пригодными
+ * для модульных тестов, а подключение другого платёжного сервиса не затронет эту сигнатуру.
  */
 export function canStartReading({ planTier, spread, readingsToday }: CanStartReadingInput): EntitlementResult {
   const policy = PLAN_POLICIES[planTier];

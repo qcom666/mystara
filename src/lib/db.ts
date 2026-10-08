@@ -4,19 +4,16 @@ import { PrismaClient } from "@prisma/client";
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 /**
- * Prisma 7 requires a driver adapter to be passed explicitly — there is no
- * zero-argument `new PrismaClient()` anymore (see PROJECT_ARCHITECTURE.md
- * §10 / TODO.md Phase 4). The adapter is constructed unconditionally so the
- * app can boot without DATABASE_URL: `pg.Pool` connects lazily, so a
- * placeholder connection string is harmless as long as no query ever runs —
- * which `isDatabaseConfigured()` guarantees by gating every DB-touching
- * route below.
+ * Prisma 7 требует явно передавать адаптер драйвера: конструктора `new PrismaClient()` без аргументов
+ * больше нет. Адаптер создаётся всегда, чтобы приложение запускалось и без DATABASE_URL: `pg.Pool`
+ * подключается лениво, поэтому строка-заглушка безвредна, пока не выполняется ни один запрос, а это
+ * гарантирует `isDatabaseConfigured()`, закрывающая все маршруты, которые обращаются к базе.
  */
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL ?? "postgresql://localhost:5432/not-configured";
-  // Serverless: every function instance opens its own pool, so many instances × a big pool
-  // quickly exhausts the database's connection limit. Keep each pool tiny and let idle
-  // connections go quickly (override with DATABASE_POOL_MAX if the plan allows more).
+  // Serverless: каждый экземпляр функции открывает собственный пул, поэтому много экземпляров × большой
+  // пул быстро исчерпывают лимит соединений базы. Держим пул маленьким и быстро отпускаем простаивающие
+  // соединения (можно переопределить через DATABASE_POOL_MAX, если тариф позволяет).
   const adapter = new PrismaPg({
     connectionString,
     max: Number(process.env.DATABASE_POOL_MAX) || 3,

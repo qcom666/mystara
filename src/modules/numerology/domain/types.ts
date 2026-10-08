@@ -1,9 +1,12 @@
 export type LifePathNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 11 | 22 | 33;
 
-/** Chaldean (ancient, Babylonian-derived) vs Pythagorean (modern, standard) letter-number systems. */
+/**
+ * Халдейская (древняя, вавилонского происхождения) и пифагорейская (современная, стандартная)
+ * системы соответствия букв и чисел.
+ */
 export type NumerologySystem = "pythagorean" | "chaldean";
 
-/** The language-specific text of a Life Path entry — what `getLifePathMeaning(number, locale)` returns. */
+/** Текст записи числа жизненного пути на одном языке: то, что возвращает `getLifePathMeaning(number, locale)`. */
 export interface LifePathMeaning {
   number: LifePathNumber;
   title: string;
@@ -13,7 +16,7 @@ export interface LifePathMeaning {
   challenges: string[];
 }
 
-/** Stored form: English fields plus a `*Ru` twin of each translatable field. */
+/** Хранимая форма: английские поля плюс пара `*Ru` для каждого переводимого поля. */
 export interface LifePathMeaningSource extends LifePathMeaning {
   titleRu: string;
   keywordsRu: string[];
@@ -22,7 +25,10 @@ export interface LifePathMeaningSource extends LifePathMeaning {
   challengesRu: string[];
 }
 
-/** The five core numbers of a full numerology profile, plus which letter system produced the name-derived ones. */
+/**
+ * Пять основных чисел полного нумерологического профиля и система букв, по которой посчитаны
+ * числа по имени.
+ */
 export interface NumerologyProfile {
   system: NumerologySystem;
   lifePathNumber: LifePathNumber;

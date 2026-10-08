@@ -15,7 +15,7 @@ interface ReadingFlowState {
   drawnCards: DrawnCard[];
   revealed: RevealedMap;
   aiResult: AIInterpretationResult | null;
-  /** Language `aiResult` was written in — lets the panel regenerate it when the user switches language. */
+  /** Язык, на котором написан `aiResult`: позволяет панели сгенерировать толкование заново при смене языка. */
   aiResultLocale: "en" | "ru" | null;
   aiStatus: AIStatus;
   savedReadingId: string | null;
@@ -47,9 +47,8 @@ const initialState = {
 };
 
 /**
- * The one piece of genuinely cross-component, ephemeral client state in the
- * app — the in-progress reading (see PROJECT_ARCHITECTURE.md "Client state"
- * row). Everything else uses server data or local component state.
+ * Единственное по-настоящему общее для компонентов временное клиентское состояние приложения:
+ * расклад в процессе. Всё остальное использует данные сервера или локальное состояние компонента.
  */
 export const useReadingFlowStore = create<ReadingFlowState>((set) => ({
   ...initialState,

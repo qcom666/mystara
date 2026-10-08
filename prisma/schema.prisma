@@ -1,6 +1,6 @@
-// Prisma schema — see PROJECT_ARCHITECTURE.md §10 for entity rationale.
-// Tarot card/spread *content* is intentionally NOT modeled here (Decision Log #1);
-// Reading/ReadingCard reference that content by plain string id.
+// Схема Prisma.
+// Содержимое карт и раскладов таро в базе намеренно НЕ хранится: это статические данные
+// в src/modules/tarot/domain. Reading и ReadingCard ссылаются на них обычными строковыми id.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,44 +10,43 @@ datasource db {
   provider = "postgresql"
 }
 
-// --- Auth.js standard models (JWT session strategy still uses Account/User) ---
+// --- Стандартные модели Auth.js (сессии на JWT, но Account и User всё равно используются) ---
 
 model User {
   id            String    @id @default(cuid())
   name          String?
-  // Optional now — a Telegram-only user has no email at all. At least one of
-  // (email, telegramId) is always set; enforced in application code, not the
-  // schema, since Prisma can't express "either/or" constraints.
+  // Необязателен: у пользователя, пришедшего только из Telegram, e-mail нет вовсе. Хотя бы одно
+  // из полей (email, telegramId) всегда заполнено; это проверяет код приложения, а не схема,
+  // потому что Prisma не умеет выражать ограничение «одно или другое».
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  passwordHash  String? // set only for Credentials sign-up; null for OAuth-only/Telegram users
+  passwordHash  String? // заполняется только при регистрации по паролю; у входивших через OAuth или Telegram пусто
 
-  // Telegram Mini App identity (see src/lib/telegram/). Populated the first
-  // time a user opens the Mini App — see PROJECT_ARCHITECTURE.md §16/§19.
+  // Личность из Telegram Mini App (см. src/lib/telegram/). Заполняется при первом
+  // открытии Mini App.
   telegramId       String? @unique
   telegramUsername String?
   telegramPhotoUrl String?
 
-  // Shared by numerology + astrology (see modules/numerology, modules/astrology).
-  // Stored on the profile once so returning users don't re-enter it, but both
-  // flows also work ad hoc without saving (same guest-friendly pattern as Tarot).
+  // Общая для нумерологии и астрологии (см. modules/numerology, modules/astrology).
+  // Хранится в профиле один раз, чтобы вернувшемуся пользователю не вводить её заново, но оба
+  // сценария работают и без сохранения (так же без регистрации, как и таро).
   birthDate DateTime?
 
   language String @default("en")
   timezone String @default("UTC")
 
-  // Proof of consent to personal-data processing (152-FZ art. 9): when it was
-  // given and under which policy version (src/lib/legal/operator.ts). Null for
-  // accounts created before consent capture existed.
+  // Подтверждение согласия на обработку персональных данных (152-ФЗ, ст. 9): когда оно дано
+  // и по какой версии политики (src/lib/legal/operator.ts). Пусто у аккаунтов, созданных
+  // до того, как согласие стали фиксировать.
   privacyConsentAt      DateTime?
   privacyPolicyVersion  String?
 
-  // Natal Chart is paid-only (see lib/pricing/natal-chart-pricing.ts) — a
-  // running balance, decremented by 1 per chart generated, incremented by
-  // NATAL_CHART_PACK_CREDITS once a purchase is recorded as paid. Zero by
-  // default: there is no free trial today (a product decision the codebase
-  // makes easy to change — see TODO.md "Natal Chart").
+  // Натальная карта платная (см. lib/pricing/natal-chart-pricing.ts): здесь хранится остаток
+  // кредитов. Одна построенная карта списывает 1, оплаченная покупка начисляет
+  // NATAL_CHART_PACK_CREDITS. По умолчанию 0: бесплатного пробного периода нет, но менять
+  // это решение в коде легко.
   natalChartCredits Int @default(0)
 
   createdAt DateTime @updatedAt @default(now())
@@ -100,7 +99,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// --- Product models ---
+// --- Модели продукта ---
 
 enum Orientation {
   UPRIGHT
@@ -127,9 +126,9 @@ enum SubscriptionStatus {
 model Reading {
   id         String   @id @default(cuid())
   userId     String
-  spreadId   String // references modules/tarot/domain spreads.data.ts, not a DB row
+  spreadId   String // ссылка на spreads.data.ts в modules/tarot/domain, а не на строку в базе
   question   String?
-  seed       String // provenance only — rendering always uses ReadingCard rows, never a replay (see architecture §6)
+  seed       String // только происхождение расклада: показ всегда идёт по строкам ReadingCard, повторного розыгрыша нет
   isFavorite Boolean  @default(false)
   createdAt  DateTime @default(now())
 
@@ -143,8 +142,8 @@ model Reading {
 model ReadingCard {
   id          String      @id @default(cuid())
   readingId   String
-  cardId      String // references modules/tarot/domain card dataset
-  positionId  String // references the spread's position id
+  cardId      String // ссылка на набор карт в modules/tarot/domain
+  positionId  String // ссылка на id позиции в раскладе
   orientation Orientation
   order       Int
 
@@ -162,7 +161,7 @@ model AIInterpretation {
   themes              String[]
   advice              String[]
   challenges          String[]
-  cardInterpretations Json // Array<{ positionId, cardId, interpretation }>
+  cardInterpretations Json // массив { positionId, cardId, interpretation }
   generatedAt         DateTime @default(now())
 
   reading Reading @relation(fields: [readingId], references: [id], onDelete: Cascade)
@@ -172,7 +171,7 @@ model Favorite {
   id        String       @id @default(cuid())
   userId    String
   type      FavoriteType
-  targetId  String // cardId or spreadId depending on `type`
+  targetId  String // id карты или расклада, в зависимости от `type`
   createdAt DateTime     @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -185,7 +184,7 @@ model Subscription {
   userId             String             @unique
   tier               PlanTier           @default(FREE)
   status             SubscriptionStatus @default(ACTIVE)
-  provider           String? // e.g. "stripe" — null until a payment provider is wired up
+  provider           String? // например "yookassa"; пусто, пока платёжный провайдер не подключён
   externalId         String?
   currentPeriodEnd   DateTime?
   createdAt          DateTime           @default(now())
@@ -194,23 +193,22 @@ model Subscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// --- Numerology & Astrology (Phase 7/8) ---
-// Same pattern as Tarot: the *meanings* (life path number text, zodiac sign
-// text, actor fun-fact data) are static domain data in modules/numerology
-// and modules/astrology, not DB rows — only the user's own computed results
-// are persisted here.
+// --- Нумерология и астрология ---
+// Тот же принцип, что и у таро: толкования (текст числа жизненного пути, описание знака
+// зодиака, данные для фактов об актёрах) лежат статическими данными в modules/numerology
+// и modules/astrology, а не строками в базе. Здесь сохраняются только собственные
+// рассчитанные результаты пользователя.
 
 model NumerologyReading {
   id             String   @id @default(cuid())
   userId         String
   birthDate      DateTime
   lifePathNumber Int
-  // Added alongside the depth pass (modules/numerology §17): the Birthday
-  // Number is always computed from birthDate alone, and fullName/the eight
-  // name-derived numbers are only present when the user typed a name with at
-  // least one calculable letter (see hasCalculableLetters). Both systems are
-  // stored side by side — the Pythagorean/Chaldean tab is a display choice,
-  // not a data one, so there's nothing to remember about "which system".
+  // Число дня рождения всегда считается по одной только birthDate, а fullName и восемь
+  // чисел, выведенных из имени, заполнены лишь тогда, когда пользователь ввёл имя хотя бы
+  // с одной буквой, которую можно посчитать (см. hasCalculableLetters). Обе системы
+  // хранятся рядом: вкладка «Пифагор / Халдейская» лишь способ показа, а не данные,
+  // поэтому запоминать «какая система» не нужно.
   birthdayNumber         Int?
   fullName               String?
   pythagoreanExpression  Int?
@@ -232,9 +230,9 @@ model AstrologyReading {
   id        String   @id @default(cuid())
   userId    String
   birthDate DateTime
-  sunSign   String // zodiac sign id, e.g. "aries" — references modules/astrology domain data
-  // "day" | "night" (see modules/astrology/domain/types.ts Sect) — null when
-  // the user picked "Not sure" in AstrologyInputForm, same as before this field existed.
+  sunSign   String // id знака зодиака, например "aries"; ссылка на данные modules/astrology
+  // "day" | "night" (см. Sect в modules/astrology/domain/types.ts); пусто, если в форме
+  // AstrologyInputForm выбрано «Не знаю».
   sect      String?
   createdAt DateTime @default(now())
 
@@ -243,18 +241,18 @@ model AstrologyReading {
   @@index([userId, createdAt])
 }
 
-// --- Natal Chart (Premium, paid-only — see PROJECT_ARCHITECTURE.md §17b) ---
+// --- Натальная карта (платная) ---
 
 model NatalChartReading {
   id         String   @id @default(cuid())
   userId     String
-  birthDate  DateTime // the resolved UTC instant of birth
-  hasExactTime Boolean // false = birth time unknown; houses/ascendant/MC were skipped, not guessed
-  birthPlace String? // display label, e.g. "Moscow, Russia" — null for manual lat/lon entry
+  birthDate  DateTime // момент рождения, приведённый к UTC
+  hasExactTime Boolean // false = время рождения неизвестно: дома, асцендент и MC не считались, а не угадывались
+  birthPlace String? // подпись для показа, например "Москва, Россия"; пусто при ручном вводе широты и долготы
   latitude   Float
   longitude  Float
-  timezone   String // IANA zone id used to resolve local time -> UTC, e.g. "Europe/Moscow"
-  chart      Json // the full computed NatalChart (see modules/astrology/domain/types.ts) — versioned content, not worth a relational model
+  timezone   String // идентификатор зоны IANA, по которому местное время переводилось в UTC, например "Europe/Moscow"
+  chart      Json // полностью рассчитанная NatalChart (см. modules/astrology/domain/types.ts); версионируемое содержимое, реляционная модель не нужна
   createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -266,19 +264,18 @@ model NatalChartPurchase {
   id             String   @id @default(cuid())
   userId         String
   creditsGranted Int
-  amount         Int // whole units of `currency` — 1000 for a ₽1000 pack, no fractional currency needed at this price point
-  currency       String // "XTR" (Telegram Stars) | "RUB" — see lib/payments/catalog.ts
-  provider       String? // "stars" | "yookassa" | "cryptobot" (lib/payments/catalog.ts)
-  externalId     String? // the provider's transaction id, set when the purchase is paid
+  amount         Int // целое число единиц `currency`: 1000 для пакета за 1000 ₽; при такой цене дробные доли не нужны
+  currency       String // "XTR" (Звёзды Telegram) | "RUB"; см. lib/payments/catalog.ts
+  provider       String? // "stars" | "yookassa" (lib/payments/catalog.ts)
+  externalId     String? // идентификатор транзакции у провайдера, проставляется при оплате
   status         String // "pending" | "paid" | "failed"
   createdAt      DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // A provider transaction can only ever be recorded once (Postgres allows many NULLs, so pending rows are fine).
+  // Транзакцию провайдера можно записать только один раз (Postgres допускает много NULL, так что неоплаченные строки не мешают).
   @@unique([provider, externalId])
   @@index([userId, createdAt])
 }
 
-// Future: CompatibilityReading, DailyHoroscope, Notification — intentionally
-// not modeled yet. See PROJECT_ARCHITECTURE.md §10.
+// Позже: CompatibilityReading, DailyHoroscope, Notification. Пока намеренно не заведены.

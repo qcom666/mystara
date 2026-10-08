@@ -103,14 +103,13 @@
   }
 }
 
-/* Each star drifts along its own path (see StarField, which sets --drift-x/
-   --drift-y/--drift-duration/--drift-delay per star, scaled by size so
-   "closer" — bigger — stars travel farther and faster than distant ones, a
-   simple parallax). This lives on a wrapper element around each star, not
-   the star's own <span> (which independently animates `transform` for the
-   twinkle scale) — two elements each animating their own `transform` compose
-   naturally through normal DOM nesting, whereas two animations fighting over
-   one element's `transform` would just have the second silently win. */
+/* Каждая звезда дрейфует по своей траектории (StarField задаёт для неё --drift-x,
+   --drift-y, --drift-duration и --drift-delay; смещение масштабируется размером,
+   поэтому «ближние», то есть крупные, звёзды летят дальше и быстрее дальних:
+   простой параллакс). Анимация висит на обёртке вокруг звезды, а не на самом
+   <span> (он отдельно анимирует `transform` для мерцания): два вложенных элемента
+   со своими `transform` складываются через обычную вложенность DOM, а две анимации
+   на одном элементе перебивали бы друг друга: победила бы только последняя. */
 @keyframes star-float {
   0% {
     transform: translate(0, 0);
@@ -140,20 +139,19 @@ body {
 }
 
 /*
- * Custom reusable classes, deliberately placed in Tailwind's own
- * `utilities` layer. Cascade layers always rank unlayered CSS above ANY
- * `@layer`, regardless of source order or selector specificity — a plain
- * `.foo { position: relative }` here would silently beat a Tailwind
- * `fixed`/`absolute` utility applied on the same element every time. That
- * exact bug shipped once already (a modal rendered at `position: relative`
- * instead of `fixed` because `.noise-overlay` — unlayered — overrode it), so
- * `.noise-overlay` also no longer sets `position` itself; callers add their
- * own Tailwind position utility (see cta-section.tsx, dialog.tsx).
+ * Собственные переиспользуемые классы нарочно лежат в слое `utilities` самого Tailwind.
+ * Каскадные слои всегда ставят CSS вне слоя выше ЛЮБОГО `@layer`, независимо от порядка
+ * в файле и специфичности селектора: обычное `.foo { position: relative }` здесь каждый
+ * раз молча перебивало бы утилиты Tailwind `fixed`/`absolute` на том же элементе.
+ * Эта ошибка уже случалась (модальное окно отрисовывалось с `position: relative` вместо
+ * `fixed`, потому что `.noise-overlay` вне слоя его перебивал), поэтому `.noise-overlay`
+ * больше не задаёт `position` сам: вызывающий код добавляет свой класс позиционирования
+ * Tailwind (см. cta-section.tsx, dialog.tsx).
  */
 @layer utilities {
-  /* Subtle film-grain noise so flat dark panels don't look sterile. Inline
-     SVG, no asset request. Requires the element to already have a
-     non-static `position` (relative/fixed/absolute) from its own classes. */
+  /* Лёгкая плёночная зернистость, чтобы плоские тёмные панели не выглядели стерильно.
+     Встроенный SVG, отдельного запроса за файлом нет. У элемента уже должно быть
+     нестатическое `position` (relative/fixed/absolute) из его собственных классов. */
   .noise-overlay {
     isolation: isolate;
   }

@@ -1,20 +1,18 @@
 import { ADDRESS_CLAUSE, OPERATOR } from "./operator";
 
 /**
- * Privacy policy content. The Russian text is the authoritative one (it's what
- * 152-ФЗ requires, and what a Russian user or regulator will read); the English
- * is a convenience translation, labelled as such on the page.
+ * Содержимое политики конфиденциальности. Основной текст русский (его требует 152-ФЗ и его читает
+ * российский пользователь или регулятор); английский — перевод для удобства, на странице он так
+ * и помечен.
  *
- * DRAFT — written to describe what this codebase actually does (see the data
- * inventory in PROJECT_ARCHITECTURE.md §25). It is not legal advice: have a
- * lawyer review it, fill in every `[…]` placeholder, and re-check it against
- * the current text of 152-ФЗ before the service goes public. Statements that
- * describe infrastructure (hosting location, AI provider, retention of logs)
- * must be true of the *deployed* setup — edit them when the setup changes.
+ * Написана так, чтобы описывать то, что код реально делает. Это не юридическая консультация: нужна
+ * проверка юристом, заполнение всех заглушек `[…]` и сверка с действующим текстом 152-ФЗ до публичного
+ * запуска. Утверждения об инфраструктуре (где размещено, какой провайдер ИИ, сроки хранения журналов)
+ * должны быть верны для *развёрнутой* системы: меняйте их при смене инфраструктуры.
  */
 
 export type LegalLang = "ru" | "en";
-/** A string is a paragraph; a string[] is a bullet list. */
+/** Строка — абзац; string[] — маркированный список. */
 export type LegalBlock = string | string[];
 
 export interface LegalSection {

@@ -1,38 +1,42 @@
 import type { Suit, TarotCard, TarotCardMeaningTexts, TarotCardMeanings, YesNoLeaning } from "./types";
 
 /**
- * The 56 Minor Arcana. Unlike the Major Arcana (hand-authored card by card),
- * these are *composed* from a suit theme (element/domain) crossed with a rank
- * theme (the numerological "story" 1–10, then the four court archetypes).
- * This mirrors how tarot reference literature itself teaches the Minor
- * Arcana, keeps 56 cards' worth of content maintainable in one place, and
- * still yields fully distinct, structured data per card — nothing here is a
- * placeholder or shared string; every field is generated per suit+rank.
+ * 56 младших арканов. В отличие от старших (написанных вручную карта за картой), они *составляются*
+ * из темы масти (стихия и область), скрещённой с темой достоинства (нумерологическая «история» 1–10,
+ * затем четыре придворных архетипа). Так устроена и сама справочная литература по таро, так 56 карт
+ * поддерживаются в одном месте, и при этом данные каждой карты остаются полностью различными
+ * и структурированными: здесь нет ни заглушек, ни общих строк, каждое поле порождается для сочетания
+ * масти и достоинства.
  *
- * Every English template has a Russian twin. The Russian ones interpolate the
- * suit's `domainRuGenitive` (always after "в сфере …" / "сферы …", both of
- * which take the genitive), so no template has to agree in case or gender
- * with a phrase it can't see.
+ * У каждого английского шаблона есть русская пара. Русские шаблоны подставляют `domainRuGenitive`
+ * масти (всегда после «в сфере …» / «сферы …», оба требуют родительного падежа), поэтому ни одному
+ * шаблону не нужно согласовываться по падежу и роду с фразой, которую он не видит.
  */
 
 interface SuitTheme {
   title: string;
-  /** Genitive plural, as it appears after a rank in a card name — "Three of {title}" → "Тройка {titleRuGenitive}". */
+  /**
+   * Родительный падеж множественного числа, как после достоинства в названии карты:
+   * «Three of {title}» → «Тройка {titleRuGenitive}».
+   */
   titleRuGenitive: string;
-  domain: string; // e.g. "passion, ambition, and creative drive"
-  /** Same content as `domain`, pre-declined into genitive case for insertion after "в сфере" / "сферы". */
+  domain: string; // например: «passion, ambition, and creative drive»
+  /**
+   * То же содержимое, что `domain`, заранее склонённое в родительный падеж для вставки после
+   * «в сфере» / «сферы».
+   */
   domainRuGenitive: string;
   loveAngle: string;
   careerAngle: string;
   financeAngle: string;
   spiritualAngle: string;
   element: string;
-  /** Lowercase nominative plural, used as a keyword ("жезлы"). */
+  /** Нижний регистр, именительный падеж множественного числа; используется как ключевое слово («жезлы»). */
   titleRu: string;
   elementRu: string;
-  // Each angle is pre-declined into the case its Russian sentence template needs:
-  // love/career → accusative ("опирается на …", "указывает на …"),
-  // finance → prepositional ("говорит о …"), spiritual → instrumental ("связана с …").
+  // Каждый ракурс заранее склонён в тот падеж, который нужен русскому шаблону предложения:
+  // любовь и карьера — винительный («опирается на …», «указывает на …»), финансы — предложный
+  // («говорит о …»), духовное — творительный («связана с …»).
   loveAngleRu: string;
   careerAngleRu: string;
   financeAngleRu: string;
@@ -112,13 +116,16 @@ const SUIT_THEMES: Record<Suit, SuitTheme> = {
 
 interface RankTemplate {
   title: string;
-  /** Nominative — the numeral noun as it stands alone in a card name, e.g. "Тройка" in "Тройка Жезлов". */
+  /**
+   * Именительный падеж: числительное как существительное само по себе в названии карты,
+   * например «Тройка» в «Тройка Жезлов».
+   */
   titleRu: string;
   keyword: string;
   keywordRu: string;
   upright: (domain: string) => string;
   reversed: (domain: string) => string;
-  /** Takes the suit's genitive domain phrase. */
+  /** Принимает фразу области масти в родительном падеже. */
   uprightRu: (domainGenitive: string) => string;
   reversedRu: (domainGenitive: string) => string;
   yesNo: YesNoLeaning;
@@ -243,7 +250,7 @@ interface CourtTemplate {
   keyword: string;
   keywordRu: string;
   archetype: string;
-  /** `archetype`, pre-declined into genitive case for insertion after "архетип". */
+  /** `archetype`, заранее склонённый в родительный падеж для вставки после «архетип». */
   archetypeRuGenitive: string;
   upright: (domain: string) => string;
   reversed: (domain: string) => string;

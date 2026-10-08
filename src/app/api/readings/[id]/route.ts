@@ -46,8 +46,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 
   const { id } = await params;
-  // Ownership is enforced inside setReadingFavorite (userId is part of the WHERE clause) —
-  // a user can never flip another user's reading, regardless of what id they pass.
+  // Принадлежность проверяется внутри setReadingFavorite (userId входит в условие WHERE): пользователь
+  // не сможет изменить чужой расклад, какой бы id он ни передал.
   const updated = await setReadingFavorite(id, session.user.id, parsed.data.isFavorite);
   if (!updated) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });

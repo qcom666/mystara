@@ -11,14 +11,13 @@ import { createNatalChartSchema } from "@/lib/validation/natal-chart.schema";
 import { calculateNatalChart } from "@/modules/astrology/services/calculate-natal-chart";
 import { resolveBirthInstantUtc } from "@/modules/astrology/services/resolve-birth-instant";
 
-// Natal Chart is paid-only from the start (no free tier) — see
-// lib/pricing/natal-chart-pricing.ts and PROJECT_ARCHITECTURE.md §17b.
-// NATAL_CHART_FREE_FOR_TESTING short-circuits all of that temporarily — see
-// that constant's own doc comment for why and how to turn it back off.
+// Натальная карта платная с самого начала (бесплатного уровня нет): цены в lib/pricing/natal-chart-pricing.ts.
+// Флаг NATAL_CHART_FREE_FOR_TESTING временно отключает всю проверку оплаты; подробности — в комментарии
+// к самой константе.
 
 export async function GET() {
   if (NATAL_CHART_FREE_FOR_TESTING) {
-    // Infinity doesn't survive JSON — this is just "don't block on credits", not a real balance.
+    // Infinity не переживает JSON: это просто «не блокировать по кредитам», а не реальный баланс.
     return NextResponse.json({ credits: Number.MAX_SAFE_INTEGER, readings: [] });
   }
   if (!isDatabaseConfigured()) {

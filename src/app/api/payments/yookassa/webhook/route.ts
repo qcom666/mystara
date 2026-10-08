@@ -5,10 +5,10 @@ import { fetchYooKassaPayment } from "@/lib/payments/providers/yookassa";
 import { fulfillPurchase } from "@/lib/repositories/purchase.repository";
 
 /**
- * ЮKassa notifications. The notification body is never trusted on its own: we
- * take only the payment id from it and re-fetch the payment from ЮKassa with our
- * credentials (their recommended check), then grant credits for what ЮKassa says.
- * Register this URL in ЮKassa → Настройки → HTTP-уведомления (event: payment.succeeded).
+ * Уведомления ЮKassa. Телу уведомления сами по себе не доверяем: берём из него только id платежа и
+ * перезапрашиваем платёж у ЮKassa с нашими учётными данными (рекомендуемая ими проверка), затем
+ * начисляем кредиты по тому, что скажет ЮKassa.
+ * Адрес нужно указать в ЮKassa → Настройки → HTTP-уведомления (событие: payment.succeeded).
  */
 export async function POST(request: Request) {
   const shopId = process.env.YOOKASSA_SHOP_ID;
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
   const notification = (await request.json().catch(() => null)) as { event?: string; object?: { id?: string } } | null;
   const paymentId = notification?.object?.id;
   if (notification?.event !== "payment.succeeded" || typeof paymentId !== "string") {
-    // Other events (canceled, refund…) need nothing from us — 200 so ЮKassa stops redelivering.
+    // Остальные события (отмена, возврат…) от нас ничего не требуют: отвечаем 200, чтобы ЮKassa
+    // перестала повторять доставку.
     return NextResponse.json({ ok: true });
   }
 

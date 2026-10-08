@@ -8,10 +8,9 @@ function lettersOf(name: string): string[] {
 }
 
 /**
- * Whether a name yields at least one letter with a value in *both* systems.
- * Callers must check this before computing name-derived numbers: a name with
- * nothing calculable (digits, emoji, a script we have no table for) sums to
- * 0, which is not a valid numerology number.
+ * Даёт ли имя хотя бы одну букву со значением в *обеих* системах. Вызывающий код должен проверить
+ * это до расчёта чисел по имени: имя, в котором нечего считать (цифры, эмодзи, письмо, для которого
+ * нет таблицы), даёт сумму 0, а это не допустимое нумерологическое число.
  */
 export function hasCalculableLetters(name: string): boolean {
   return lettersOf(name).some((letter) => getLetterValue(letter, "pythagorean") > 0 && getLetterValue(letter, "chaldean") > 0);
@@ -23,31 +22,33 @@ function sumLetters(name: string, system: NumerologySystem, include: (letter: st
     .reduce((sum, letter) => sum + getLetterValue(letter, system), 0);
 }
 
-/** Expression (Destiny) Number — every letter of the full birth name. What you're here to do. */
+/** Число выражения (судьбы): все буквы полного имени при рождении. Для чего вы здесь. */
 export function calculateExpressionNumber(fullName: string, system: NumerologySystem): LifePathNumber {
   return reduceToNumerologyDigit(sumLetters(fullName, system, () => true));
 }
 
-/** Soul Urge (Heart's Desire) Number — vowels only. What you inwardly want. */
+/** Число души (желания сердца): только гласные. Чего вы желаете внутри. */
 export function calculateSoulUrgeNumber(fullName: string, system: NumerologySystem): LifePathNumber {
   return reduceToNumerologyDigit(sumLetters(fullName, system, isVowel));
 }
 
-/** Personality Number — consonants only. How others perceive you before they know you. */
+/** Число личности: только согласные. Как вас воспринимают, пока не знают. */
 export function calculatePersonalityNumber(fullName: string, system: NumerologySystem): LifePathNumber {
   return reduceToNumerologyDigit(sumLetters(fullName, system, (letter) => !isVowel(letter)));
 }
 
-/** Maturity (Reality) Number — Life Path + Expression, reduced together. The self that emerges later in life. */
+/**
+ * Число зрелости (реализации): число жизненного пути + число выражения, сведённые вместе.
+ * Личность, которая проявляется позже в жизни.
+ */
 export function calculateMaturityNumber(lifePathNumber: number, expressionNumber: number): LifePathNumber {
   return reduceToNumerologyDigit(lifePathNumber + expressionNumber);
 }
 
 /**
- * Computes the full profile for one letter system. Life Path and Birthday
- * are date-only, so they're identical across systems — only the
- * name-derived numbers (Expression/Soul Urge/Personality/Maturity) differ
- * between Pythagorean and Chaldean.
+ * Считает полный профиль для одной системы букв. Число жизненного пути и число дня рождения зависят
+ * только от даты, поэтому одинаковы в обеих системах; различаются только числа по имени
+ * (выражение/душа/личность/зрелость) между пифагорейской и халдейской.
  */
 export function calculateNumerologyProfile(fullName: string, birthDate: Date, system: NumerologySystem): NumerologyProfile {
   const lifePathNumber = calculateLifePathNumber(birthDate);

@@ -1,11 +1,8 @@
 /**
- * English dictionary. Covers product-chrome strings (nav, forms, the reading
- * flow, auth, errors) and the marketing landing page's own copy — the
- * strings that need to move together when a locale is added. The large
- * hand-written content datasets (Tarot card/spread text, numerology/astrology
- * meanings, AI-generated interpretations) are NOT here — that's a much
- * bigger, separate localization project than a chrome dictionary; see
- * PROJECT_ARCHITECTURE.md §14.
+ * Английский словарь. Содержит строки интерфейса (навигация, формы, процесс расклада, вход, ошибки)
+ * и тексты главной страницы: то, что нужно менять вместе при добавлении языка. Больших наборов
+ * авторского содержимого (тексты карт и раскладов, значения нумерологии и астрологии, сгенерированные
+ * толкования) здесь НЕТ: это отдельная, гораздо более крупная задача локализации.
  */
 export const en = {
   common: {
@@ -214,7 +211,8 @@ export const en = {
     eyebrow: "Natal Chart",
     title: "Your Full Natal Chart",
     subtitle: "Real planetary positions for your exact birth date, time, and place — the Moon, every planet, your rising sign, houses, and aspects.",
-    // NATAL_CHART_PACK_CREDITS is 3 — keep this in sync if that constant ever changes (lib/pricing/natal-chart-pricing.ts).
+    // NATAL_CHART_PACK_CREDITS равно 3: при изменении этой константы (lib/pricing/natal-chart-pricing.ts)
+    // поправьте и этот текст.
     packSize: "3 charts",
     priceNote: "One-time purchase, no subscription.",
     buyCta: "Buy",
@@ -521,10 +519,9 @@ export const en = {
 };
 
 /**
- * Deliberately not `typeof en` over an `as const` literal — that would pin
- * every leaf to its exact English string, so `ru.ts` (same shape, different
- * words) couldn't satisfy the type at all. Widening to `string` still catches
- * a missing, extra, or misspelled key in a translation, which is the actual
- * safety net this type is for.
+ * Намеренно не `typeof en` поверх литерала `as const`: он привязал бы каждый лист к точной английской
+ * строке, и `ru.ts` (та же структура, другие слова) вообще не прошёл бы проверку типов. Расширение до
+ * `string` по-прежнему ловит пропущенный, лишний или неверно написанный ключ в переводе: ради этого
+ * этот тип и нужен.
  */
 export type Dictionary = typeof en;

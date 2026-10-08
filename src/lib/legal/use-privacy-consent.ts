@@ -14,8 +14,8 @@ function subscribe(onChange: () => void): () => void {
   };
 }
 
-// Mirror of the last value written, so a device with blocked storage still gets
-// past the consent screen for the rest of the visit instead of seeing it forever.
+// Копия последнего записанного значения: на устройстве с заблокированным хранилищем экран согласия
+// всё равно пропускается до конца визита, а не показывается бесконечно.
 let memoryValue: string | null = null;
 
 function getSnapshot(): ConsentState {
@@ -26,21 +26,21 @@ function getSnapshot(): ConsentState {
   }
 }
 
-/** Server and first paint always report "unknown"; the real value lands after hydration. */
+/** Сервер и первая отрисовка всегда сообщают «unknown»; реальное значение появляется после гидратации. */
 function getServerSnapshot(): ConsentState {
   return "unknown";
 }
 
 /**
- * Records the visitor's choice on this device. localStorage is a UX cache only —
- * the auditable record of a consent lives on the user row (see /api/privacy/consent).
+ * Запоминает выбор посетителя на этом устройстве. localStorage — только кэш для удобства: проверяемая
+ * запись согласия хранится в строке пользователя (см. /api/privacy/consent).
  */
 export function setPrivacyConsent(state: Exclude<ConsentState, "unknown">): void {
   memoryValue = serializeConsent(state);
   try {
     window.localStorage.setItem(CONSENT_STORAGE_KEY, memoryValue);
   } catch {
-    // Storage blocked (private mode etc.) — the choice simply won't persist across visits.
+    // Хранилище заблокировано (приватный режим и т.п.): выбор просто не сохранится между визитами.
   }
   window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
 }

@@ -55,15 +55,14 @@ export function getNumberTypeLabels(type: NumerologyNumberType, locale: Locale):
 }
 
 /**
- * Composes a description per number-type from the existing rich Life Path
- * content (title + keywords) rather than hand-writing ~60 new long-form
- * entries — a number's *core* meaning is traditionally taught once and then
- * applied contextually (Expression, Soul Urge, etc. all draw on the same
- * essence, pointed at a different question), which is both authentic to how
- * numerology is actually presented and far more maintainable.
+ * Составляет описание для каждого типа числа из уже богатого содержимого числа жизненного пути
+ * (заголовок + ключевые слова), а не пишет вручную ~60 новых длинных записей: *основной* смысл числа
+ * традиционно излагается один раз, а затем применяется в контексте (выражение, число души и т.д.
+ * опираются на одну и ту же суть, обращённую к другому вопросу); это и соответствует тому, как
+ * нумерология обычно подаётся, и намного проще поддерживать.
  *
- * The Russian sentences quote the keywords and archetype in «…» so they never
- * have to be declined — the same trick the Minor Arcana templates use.
+ * В русских предложениях ключевые слова и архетип взяты в «…», чтобы их не приходилось склонять:
+ * тот же приём, что в шаблонах младших арканов.
  */
 export function describeNumberForType(number: LifePathNumber, type: NumerologyNumberType, locale: Locale = "en"): string {
   const meaning = getLifePathMeaning(number, locale);

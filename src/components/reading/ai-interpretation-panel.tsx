@@ -23,8 +23,8 @@ export function AIInterpretationPanel({ spread, question, cards }: AIInterpretat
   const setAIResult = useReadingFlowStore((s) => s.setAIResult);
   const setAIStatus = useReadingFlowStore((s) => s.setAIStatus);
 
-  // The interpretation is written in the language that was active when it
-  // was requested, so a stale-language result counts as "not generated yet".
+  // Толкование написано на языке, который был активен при запросе, поэтому результат на устаревшем
+  // языке считается «ещё не сформированным».
   const hasCurrentResult = Boolean(aiResult) && aiResultLocale === locale;
 
   useEffect(() => {
@@ -59,8 +59,8 @@ export function AIInterpretationPanel({ spread, question, cards }: AIInterpretat
     return () => {
       cancelled = true;
     };
-    // Runs when the result step mounts for this reading and again if the
-    // user switches language — deliberately not on every keystroke/re-render.
+    // Срабатывает, когда шаг результата монтируется для этого расклада, и ещё раз при смене языка:
+    // намеренно не при каждом вводе или перерисовке.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale]);
 

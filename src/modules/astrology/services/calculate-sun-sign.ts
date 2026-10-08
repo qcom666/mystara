@@ -10,8 +10,8 @@ export function calculateSunSign(birthDate: Date): ZodiacSign {
     const afterStart = month > startMonth || (month === startMonth && day >= startDay);
     const beforeEnd = month < endMonth || (month === endMonth && day <= endDay);
 
-    // Capricorn wraps the year boundary (Dec 22 → Jan 19): startMonth > endMonth,
-    // so the date needs to satisfy either bound rather than both.
+    // Козерог переходит границу года (22 декабря → 19 января): startMonth > endMonth, поэтому дата должна
+    // удовлетворять одной из границ, а не обеим.
     const wraps = startMonth > endMonth;
     const matches = wraps ? afterStart || beforeEnd : afterStart && beforeEnd;
     if (matches) return sign;

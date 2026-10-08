@@ -1,27 +1,24 @@
 /**
- * Real planetary positions for the natal chart — server-only (this pulls in
- * astronomia's VSOP87 series, which have no business in a client bundle; it
- * is only ever imported from calculate-natal-chart.ts, itself only imported
- * from the /api/natal-chart route).
+ * Реальные положения планет для натальной карты; только для сервера (подключает ряды VSOP87 из
+ * astronomia, которым нечего делать в клиентском бандле; импортируется только из
+ * calculate-natal-chart.ts, а тот — только из маршрута /api/natal-chart).
  *
- * This wraps `astronomia` (a JS port of Jean Meeus' "Astronomical
- * Algorithms") rather than reimplementing orbital mechanics by hand. Where a
- * ready-made "geocentric position of a planet" helper isn't exposed for the
- * ecliptic frame (only for equatorial, via `elliptic.position`), the function
- * below (`geocentricEclipticOfDate`) mirrors that exact same algorithm
- * (rectangular subtraction → one light-time iteration → aberration → FK5 →
- * nutation), just stopping one step earlier so the result stays in ecliptic
- * longitude/latitude instead of being converted on to right ascension/declination.
+ * Обёртка над `astronomia` (JS-порт «Astronomical Algorithms» Жана Мееса), а не ручная реализация
+ * орбитальной механики. Для эклиптической системы готового помощника «геоцентрическое положение
+ * планеты» нет (только для экваториальной, через `elliptic.position`), поэтому функция ниже
+ * (`geocentricEclipticOfDate`) повторяет тот же алгоритм (вычитание прямоугольных координат → одна
+ * итерация светового времени → аберрация → FK5 → нутация), но останавливается на шаг раньше:
+ * результат остаётся в эклиптической долготе и широте и не переводится в прямое восхождение
+ * и склонение.
  *
- * Precision trade-offs, deliberate and documented (see PROJECT_ARCHITECTURE.md):
- * - ΔT (TT − UT) is treated as zero. Over the last ~150 years this is at most
- *   a couple of minutes, which moves the sky by a fraction of a degree — far
- *   smaller than the uncertainty most people already have in their recorded
- *   birth *time* (a one-minute error there already shifts the Ascendant by
- *   about a quarter of a degree). Not worth a ΔT table for this use case.
- * - Pluto uses Meeus ch. 37's dedicated periodic series, valid ~1885–2099;
- *   outside that range it's omitted rather than guessed (same philosophy as
- *   the existing "sect: not sure" case).
+ * Компромиссы по точности, сделанные намеренно:
+ * - ΔT (TT − UT) принимается равной нулю. За последние ~150 лет она не превышает пары минут, что
+ *   сдвигает небо на долю градуса: гораздо меньше погрешности, которая обычно есть в записанном
+ *   *времени* рождения (ошибка в одну минуту уже сдвигает асцендент примерно на четверть градуса).
+ *   Таблица ΔT для этой задачи не нужна.
+ * - Плутон считается по отдельному периодическому ряду из главы 37 Мееса, действительному примерно
+ *   в 1885–2099 годах; вне этого диапазона он не выводится, а не угадывается (так же, как случай
+ *   «секта: не уверен»).
  */
 import apparent from "astronomia/apparent";
 import base from "astronomia/base";
@@ -45,13 +42,13 @@ export type EphemerisBodyId = "sun" | "moon" | "mercury" | "venus" | "mars" | "j
 
 export interface EphemerisPosition {
   id: EphemerisBodyId;
-  /** Apparent geocentric ecliptic longitude, true equinox of date, in degrees [0, 360). */
+  /** Видимая геоцентрическая эклиптическая долгота на истинное равноденствие даты, в градусах [0, 360). */
   longitudeDeg: number;
-  /** True only for bodies where retrograde motion is a real phenomenon (not sun/moon). */
+  /** true только для тел, у которых ретроградное движение реально (не для Солнца и Луны). */
   isRetrograde: boolean | null;
 }
 
-// Meeus ch. 37's Pluto series is fitted to 1885–2099; outside that we omit it.
+// Ряд Плутона из главы 37 Мееса подогнан под 1885–2099 годы; за их пределами Плутон не выводим.
 const PLUTO_MIN_JDE = julian.CalendarGregorianToJD(1885, 1, 1);
 const PLUTO_MAX_JDE = julian.CalendarGregorianToJD(2099, 12, 31);
 
@@ -72,12 +69,11 @@ function toDeg360(rad: number): number {
 }
 
 /**
- * Geocentric ecliptic longitude/latitude of `planet` at `jde`, apparent, true
- * equinox of date — same algorithm as astronomia's `elliptic.position()`
- * (rectangular subtraction, one light-time iteration, annual aberration,
- * FK5 frame correction, nutation in longitude), stopping before the final
- * ecliptic→equatorial conversion since ecliptic longitude is what a zodiac
- * sign is defined by.
+ * Геоцентрическая эклиптическая долгота и широта планеты `planet` на момент `jde`, видимая, на истинное
+ * равноденствие даты: тот же алгоритм, что у `elliptic.position()` в astronomia (вычитание прямоугольных
+ * координат, одна итерация светового времени, годичная аберрация, поправка к системе FK5, нутация
+ * по долготе), но без финального перехода из эклиптических координат в экваториальные: знак зодиака
+ * определяется именно эклиптической долготой.
  */
 function geocentricEclipticOfDate(planet: Planet, jde: number): { lon: number; lat: number; range: number } {
   const posEarth = earth.position(jde);
@@ -114,7 +110,10 @@ function geocentricEclipticOfDate(planet: Planet, jde: number): { lon: number; l
   return { lon, lat, range };
 }
 
-/** Same as geocentricEclipticOfDate, but for Pluto, whose series is J2000-frame heliocentric only. */
+/**
+ * То же, что geocentricEclipticOfDate, но для Плутона, у которого ряд задан только гелиоцентрически
+ * в системе J2000.
+ */
 function plutoGeocentricOfDate(jde: number): { lon: number; lat: number; range: number } | null {
   if (jde < PLUTO_MIN_JDE || jde > PLUTO_MAX_JDE) return null;
 
@@ -141,8 +140,8 @@ function plutoGeocentricOfDate(jde: number): { lon: number; lat: number; range: 
   let lon = Math.atan2(y, x);
   const lat = Math.atan2(z, Math.hypot(x, y));
 
-  // Pluto's series is J2000-frame — precess to the ecliptic of date, same
-  // helper astronomia's own VSOP87B path uses internally for the same job.
+  // Ряд Плутона в системе J2000: приводим (прецессия) к эклиптике даты тем же помощником, который
+  // astronomia использует внутри своего пути VSOP87B для той же задачи.
   const epochTo = base.JDEToJulianYear(jde);
   const precessed = precess.eclipticPosition(new base.Coord(lon, lat), 2000.0, epochTo);
   lon = precessed.lon;
@@ -153,24 +152,23 @@ function plutoGeocentricOfDate(jde: number): { lon: number; lat: number; range: 
   return { lon, lat: precessed.lat, range };
 }
 
-/** One day of dynamical time — plenty to detect a station without landing on it exactly. */
+/** Одни сутки динамического времени: достаточно, чтобы заметить стояние планеты, не попадая в него точно. */
 const RETROGRADE_PROBE_DAYS = 1;
 
 function isRetrogradeAt(longitudeFn: (jde: number) => number, jde: number): boolean {
   const lonNow = longitudeFn(jde);
   const lonLater = longitudeFn(jde + RETROGRADE_PROBE_DAYS);
   let delta = lonLater - lonNow;
-  // Normalize the shortest way around the circle so a 359°→1° wrap isn't
-  // mistaken for "moved backward by 358°".
+  // Нормализуем кратчайшим путём по кругу, чтобы переход 359°→1° не приняли за «сдвиг назад на 358°».
   if (delta > 180) delta -= 360;
   if (delta < -180) delta += 360;
   return delta < 0;
 }
 
 /**
- * Computes the apparent geocentric ecliptic longitude of every body used in
- * the natal chart at the given Julian Ephemeris Day. Pluto is omitted (not
- * guessed) outside its series' valid range.
+ * Вычисляет видимую геоцентрическую эклиптическую долготу каждого тела, используемого в натальной
+ * карте, на заданный юлианский эфемеридный день. Плутон за пределами допустимого диапазона его ряда
+ * не выводится (а не угадывается).
  */
 export function getBodyPositions(jde: number): EphemerisPosition[] {
   const results: EphemerisPosition[] = [];

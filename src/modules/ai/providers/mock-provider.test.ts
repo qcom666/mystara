@@ -23,15 +23,15 @@ describe("MockAIProvider", () => {
     const result = await provider.generate({ question: null, spread, cards });
     const overall = result.overall.toLowerCase();
 
-    // The disclaimer itself legitimately contains the word "guaranteed" (as
-    // a negation) — assert no *affirmative* guarantee language slips in.
+    // Сама оговорка законно содержит слово «guaranteed» (в отрицании): проверяем, что в текст
+    // не попадает *утвердительная* гарантия.
     expect(overall).not.toMatch(/\b(is|are)\s+guaranteed\b|\bwill (definitely|certainly)\b/);
     expect(overall).toContain("not a guaranteed prediction");
   });
 
   describe("Russian locale", () => {
     const CYRILLIC = /[А-Яа-яЁё]/;
-    // Names of the Latin-script suits/ranks that would betray a leaked English card name.
+    // Названия мастей и достоинств латиницей, которые выдали бы просочившееся английское название карты.
     const ENGLISH_CARD_WORDS = /\b(Wands|Cups|Swords|Pentacles|The Fool|The Sun|Ace of|Queen of|King of|Knight of|Page of)\b/;
 
     it("writes every field in Russian, with no English card or position names leaking through", async () => {
@@ -42,7 +42,7 @@ describe("MockAIProvider", () => {
       const allText = [result.summary, result.overall, ...result.advice, ...result.challenges, ...result.themes, ...result.cardInterpretations.map((c) => c.interpretation)].join(" ");
       expect(allText).toMatch(CYRILLIC);
       expect(allText).not.toMatch(ENGLISH_CARD_WORDS);
-      // Themes come from the Russian keywords, so none should be Latin-script.
+      // Темы берутся из русских ключевых слов, поэтому латиницы в них быть не должно.
       for (const theme of result.themes) expect(theme).toMatch(CYRILLIC);
       expect(result.overall).toContain("не гарантированное предсказание");
     });
@@ -56,7 +56,7 @@ describe("MockAIProvider", () => {
       const general = await provider.generate({ question: "Что мне делать?", spread, cards, locale: "ru" });
 
       expect(love.overall).toContain("«Как сложатся мои отношения?»");
-      // A love-flavoured question appends the card's love meaning; a generic one appends the spiritual meaning.
+      // Вопрос о любви добавляет значение карты про любовь, обычный вопрос добавляет духовное значение.
       expect(love.cardInterpretations[0].interpretation).not.toEqual(general.cardInterpretations[0].interpretation);
     });
 

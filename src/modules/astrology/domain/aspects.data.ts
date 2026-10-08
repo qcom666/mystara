@@ -3,7 +3,10 @@ import type { AspectType } from "./types";
 export interface AspectDefinition {
   type: AspectType;
   angleDeg: number;
-  /** Simplified flat orb per type — real practice varies orb by planet, which is more precision than a natal-chart teaser needs. */
+  /**
+   * Упрощённый плоский орбис на тип аспекта: на практике он зависит от планеты, а для краткого обзора
+   * натальной карты такая точность не нужна.
+   */
   orbDeg: number;
   symbol: string;
   label: string;

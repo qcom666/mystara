@@ -1,7 +1,7 @@
 /**
- * The 12 houses' classical themes, used only to compose short placement
- * text (see natal-chart-interpretation.ts) — not the full angular/
- * succedent/cadent theory, which doesn't change what's shown to a reader.
+ * Классические темы 12 домов; используются только для составления коротких текстов о положении планет
+ * (см. natal-chart-interpretation.ts). Полная теория угловых, следующих и падающих домов не нужна:
+ * читателю она ничего не меняет.
  */
 export interface HouseTheme {
   number: number;

@@ -2,7 +2,10 @@ import { prisma } from "@/lib/db";
 import type { PaymentCurrency, PaymentProviderId } from "@/lib/payments/catalog";
 import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
 
-/** A pack of Natal Chart credits is the only product so far; each provider has its own price (lib/payments/catalog.ts). */
+/**
+ * Пока единственный товар — пакет кредитов натальной карты; у каждого провайдера своя цена
+ * (lib/payments/catalog.ts).
+ */
 export async function createPendingPurchase(input: {
   userId: string;
   provider: PaymentProviderId;
@@ -28,9 +31,9 @@ export async function markPurchaseFailed(purchaseId: string): Promise<void> {
 export interface PaidPayment {
   purchaseId: string;
   provider: PaymentProviderId;
-  /** The provider's own transaction id (Stars charge id, ЮKassa payment id). */
+  /** Собственный идентификатор транзакции у провайдера (id платежа Stars, id платежа ЮKassa). */
   externalId: string;
-  /** What the provider says was actually paid — checked against what we asked for. */
+  /** Что провайдер сообщает о реальной оплате: сверяется с тем, что мы запрашивали. */
   amount: number;
   currency: PaymentCurrency;
 }
@@ -38,10 +41,10 @@ export interface PaidPayment {
 export type FulfillResult = "fulfilled" | "already_paid" | "not_found" | "mismatch";
 
 /**
- * Turns a confirmed payment into credits — exactly once. The status flip
- * (pending → paid) and the credit grant happen in one transaction, and the
- * flip is a conditional update, so a provider that delivers the same webhook
- * twice (or two webhooks racing) can never grant the pack twice.
+ * Превращает подтверждённый платёж в кредиты — ровно один раз. Смена статуса (pending → paid) и
+ * начисление кредитов выполняются в одной транзакции, а сама смена — условное обновление, поэтому
+ * провайдер, доставивший то же уведомление дважды (или два уведомления одновременно), не сможет
+ * начислить пакет дважды.
  */
 export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResult> {
   return prisma.$transaction(async (tx) => {
@@ -63,7 +66,7 @@ export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResu
   });
 }
 
-/** Telegram's pre-checkout gate: is this a purchase we're still waiting on, for exactly this price? */
+/** Проверка перед оплатой в Telegram: ждём ли мы ещё эту покупку и именно на эту сумму? */
 export async function isPurchasePayable(input: {
   purchaseId: string;
   provider: PaymentProviderId;

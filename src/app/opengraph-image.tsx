@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 
-// Shown when a link to the site is shared (Telegram, messengers, social). Latin-only on
-// purpose: ImageResponse's built-in font has no Cyrillic, and shipping a font file would
-// eat into its 500KB bundle limit for no gain.
+// Показывается, когда ссылкой на сайт делятся (Telegram, мессенджеры, соцсети). Только латиница:
+// во встроенном шрифте ImageResponse нет кириллицы, а подключение файла шрифта съело бы лимит
+// размера в 500 КБ без пользы.
 export const alt = "Mystara — Tarot, numerology and astrology";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

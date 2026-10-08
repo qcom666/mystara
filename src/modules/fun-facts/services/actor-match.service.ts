@@ -11,16 +11,16 @@ import type { ActorFunFact } from "../domain/types";
 
 type Locale = "en" | "ru";
 
-// The Russian sentences name the actor in the nominative after a dash
-// ("… со звездой кино — Киану Ривз") instead of declining the name into a
-// case, which is unreliable for foreign names — and they stay gender-neutral.
+// В русских предложениях актёр называется в именительном падеже после тире («… со звездой кино —
+// Киану Ривз»), а не склоняется: склонение иностранных имён ненадёжно; формулировки при этом
+// остаются нейтральными по роду.
 
 function pickDeterministic<T>(items: readonly T[], seed: string): T {
   const random = createSeededRandom(seed);
   return items[Math.floor(random() * items.length)];
 }
 
-/** Astrology fun fact: an actor who shares the same sun sign. */
+/** Астрологический занимательный факт: актёр с тем же солнечным знаком. */
 export function getActorFunFactByZodiac(signId: ZodiacSignId, seed: string, locale: Locale = "en"): ActorFunFact | null {
   const matches = ACTORS.filter((actor) => calculateSunSign(new Date(actor.birthDate)).id === signId);
   if (matches.length === 0) return null;
@@ -30,7 +30,7 @@ export function getActorFunFactByZodiac(signId: ZodiacSignId, seed: string, loca
     : { actorName: actor.name, reason: `You share your zodiac sign with ${actor.name}.` };
 }
 
-/** Numerology fun fact: an actor who shares the same Life Path Number. */
+/** Нумерологический занимательный факт: актёр с тем же числом жизненного пути. */
 export function getActorFunFactByLifePath(lifePathNumber: LifePathNumber, seed: string, locale: Locale = "en"): ActorFunFact | null {
   const matches = ACTORS.filter((actor) => calculateLifePathNumber(new Date(actor.birthDate)) === lifePathNumber);
   if (matches.length === 0) return null;
@@ -41,10 +41,9 @@ export function getActorFunFactByLifePath(lifePathNumber: LifePathNumber, seed: 
 }
 
 /**
- * Tarot fun fact: an actor associated with a similar archetype to one of the
- * drawn cards. Only Major Arcana cards carry an archetype mapping — if the
- * reading drew none, there's nothing sensible to match against, so this
- * returns null rather than forcing a weak connection through a Minor card.
+ * Занимательный факт из таро: актёр, связанный со схожим архетипом с одной из вытянутых карт.
+ * Сопоставление есть только у карт старших арканов: если в раскладе их не выпало, сопоставлять
+ * не с чем, и функция возвращает null, а не притягивает слабую связь через карту младших арканов.
  */
 export function getActorFunFactByReading(cards: readonly DrawnCard[], seed: string, locale: Locale = "en"): ActorFunFact | null {
   const majorCard = cards.find((drawn) => drawn.card.arcana === "major" && MAJOR_ARCANA_ARCHETYPES[drawn.card.id]);

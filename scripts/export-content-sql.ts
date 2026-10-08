@@ -1,12 +1,12 @@
 /**
- * Exports the site's built-in content (cards, spreads, zodiac, numerology, astrology
- * reference data, cities, celebrities) as SQL for the `mystara` database, so the database
- * holds exactly the same texts the site shows. Run from the project root:
+ * Выгружает встроенное содержимое сайта (карты, расклады, знаки зодиака, нумерологию, справочники
+ * астрологии, города, знаменитостей) в виде SQL для базы `mystara`, чтобы тексты в базе совпадали
+ * с тем, что показывает сайт. Запуск из корня проекта:
  *
  *   npx tsx scripts/export-content-sql.ts > db/mystara/mystara_content.sql
  *
- * The output is idempotent (UPDATE / INSERT ... ON CONFLICT) and ends with checks that
- * abort the transaction if any table ends up with the wrong number of rows.
+ * Результат идемпотентен (UPDATE / INSERT ... ON CONFLICT) и заканчивается проверками: если в какой-то
+ * таблице окажется неверное число строк, транзакция отменяется.
  */
 import { FULL_DECK } from "@/modules/tarot/domain/deck";
 import { SPREADS } from "@/modules/tarot/domain/spreads.data";
@@ -39,7 +39,7 @@ line();
 line("BEGIN;");
 line();
 
-// ---- Tarot cards: ids follow the seed (major: number + 1; minor: 22 + suit * 14 + number) ----
+// ---- Карты таро: идентификаторы как в seed (старшие: номер + 1; младшие: 22 + масть * 14 + номер) ----
 line("-- Карты таро (78): тексты на двух языках, ключевые слова, толкования");
 const suitIndex = { wands: 0, cups: 1, swords: 2, pentacles: 3 } as const;
 for (const card of FULL_DECK) {
@@ -56,7 +56,7 @@ for (const card of FULL_DECK) {
 }
 line();
 
-// ---- Spreads: three are the same spreads as in the seed (matched by meaning), the rest are added ----
+// ---- Расклады: три совпадают с расклады из seed (сопоставлены по смыслу), остальные добавляются ----
 line("-- Расклады: совпадающие с seed обновляются, остальные добавляются");
 const existingCodeBySlug: Record<string, string> = { "three-card": "three_cards", "yes-no": "yes_no", "celtic-cross": "celtic_cross" };
 let sortOrder = 60;
@@ -82,7 +82,7 @@ for (const spread of SPREADS) {
 }
 line();
 
-// ---- Zodiac ----
+// ---- Знаки зодиака ----
 line("-- Знаки зодиака");
 for (const sign of ZODIAC_SIGNS) {
   line(
@@ -94,7 +94,7 @@ for (const sign of ZODIAC_SIGNS) {
 }
 line();
 
-// ---- Astrology reference tables ----
+// ---- Справочники астрологии ----
 line("-- Планеты, дома, аспекты, дневная/ночная карта");
 for (const p of PLANETS) {
   line(
@@ -122,7 +122,7 @@ for (const s of Object.values(SECT_PROFILES)) {
 }
 line();
 
-// ---- Cities ----
+// ---- Города ----
 line("-- Города для выбора места рождения");
 for (const c of CITIES) {
   line(
@@ -132,7 +132,7 @@ for (const c of CITIES) {
 }
 line();
 
-// ---- Numerology ----
+// ---- Нумерология ----
 line("-- Нумерология: число жизненного пути и остальные числа профиля");
 const numbers: LifePathNumber[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33];
 const kindByType: Record<NumerologyNumberType, string> = {
@@ -164,7 +164,7 @@ for (const n of numbers) {
 }
 line();
 
-// ---- Celebrities and archetypes ----
+// ---- Знаменитости и архетипы ----
 line("-- «На кого вы похожи»: знаменитости (знак зодиака считает триггер) и архетипы старших арканов");
 for (const a of ACTORS) {
   line(
@@ -181,7 +181,7 @@ for (const [slug, tags] of Object.entries(MAJOR_ARCANA_ARCHETYPES)) {
 }
 line();
 
-// ---- Self-checks: abort the whole transaction if anything is off ----
+// ---- Самопроверки: при любом расхождении откатываем всю транзакцию ----
 const expectations: [string, number, string][] = [
   ["tarot_cards with slug", FULL_DECK.length, "SELECT count(*) FROM tarot_cards WHERE slug IS NOT NULL AND name_en IS NOT NULL AND meaning_upright IS NOT NULL AND meaning_upright_en IS NOT NULL"],
   ["tarot_spreads with slug", SPREADS.length, "SELECT count(*) FROM tarot_spreads WHERE slug IS NOT NULL AND name_en IS NOT NULL AND jsonb_array_length(position_details) > 0"],

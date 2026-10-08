@@ -1,13 +1,12 @@
 import type { NumerologySystem } from "./types";
 
 /**
- * Two real, traditional letter-to-number systems — not a single "modern"
- * invention. Pythagorean is the standard modern system (a simple 1–9 cycle
- * through the alphabet). Chaldean is the older Babylonian-derived system,
- * based on sound/vibration rather than alphabet order, and deliberately
- * assigns no letter to 9 (considered too sacred/complete a number to tie to
- * a single letter). Both are widely published, traditional systems — not
- * unique to any one book.
+ * Две настоящие традиционные системы соответствия букв и чисел, а не одно «современное» изобретение.
+ * Пифагорейская — стандартная современная система (простой цикл 1–9 по алфавиту). Халдейская —
+ * более старая система вавилонского происхождения, основанная на звучании и вибрации, а не на
+ * порядке алфавита; девятке в ней намеренно не сопоставляется ни одна буква (число считается слишком
+ * священным и завершённым, чтобы привязывать его к одной букве). Обе системы широко опубликованы
+ * и традиционны: они не принадлежат какой-либо одной книге.
  */
 const PYTHAGOREAN_VALUES: Record<string, number> = {
   A: 1,
@@ -65,18 +64,17 @@ const CHALDEAN_VALUES: Record<string, number> = {
   Z: 7,
   F: 8,
   P: 8,
-  // No letter maps to 9 in the Chaldean system.
+  // В халдейской системе ни одна буква не соответствует 9.
 };
 
 const VOWELS = new Set(["A", "E", "I", "O", "U"]);
 
 /**
- * Russian names. The standard Russian Pythagorean table is the same idea as
- * the Latin one — cycle 1–9 through the alphabet in order — applied to the
- * 33-letter Russian alphabet (А=1 … З=9, И=1 … Р=9, С=1 … Щ=9, Ъ=1 … Я=6).
- * There is no canonical Cyrillic *Chaldean* table (the system is built on
- * the sounds of a specific ancient alphabet), so Chaldean values for a
- * Cyrillic letter are those of its Latin transliteration, summed.
+ * Русские имена. Стандартная русская пифагорейская таблица — та же идея, что и латинская: цикл 1–9
+ * по алфавиту, применённый к 33-буквенному русскому алфавиту (А=1 … З=9, И=1 … Р=9, С=1 … Щ=9,
+ * Ъ=1 … Я=6). Канонической кириллической *халдейской* таблицы нет (система построена на звуках
+ * конкретного древнего алфавита), поэтому халдейские значения буквы кириллицы — это значения её
+ * латинской транслитерации, сложенные.
  */
 const RU_ALPHABET = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
 const RU_PYTHAGOREAN_VALUES: Record<string, number> = Object.fromEntries([...RU_ALPHABET].map((letter, index) => [letter, (index % 9) + 1]));
@@ -89,7 +87,7 @@ const RU_TO_LATIN: Record<string, string> = {
 
 const RU_VOWELS = new Set(["А", "Е", "Ё", "И", "О", "У", "Ы", "Э", "Ю", "Я"]);
 
-/** A letter this module can turn into a number: Latin A–Z or Russian Cyrillic. */
+/** Буква, которую модуль может превратить в число: латиница A–Z или русская кириллица. */
 export function isRecognizedLetter(character: string): boolean {
   return /^[A-ZА-ЯЁ]$/.test(character.toUpperCase());
 }

@@ -1,9 +1,8 @@
 /**
- * Shared "archetype vocabulary" used to loosely match a drawn Major Arcana
- * card to actors associated with a similar energy. Deliberately small and
- * hand-curated (not derived from card keywords directly) — it's the same
- * tag set on both sides of the match, which keeps the connection legible
- * ("dreamer" ↔ "dreamer") instead of a fuzzy text-similarity guess.
+ * Общий «словарь архетипов» для вольного сопоставления вытянутой карты старших арканов с актёрами,
+ * связанными со схожей энергией. Намеренно небольшой и составленный вручную (не выводится из ключевых
+ * слов карт): с обеих сторон сопоставления один и тот же набор тегов, поэтому связь понятна
+ * («dreamer» ↔ «dreamer»), а не является результатом нечёткого сходства текстов.
  */
 export const ARCHETYPE_TAGS = [
   "pioneer",
@@ -25,7 +24,10 @@ export type ArchetypeTag = (typeof ARCHETYPE_TAGS)[number];
 export interface ActorProfile {
   name: string;
   nameRu: string;
-  /** Real, publicly known birthdate (ISO yyyy-mm-dd) — zodiac sign and life path number are derived from it, never hardcoded, so they can't drift out of sync. */
+  /**
+   * Реальная публично известная дата рождения (ISO гггг-мм-дд): знак зодиака и число жизненного пути
+   * выводятся из неё и никогда не задаются жёстко, чтобы не разойтись.
+   */
   birthDate: string;
   archetypeTags: ArchetypeTag[];
 }

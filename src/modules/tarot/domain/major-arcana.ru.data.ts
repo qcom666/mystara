@@ -1,13 +1,13 @@
 import type { TarotCardMeaningTexts } from "./types";
 
 /**
- * Russian keywords and meanings for the 22 Major Arcana, keyed by card id.
- * Kept in its own file (rather than inline in `major-arcana.data.ts`) so the
- * English source stays readable; `major-arcana.data.ts` merges the two and
- * fails loudly at import time if a card is missing here.
+ * Русские ключевые слова и значения 22 старших арканов, по идентификатору карты. Вынесены в отдельный
+ * файл (а не вписаны в `major-arcana.data.ts`), чтобы английский источник оставался читаемым;
+ * `major-arcana.data.ts` объединяет оба и при импорте падает с понятной ошибкой, если здесь
+ * не хватает карты.
  *
- * Tone mirrors the English: hedged and reflective ("это может говорить",
- * "одна из возможных трактовок") — never a promise about the future.
+ * Тон повторяет английский: осторожный и размышляющий («это может говорить», «одна из возможных
+ * трактовок»), никогда не обещание о будущем.
  */
 export const MAJOR_ARCANA_RU: Record<string, { keywords: string[]; meanings: TarotCardMeaningTexts }> = {
   "the-fool": {

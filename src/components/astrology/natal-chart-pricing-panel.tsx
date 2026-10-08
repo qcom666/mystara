@@ -20,14 +20,14 @@ function formatMethodPrice(price: ProviderPrice): string {
   return `${price.amount} ₽`;
 }
 
-/** True inside the Telegram bot / Mini App — Stars there, ЮKassa on the website. */
+/** true внутри Telegram-бота и мини-приложения: там Звёзды, на сайте ЮKassa. */
 const inTelegram = () => Boolean(getTelegramWebApp()?.initData);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Credits arrive via the provider's webhook, a moment after the buyer pays —
- * so after a payment we poll the balance briefly instead of trusting the client.
+ * Кредиты приходят через вебхук провайдера чуть позже оплаты, поэтому после платежа мы недолго
+ * опрашиваем баланс, а не доверяем клиенту.
  */
 async function waitForCredits(): Promise<boolean> {
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -42,10 +42,9 @@ async function waitForCredits(): Promise<boolean> {
 }
 
 /**
- * Shown wherever someone can't generate a chart right now (no account, or an
- * account with zero credits). Offers the payment method for where the buyer is:
- * Telegram Stars inside the Telegram bot / Mini App (Telegram's rule for digital
- * goods), cards/SBP through ЮKassa on the website.
+ * Показывается везде, где сейчас нельзя построить карту (нет аккаунта или на аккаунте ноль кредитов).
+ * Предлагает способ оплаты по месту, где находится покупатель: Звёзды Telegram внутри бота и
+ * мини-приложения (правило Telegram для цифровых товаров), карта и СБП через ЮKassa на сайте.
  */
 export function NatalChartPricingPanel({
   title,

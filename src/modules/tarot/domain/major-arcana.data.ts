@@ -4,10 +4,9 @@ import type { TarotCard } from "./types";
 type MajorArcanaSource = Omit<TarotCard, "keywordsRu" | "meaningsRu">;
 
 /**
- * The 22 Major Arcana. Hand-authored (not templated) since these are the
- * most-featured, most-referenced cards in the product (landing showcase,
- * SEO card pages, most spreads' "big" positions). Russian keywords/meanings
- * live in `major-arcana.ru.data.ts` and are merged in below.
+ * 22 старших аркана. Написаны вручную (не по шаблону), потому что это самые заметные и часто
+ * упоминаемые карты продукта (витрина на главной, SEO-страницы карт, «большие» позиции большинства
+ * раскладов). Русские ключевые слова и значения лежат в `major-arcana.ru.data.ts` и подмешиваются ниже.
  */
 const MAJOR_ARCANA_SOURCE: MajorArcanaSource[] = [
   {

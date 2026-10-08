@@ -1,11 +1,8 @@
 /**
- * Composes short natal-chart interpretation text from existing building
- * blocks (planet nature, zodiac sign keywords, house theme, aspect meaning)
- * rather than hand-authoring the combinatorial explosion of planet×sign×house
- * text — the same trick number-type-framing.ts uses for numerology. This also
- * means the text is plain composed strings, not an "AI interpretation" (see
- * PROJECT_ARCHITECTURE.md Decision Log #16 on not claiming AI where there
- * isn't one yet).
+ * Составляет короткие тексты толкования натальной карты из готовых блоков (природа планеты, ключевые
+ * слова знака, тема дома, значение аспекта), а не пишет вручную комбинаторный взрыв «планета × знак × дом»:
+ * тот же приём, что в number-type-framing.ts для нумерологии. Поэтому это обычные составленные строки,
+ * а не «толкование ИИ»: ИИ там, где его нет, не заявляем.
  */
 import { localizeAspectDefinition, ASPECT_DEFINITIONS } from "./aspects.data";
 import { localizeHouseTheme, requireHouseTheme } from "./houses.data";
@@ -15,7 +12,7 @@ import { localizeZodiacSign, requireZodiacSignById } from "./zodiac-signs.data";
 
 type Locale = "en" | "ru";
 
-/** "{Planet} in {Sign} — {planet's domain} carries {sign}'s {keyword}, {keyword}." */
+/** Шаблон фразы: «{Planet} in {Sign} — {planet's domain} carries {sign}'s {keyword}, {keyword}.» */
 export function describePlacement(placement: PlanetPlacement, locale: Locale): string {
   const planet = localizePlanet(requirePlanetById(placement.planet), locale);
   const sign = localizeZodiacSign(requireZodiacSignById(placement.sign), locale);
@@ -27,7 +24,7 @@ export function describePlacement(placement: PlanetPlacement, locale: Locale): s
   return `${planet.name} in ${sign.name} — ${planet.nature}, colored by this sign's ${keywords}.`;
 }
 
-/** "In your {n}th House ({theme}), this shows up around {houseTheme}." */
+/** Шаблон фразы: «In your {n}th House ({theme}), this shows up around {houseTheme}.» */
 export function describeHousePlacement(placement: PlanetPlacement, locale: Locale): string | null {
   if (placement.house === null) return null;
   const planet = localizePlanet(requirePlanetById(placement.planet), locale);

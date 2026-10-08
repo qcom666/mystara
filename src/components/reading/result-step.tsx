@@ -28,7 +28,7 @@ interface ResultStepProps {
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
-  // The built-in template generator ("mock") is not AI, so only a real model earns the label.
+  // Встроенный генератор по шаблонам («mock») не ИИ, поэтому подпись заслуживает только настоящая модель.
   const aiProvider = useReadingFlowStore((s) => s.aiResult?.provider);
   const t = useTranslation();
   const interpretationHeading = aiProvider && aiProvider !== "mock" ? t.reading.aiInterpretationTitle : t.reading.interpretationTitle;

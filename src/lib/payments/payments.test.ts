@@ -7,7 +7,8 @@ const jsonResponse = (body: unknown, ok = true) => ({ ok, json: async () => body
 
 describe("enabledProviders", () => {
   const all = { TELEGRAM_BOT_TOKEN: "t", YOOKASSA_SHOP_ID: "1", YOOKASSA_SECRET_KEY: "k", CRYPTOBOT_API_TOKEN: "c" };
-  // CRYPTOBOT_API_TOKEN stays in the fixture on purpose: even if someone sets it, no crypto method may appear.
+  // CRYPTOBOT_API_TOKEN остаётся в тестовых данных намеренно: даже если его кто-то задаст,
+  // способ оплаты криптовалютой появляться не должен.
 
   it("offers only Stars inside Telegram, whatever else is configured", () => {
     expect(enabledProviders(all, "telegram")).toEqual(["stars"]);

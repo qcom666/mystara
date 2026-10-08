@@ -1,31 +1,25 @@
 /**
- * Natal Chart is a paid-only feature (no free tier, unlike Tarot/numerology/
- * astrology's sun sign) — a real ephemeris computation, priced per the
- * product decision: a pack of 3 for ₽1000. Prices are shown in rubles in every
- * language: the only currencies the seller can take are rubles (ЮKassa) and
- * Telegram Stars.
+ * Натальная карта — только платная функция (бесплатного уровня нет, в отличие от таро, нумерологии
+ * и солнечного знака): настоящий расчёт по эфемеридам, пакет из 3 за 1000 ₽. Цены показываются
+ * в рублях на всех языках: продавец может принимать только рубли (ЮKassa) и Звёзды Telegram.
  */
 export const NATAL_CHART_PACK_CREDITS = 3;
 export const NATAL_CHART_PRICE_RUB = 1000;
 /**
- * Telegram Stars price of the same pack. Stars are what Telegram requires for
- * digital goods bought inside its apps; a buyer pays roughly $0.02 per Star, so
- * 500 ⭐ lands near the ₽1000 price. Tune it here, nowhere else.
+ * Цена того же пакета в Звёздах Telegram. Звёзды — то, что Telegram требует для цифровых товаров внутри
+ * своих приложений; покупатель платит примерно $0,02 за Звезду, так что 500 ⭐ близко к цене 1000 ₽.
+ * Менять только здесь.
  */
 export const NATAL_CHART_PRICE_STARS = 500;
 
 /**
- * TEMPORARY (requested by the product owner to try the feature out): while
- * this is `true`, anyone can generate a Natal Chart for free, unsaved, with
- * no sign-in and no credit spent — both the client (NatalChartFlow) and the
- * server (`POST /api/natal-chart`) check it and skip the paywall entirely.
- * This also happens to be the only way to exercise the feature at all in an
- * environment with no `DATABASE_URL`, since the real paywall requires both
- * an account and persistence.
+ * ВРЕМЕННО: пока значение `true`, любой может построить натальную карту бесплатно, без сохранения,
+ * без входа и без списания кредита: флаг проверяют и клиент (NatalChartFlow), и сервер
+ * (`POST /api/natal-chart`), полностью пропуская оплату. Это же единственный способ вообще проверить
+ * функцию в окружении без `DATABASE_URL`, потому что настоящая оплата требует и аккаунта, и хранения.
  *
- * Flip to `false` once real accounts + a payment provider are live — nothing
- * else needs to change, the full credit/save logic below is untouched and
- * ready. Tracked in TODO.md "Natal Chart" so it isn't forgotten before launch.
+ * Переключить на `false`, когда заработают аккаунты и платёжный провайдер: больше ничего менять
+ * не нужно, вся логика кредитов и сохранения ниже готова. Обязательно выключить до запуска.
  */
 export const NATAL_CHART_FREE_FOR_TESTING = true;
 

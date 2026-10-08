@@ -62,8 +62,8 @@ export function NumerologyResult({ fullName, birthDate, onReset }: NumerologyRes
   const isAuthenticated = status === "authenticated";
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
-  // Not just "non-empty": a name with nothing calculable (digits, emoji, an
-  // unsupported script) has no valid name-derived numbers to show.
+  // Не просто «не пусто»: имя без символов, которые можно посчитать (цифры, эмодзи, неподдерживаемое
+  // письмо), не даёт чисел по имени.
   const hasName = hasCalculableLetters(fullName);
   const lifePathNumber = useMemo(() => calculateLifePathNumber(birthDate), [birthDate]);
   const birthdayNumber = useMemo(() => calculateBirthdayNumber(birthDate), [birthDate]);

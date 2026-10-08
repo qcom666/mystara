@@ -5,10 +5,10 @@ import { PRIVACY_POLICY_VERSION } from "@/lib/legal/operator";
 import { privacyConsentSchema } from "@/lib/validation/reading.schema";
 
 /**
- * Stores a signed-in user's consent to personal-data processing. Sign-up records
- * it itself; this covers the other doors (Google, Telegram) where the account is
- * created by the sign-in provider and the consent was given on this device just before.
- * Idempotent per policy version, so calling it on every visit costs one read.
+ * Сохраняет согласие вошедшего пользователя на обработку персональных данных. При регистрации по e-mail
+ * согласие записывается само; этот маршрут нужен для остальных способов входа (Google, Telegram), где
+ * аккаунт создаёт провайдер входа, а согласие дано на этом устройстве чуть раньше.
+ * Идемпотентен для каждой версии политики, поэтому вызов при каждом визите стоит одного чтения.
  */
 export async function POST(request: Request) {
   if (!isDatabaseConfigured()) {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => null);
   const parsed = privacyConsentSchema.safeParse(body);
-  // Only the current policy version can be consented to — a stale client can't record an old one.
+  // Согласие можно дать только на текущую версию политики: устаревший клиент не запишет старую.
   if (!parsed.success || parsed.data.version !== PRIVACY_POLICY_VERSION) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }

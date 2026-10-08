@@ -1,22 +1,18 @@
 /**
- * A curated list of cities for the natal-chart birth-place picker — not a
- * geocoding service. This deliberately avoids calling any third-party
- * geocoding/timezone API: birth date + time + place is sensitive personal
- * data, and sending it to an external service would be exactly the kind of
- * cross-border transfer PROJECT_ARCHITECTURE.md §14b already flags as
- * unresolved. A bundled, hand-checked list has no such exposure.
+ * Отобранный список городов для выбора места рождения в натальной карте; это не геокодер. Намеренно не
+ * используем сторонние сервисы геокодирования и часовых поясов: дата, время и место рождения —
+ * чувствительные персональные данные, и передача их внешнему сервису была бы как раз трансграничной
+ * передачей, которой стоит избегать. Встроенный, проверенный вручную список такого риска не несёт.
  *
- * Kept deliberately smaller than it could be: every entry's IANA timezone id
- * is one this was written with real confidence in. Russia in particular has
- * a long, quirky history of regional timezone changes — rather than guess,
- * cities whose current zone wasn't confidently known were left out. Anyone
- * whose city isn't listed can enter coordinates and pick a timezone by hand
- * (see NatalChartInputForm) — the honest fallback already established for
- * "we don't have real data for that" elsewhere in this module (sect: "not sure").
+ * Список намеренно короче возможного: в каждую запись попал только тот пояс IANA, в котором есть
+ * уверенность. У России долгая и запутанная история региональных изменений часовых поясов: вместо
+ * догадок города, чей нынешний пояс нельзя назвать уверенно, не включены. Тот, чьего города нет
+ * в списке, может ввести координаты и выбрать пояс вручную (см. NatalChartInputForm): тот же запасной
+ * вариант «нет достоверных данных», что и в других местах модуля (секта: «не уверен»).
  *
- * `timezone` is an IANA zone id (e.g. "Europe/Moscow") — luxon resolves the
- * correct historical UTC offset for that zone at the birth instant, so
- * historical DST rules are handled correctly without a lookup table here.
+ * `timezone` — идентификатор пояса IANA (например, «Europe/Moscow»): luxon определяет корректное
+ * историческое смещение UTC этого пояса на момент рождения, поэтому исторические правила летнего
+ * времени учитываются без собственной таблицы.
  */
 export interface City {
   id: string;
@@ -30,7 +26,7 @@ export interface City {
 }
 
 export const CITIES: City[] = [
-  // --- Russia ---
+  // --- Россия ---
   { id: "moscow", name: "Moscow", nameRu: "Москва", country: "Russia", countryRu: "Россия", latitude: 55.75, longitude: 37.62, timezone: "Europe/Moscow" },
   {
     id: "saint-petersburg",
@@ -92,7 +88,7 @@ export const CITIES: City[] = [
     timezone: "Asia/Kamchatka",
   },
 
-  // --- CIS ---
+  // --- СНГ ---
   { id: "kyiv", name: "Kyiv", nameRu: "Киев", country: "Ukraine", countryRu: "Украина", latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" },
   { id: "minsk", name: "Minsk", nameRu: "Минск", country: "Belarus", countryRu: "Беларусь", latitude: 53.9, longitude: 27.57, timezone: "Europe/Minsk" },
   { id: "almaty", name: "Almaty", nameRu: "Алматы", country: "Kazakhstan", countryRu: "Казахстан", latitude: 43.24, longitude: 76.9, timezone: "Asia/Almaty" },
@@ -106,7 +102,7 @@ export const CITIES: City[] = [
   { id: "tbilisi", name: "Tbilisi", nameRu: "Тбилиси", country: "Georgia", countryRu: "Грузия", latitude: 41.72, longitude: 44.79, timezone: "Asia/Tbilisi" },
   { id: "chisinau", name: "Chisinau", nameRu: "Кишинёв", country: "Moldova", countryRu: "Молдова", latitude: 47.01, longitude: 28.86, timezone: "Europe/Chisinau" },
 
-  // --- Europe ---
+  // --- Европа ---
   { id: "london", name: "London", nameRu: "Лондон", country: "United Kingdom", countryRu: "Великобритания", latitude: 51.51, longitude: -0.13, timezone: "Europe/London" },
   { id: "paris", name: "Paris", nameRu: "Париж", country: "France", countryRu: "Франция", latitude: 48.86, longitude: 2.35, timezone: "Europe/Paris" },
   { id: "berlin", name: "Berlin", nameRu: "Берлин", country: "Germany", countryRu: "Германия", latitude: 52.52, longitude: 13.4, timezone: "Europe/Berlin" },
@@ -127,7 +123,7 @@ export const CITIES: City[] = [
   { id: "zurich", name: "Zurich", nameRu: "Цюрих", country: "Switzerland", countryRu: "Швейцария", latitude: 47.37, longitude: 8.54, timezone: "Europe/Zurich" },
   { id: "istanbul", name: "Istanbul", nameRu: "Стамбул", country: "Turkey", countryRu: "Турция", latitude: 41.01, longitude: 28.98, timezone: "Europe/Istanbul" },
 
-  // --- Americas ---
+  // --- Америка ---
   { id: "new-york", name: "New York", nameRu: "Нью-Йорк", country: "United States", countryRu: "США", latitude: 40.71, longitude: -74.01, timezone: "America/New_York" },
   { id: "los-angeles", name: "Los Angeles", nameRu: "Лос-Анджелес", country: "United States", countryRu: "США", latitude: 34.05, longitude: -118.24, timezone: "America/Los_Angeles" },
   { id: "chicago", name: "Chicago", nameRu: "Чикаго", country: "United States", countryRu: "США", latitude: 41.88, longitude: -87.63, timezone: "America/Chicago" },
@@ -146,7 +142,7 @@ export const CITIES: City[] = [
     timezone: "America/Argentina/Buenos_Aires",
   },
 
-  // --- Asia & the Middle East ---
+  // --- Азия и Ближний Восток ---
   { id: "beijing", name: "Beijing", nameRu: "Пекин", country: "China", countryRu: "Китай", latitude: 39.9, longitude: 116.4, timezone: "Asia/Shanghai" },
   { id: "shanghai", name: "Shanghai", nameRu: "Шанхай", country: "China", countryRu: "Китай", latitude: 31.23, longitude: 121.47, timezone: "Asia/Shanghai" },
   { id: "tokyo", name: "Tokyo", nameRu: "Токио", country: "Japan", countryRu: "Япония", latitude: 35.68, longitude: 139.69, timezone: "Asia/Tokyo" },
@@ -168,7 +164,7 @@ export const CITIES: City[] = [
   { id: "tel-aviv", name: "Tel Aviv", nameRu: "Тель-Авив", country: "Israel", countryRu: "Израиль", latitude: 32.08, longitude: 34.78, timezone: "Asia/Jerusalem" },
   { id: "cairo", name: "Cairo", nameRu: "Каир", country: "Egypt", countryRu: "Египет", latitude: 30.04, longitude: 31.24, timezone: "Africa/Cairo" },
 
-  // --- Oceania ---
+  // --- Океания ---
   { id: "sydney", name: "Sydney", nameRu: "Сидней", country: "Australia", countryRu: "Австралия", latitude: -33.87, longitude: 151.21, timezone: "Australia/Sydney" },
   { id: "melbourne", name: "Melbourne", nameRu: "Мельбурн", country: "Australia", countryRu: "Австралия", latitude: -37.81, longitude: 144.96, timezone: "Australia/Melbourne" },
   { id: "auckland", name: "Auckland", nameRu: "Окленд", country: "New Zealand", countryRu: "Новая Зеландия", latitude: -36.85, longitude: 174.76, timezone: "Pacific/Auckland" },

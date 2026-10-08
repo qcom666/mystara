@@ -13,7 +13,10 @@ interface ReadingFlowProps {
   isAuthenticated: boolean;
 }
 
-/** Orchestrates the spread → question → shuffle → reveal → result state machine (store: reading-flow.store.ts). */
+/**
+ * Управляет цепочкой «расклад → вопрос → перемешивание → открытие карт → результат»
+ * (состояние хранится в reading-flow.store.ts).
+ */
 export function ReadingFlow({ spread, isAuthenticated }: ReadingFlowProps) {
   const step = useReadingFlowStore((s) => s.step);
   const spreadId = useReadingFlowStore((s) => s.spreadId);
@@ -25,8 +28,8 @@ export function ReadingFlow({ spread, isAuthenticated }: ReadingFlowProps) {
       reset();
       selectSpread(spread.id);
     }
-    // Re-sync whenever the route's spread changes (e.g. back button to a
-    // different spread) — intentionally not reacting to store internals here.
+    // Синхронизируемся при смене расклада в маршруте (например, кнопка «назад» на другой расклад);
+    // внутренности стора здесь намеренно не отслеживаем.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spread.id]);
 

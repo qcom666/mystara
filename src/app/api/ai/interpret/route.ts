@@ -6,9 +6,8 @@ import { requireCardById } from "@/modules/tarot/domain/deck";
 import { requireSpreadById } from "@/modules/tarot/domain/spreads.data";
 import type { DrawnCard } from "@/modules/tarot/domain/types";
 
-// Deliberately open to guests (no auth check) — AI interpretation is part of
-// the try-before-signup reading flow (see PROJECT_ARCHITECTURE.md Decision Log #4).
-// Request-level rate limiting is tracked as future work in TODO.md.
+// Намеренно открыт для гостей (без проверки входа): толкование — часть расклада, который можно
+// попробовать до регистрации. Ограничение частоты запросов пока не реализовано.
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = aiInterpretRequestSchema.safeParse(body);

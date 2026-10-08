@@ -1,30 +1,29 @@
 /**
- * Ascendant and Midheaven — the two angles whole-sign houses are built from.
- * Standard spherical-astronomy formulas (RAMC → ecliptic longitude), the same
- * ones used across essentially every astrology-calculation implementation:
+ * Асцендент и MC: два угла, из которых строятся дома по системе целых знаков. Стандартные формулы
+ * сферической астрономии (RAMC → эклиптическая долгота), те же, что в практически любой реализации
+ * астрологических расчётов:
  *
- *   RAMC = local sidereal time, expressed in degrees of Right Ascension
+ *   RAMC = местное звёздное время в градусах прямого восхождения
  *   MC  = atan2( sin(RAMC), cos(RAMC)·cos(ε) )
  *   Asc = atan2( cos(RAMC), −(sin(ε)·tan(φ) + cos(ε)·sin(RAMC)) )
  *
- * where ε is the obliquity of the ecliptic and φ is the observer's latitude.
- * Both are independently re-derivable from the standard ecliptic↔equatorial
- * conversion for a point with ecliptic latitude 0 (MC) and altitude 0 (Asc),
- * and both reduce to the obviously-correct degenerate case Asc = RAMC + 90°
- * when ε = 0 and φ = 0 (no ecliptic tilt ⇒ the rising point is a quarter
- * turn from the meridian, same as the equator).
+ * где ε — наклон эклиптики, φ — широта наблюдателя. Обе формулы можно независимо вывести из стандартного
+ * преобразования эклиптических координат в экваториальные для точки с эклиптической широтой 0 (MC)
+ * и высотой 0 (асцендент), и обе сводятся к очевидно верному частному случаю Asc = RAMC + 90° при
+ * ε = 0 и φ = 0 (без наклона эклиптики восходящая точка отстоит от меридиана на четверть круга,
+ * как на экваторе).
  *
- * Same ΔT-is-negligible simplification as ephemeris.ts: sidereal time is
- * computed from the plain UT-based Julian Day, not from JDE via a ΔT table.
+ * То же упрощение «ΔT пренебрежимо мала», что и в ephemeris.ts: звёздное время считается по обычной
+ * юлианской дате по UT, а не по JDE через таблицу ΔT.
  */
 import base from "astronomia/base";
 import nutation from "astronomia/nutation";
 import sidereal from "astronomia/sidereal";
 
 export interface ChartAngles {
-  /** Ecliptic longitude of the Ascendant, degrees [0, 360). */
+  /** Эклиптическая долгота асцендента, градусы [0, 360). */
   ascendantDeg: number;
-  /** Ecliptic longitude of the Midheaven, degrees [0, 360). */
+  /** Эклиптическая долгота MC, градусы [0, 360). */
   midheavenDeg: number;
 }
 
@@ -34,13 +33,13 @@ function toDeg360(rad: number): number {
 }
 
 /**
- * @param jdUt Julian Day of the birth instant, UT (not JDE — see module doc).
- * @param latitudeDeg Observer's geographic latitude, degrees north-positive.
- * @param longitudeDeg Observer's geographic longitude, degrees east-positive.
+ * @param jdUt юлианская дата момента рождения по UT (не JDE; см. описание модуля).
+ * @param latitudeDeg географическая широта наблюдателя, градусы, на север положительная.
+ * @param longitudeDeg географическая долгота наблюдателя, градусы, на восток положительная.
  */
 export function calculateChartAngles(jdUt: number, latitudeDeg: number, longitudeDeg: number): ChartAngles {
   const gstSeconds = sidereal.apparent(jdUt); // [0, 86400)
-  const gstDeg = gstSeconds / 240; // 86400s = 360°, so 1s = 1/240°
+  const gstDeg = gstSeconds / 240; // 86400 с = 360°, поэтому 1 с = 1/240°
   const ramcDeg = ((gstDeg + longitudeDeg) % 360 + 360) % 360;
   const ramcRad = (ramcDeg * Math.PI) / 180;
 

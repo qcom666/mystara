@@ -1,16 +1,14 @@
 import type { Sect, SectProfile } from "./types";
 
 /**
- * "Sect" — a real, traditional (Hellenistic) astrological concept: a chart
- * is diurnal (day) if the Sun was above the horizon at birth, nocturnal
- * (night) if below. This is exactly what asking "day or night?" captures —
- * we deliberately do NOT pretend to compute real sunrise/sunset from date +
- * location (that needs an actual ephemeris/geolocation, out of scope; see
- * PROJECT_ARCHITECTURE.md), so the person's own direct answer is the
- * honest input here, not a fabricated calculation.
+ * «Секта» — настоящее традиционное (эллинистическое) астрологическое понятие: карта дневная, если при
+ * рождении Солнце было над горизонтом, и ночная, если под ним. Именно это и выясняет вопрос «день
+ * или ночь?»: мы намеренно НЕ делаем вид, что считаем настоящие восход и закат по дате и месту (для
+ * этого нужны эфемериды и геолокация), поэтому входными данными служит прямой ответ человека,
+ * а не выдуманный расчёт.
  *
- * The Russian copy avoids the bare loanword "секта" (which reads as "cult")
- * and speaks of a "дневная / ночная карта" instead.
+ * В русском тексте не используется голое заимствование «секта» (оно читается как «культ»):
+ * говорится о «дневной / ночной карте».
  */
 export const SECT_PROFILES: Record<Sect, SectProfile> = {
   day: {
@@ -49,7 +47,7 @@ export function getSectProfile(sect: Sect): SectProfile {
   return SECT_PROFILES[sect];
 }
 
-/** The profile with its text in the requested language (English by default). */
+/** Профиль с текстом на запрошенном языке (по умолчанию английский). */
 export function localizeSectProfile(profile: SectProfile, locale: "en" | "ru"): SectProfile {
   if (locale !== "ru") return profile;
   return { ...profile, title: profile.titleRu, description: profile.descriptionRu, keynote: profile.keynoteRu };

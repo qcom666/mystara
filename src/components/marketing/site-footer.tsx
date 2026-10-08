@@ -81,14 +81,13 @@ export function SiteFooter() {
           <p className="mt-3">
             © {new Date().getFullYear()} {t.footer.copyrightSuffix}
           </p>
-          {/* Seller details: shown only once real ones are configured — never the [placeholder] text. */}
+          {/* Данные продавца показываются, только когда заданы настоящие: текст-заглушка в квадратных скобках не выводится. */}
           {!OPERATOR.name.startsWith("[") && !OPERATOR.registration.startsWith("[") && (
             <p className="mt-2">
               {t.footer.sellerLabel} {OPERATOR.name}, {OPERATOR.registration}
             </p>
           )}
-          {/* Deliberately fine print: small and muted so it doesn't shout, but real text at a
-              legible contrast — an unreadable disclaimer would defeat its own purpose. */}
+          {/* Мелкий шрифт намеренно: небольшой и приглушённый, чтобы не бросался в глаза, но с читаемым контрастом: нечитаемая оговорка теряла бы смысл. */}
           <p className="mt-4 max-w-3xl text-[11px] leading-snug text-silver-500/80">{t.footer.disclaimer}</p>
         </div>
       </div>
