@@ -435,7 +435,7 @@ export const en = {
         },
         {
           q: "How do I contact support?",
-          a: "Write to the e-mail or on Telegram: the current contacts and the provider’s details are on the “Contacts” page. For payment and refund questions, include the e-mail or Telegram name of your account, the date and the payment method.",
+          a: "Write to the e-mail, message Telegram support or call the phone number: the current contacts and the provider’s details are on the “Contacts” page. For payment and refund questions, include the e-mail or Telegram name of your account, the date and the payment method.",
         },
       ],
     },
@@ -478,6 +478,7 @@ export const en = {
     nameLabel: "Name",
     innLabel: "Tax ID (INN)",
     statusLabel: "Status",
+    phoneLabel: "Phone",
     emailLabel: "E-mail",
     telegramLabel: "Telegram support",
     addressLabel: "Address",

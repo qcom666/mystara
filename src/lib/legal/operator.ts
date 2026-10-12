@@ -23,6 +23,26 @@ function telegramUrl(raw: string | undefined): string {
   return handle ? `https://t.me/${handle.slice(1)}` : "";
 }
 
+/**
+ * Российский номер из 11 цифр (в начале 7 или 8, остальное — любые разделители) приводится к «7XXXXXXXXXX»;
+ * всё остальное считается незаданным номером.
+ */
+function phoneDigits(raw: string | undefined): string {
+  const digits = (raw ?? "").replace(/\D/g, "");
+  return digits.length === 11 && (digits[0] === "7" || digits[0] === "8") ? `7${digits.slice(1)}` : "";
+}
+
+/** «8 (962) 454-00-15» превращается в «+7 962 454-00-15»; если номер не задан, пустая строка. */
+function formatPhone(raw: string | undefined): string {
+  const d = phoneDigits(raw);
+  return d ? `+7 ${d.slice(1, 4)} ${d.slice(4, 7)}-${d.slice(7, 9)}-${d.slice(9, 11)}` : "";
+}
+
+function phoneUrl(raw: string | undefined): string {
+  const d = phoneDigits(raw);
+  return d ? `tel:+${d}` : "";
+}
+
 export const OPERATOR = {
   /** ФИО (ИП / самозанятый / физлицо) или полное наименование юрлица. */
   name: process.env.NEXT_PUBLIC_OPERATOR_NAME || placeholder("ФИО или наименование оператора"),
@@ -32,6 +52,10 @@ export const OPERATOR = {
   address: process.env.NEXT_PUBLIC_OPERATOR_ADDRESS || "",
   /** Адрес электронной почты для обращений субъектов персональных данных. */
   email: process.env.NEXT_PUBLIC_OPERATOR_EMAIL || placeholder("e-mail для обращений"),
+  /** Телефон для обращений, например +7 962 454-00-15 (необязательный: пока не задан, нигде не показывается). */
+  phone: formatPhone(process.env.NEXT_PUBLIC_OPERATOR_PHONE),
+  /** Ссылка `tel:` на этот номер (пусто, если он не задан). */
+  phoneUrl: phoneUrl(process.env.NEXT_PUBLIC_OPERATOR_PHONE),
   /** Telegram-аккаунт службы поддержки, например @Mystara_Support (необязательный). */
   telegram: normalizeTelegramHandle(process.env.NEXT_PUBLIC_OPERATOR_TELEGRAM),
   /** Ссылка на этот аккаунт (пусто, если он не задан). */

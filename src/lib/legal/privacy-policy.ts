@@ -48,11 +48,11 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
     body: {
       ru: [
         "Оператором персональных данных (лицом, определяющим цели и состав обработки) является:",
-        [`Наименование / ФИО: ${op.name}`, `Регистрационные данные: ${op.registration}`, ...(op.address ? [`Адрес: ${op.address}`] : []), `Электронная почта для обращений: ${op.email}`, ...(op.telegram ? [`Telegram: ${op.telegram}`] : [])],
+        [`Наименование / ФИО: ${op.name}`, `Регистрационные данные: ${op.registration}`, ...(op.address ? [`Адрес: ${op.address}`] : []), ...(op.phone ? [`Телефон: ${op.phone}`] : []), `Электронная почта для обращений: ${op.email}`, ...(op.telegram ? [`Поддержка в Telegram: ${op.telegram}`] : [])],
       ],
       en: [
         "The personal-data operator (the party that determines the purposes and scope of processing) is:",
-        [`Name: ${op.name}`, `Registration details: ${op.registration}`, ...(op.address ? [`Address: ${op.address}`] : []), `Contact e-mail: ${op.email}`, ...(op.telegram ? [`Telegram: ${op.telegram}`] : [])],
+        [`Name: ${op.name}`, `Registration details: ${op.registration}`, ...(op.address ? [`Address: ${op.address}`] : []), ...(op.phone ? [`Phone: ${op.phone}`] : []), `Contact e-mail: ${op.email}`, ...(op.telegram ? [`Telegram support: ${op.telegram}`] : [])],
       ],
     },
   },

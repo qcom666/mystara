@@ -16,6 +16,7 @@ export function ContactsView() {
     { label: c.nameLabel, value: OPERATOR.name },
     { label: c.statusLabel, value: c.sellerStatus },
     { label: c.innLabel, value: OPERATOR.registration.replace(/^ИНН\s*/i, "") },
+    ...(OPERATOR.phone ? [{ label: c.phoneLabel, value: OPERATOR.phone, href: OPERATOR.phoneUrl }] : []),
     { label: c.emailLabel, value: OPERATOR.email },
     ...(OPERATOR.telegram ? [{ label: c.telegramLabel, value: OPERATOR.telegram, href: OPERATOR.telegramUrl }] : []),
     ...(OPERATOR.address ? [{ label: c.addressLabel, value: OPERATOR.address }] : []),
@@ -34,7 +35,7 @@ export function ContactsView() {
               <dt className="w-44 shrink-0 text-silver-500">{label}</dt>
               <dd className="text-silver-200">
                 {href ? (
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-gold-300 underline-offset-2 hover:underline">
+                  <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="text-gold-300 underline-offset-2 hover:underline">
                     {value}
                   </a>
                 ) : (

@@ -39,7 +39,7 @@ interface Copy {
   help: string;
   fallback: string;
   docs: string;
-  support: (email: string, telegram: string) => string;
+  support: (email: string, telegram: string, phone: string) => string;
 }
 
 const COPY: Record<BotLang, Copy> = {
@@ -54,8 +54,8 @@ const COPY: Record<BotLang, Copy> = {
       "Mystara — это развлекательный сервис: расклады и толкования не являются предсказанием и не заменяют консультацию специалиста.\n\nНажмите кнопку ниже, чтобы открыть приложение. Команда /start покажет приветствие снова, /docs — документы, /support — как связаться с нами.",
     fallback: "Все расклады — в приложении. Нажмите кнопку ниже, чтобы открыть Mystara.",
     docs: "Документы сервиса Mystara: политика конфиденциальности, публичная оферта (она же пользовательское соглашение), контакты и реквизиты продавца.",
-    support: (email, telegram) =>
-      `Служба поддержки Mystara.\n\nВопросы по заказу, оплате и возврату — пишите на ${email}${telegram ? ` или в Telegram ${telegram}` : ""}. Отвечаем в течение 3 рабочих дней, по претензиям — в течение 10 дней.`,
+    support: (email, telegram, phone) =>
+      `Служба поддержки Mystara.\n\nВопросы по заказу, оплате и возврату — пишите на ${email}${telegram ? `, в Telegram-поддержку ${telegram}` : ""}${phone ? ` или звоните: ${phone}` : ""}. Отвечаем в течение 3 рабочих дней, по претензиям — в течение 10 дней.`,
   },
   en: {
     open: "Open Mystara",
@@ -68,8 +68,8 @@ const COPY: Record<BotLang, Copy> = {
       "Mystara is an entertainment service: readings and interpretations are not predictions and are no substitute for professional advice.\n\nTap the button below to open the app. /start shows the greeting again, /docs the documents, /support how to reach us.",
     fallback: "All readings live in the app. Tap the button below to open Mystara.",
     docs: "Mystara documents: the privacy policy, the public offer (also the terms of use), and the seller’s contacts and details.",
-    support: (email, telegram) =>
-      `Mystara support.\n\nQuestions about an order, a payment or a refund — write to ${email}${telegram ? ` or on Telegram ${telegram}` : ""}. We reply within 3 business days; claims within 10 days.`,
+    support: (email, telegram, phone) =>
+      `Mystara support.\n\nQuestions about an order, a payment or a refund — write to ${email}${telegram ? `, message Telegram support ${telegram}` : ""}${phone ? ` or call ${phone}` : ""}. We reply within 3 business days; claims within 10 days.`,
   },
 };
 
@@ -114,7 +114,7 @@ export function buildBotReply(update: TelegramUpdate, appUrl: string): BotReply 
   let text: string;
   if (command === "start") text = copy.start;
   else if (command === "help") text = copy.help;
-  else if (command === "support") text = copy.support(OPERATOR.email, OPERATOR.telegram);
+  else if (command === "support") text = copy.support(OPERATOR.email, OPERATOR.telegram, OPERATOR.phone);
   else if (command && DOCS_COMMANDS.has(command)) text = copy.docs;
   else text = copy.fallback;
 
