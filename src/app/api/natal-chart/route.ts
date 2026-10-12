@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
-import { NATAL_CHART_FREE_FOR_TESTING } from "@/lib/pricing/natal-chart-pricing";
 import {
   getNatalChartCredits,
   listNatalChartReadingsForUser,
@@ -11,15 +10,10 @@ import { createNatalChartSchema } from "@/lib/validation/natal-chart.schema";
 import { calculateNatalChart } from "@/modules/astrology/services/calculate-natal-chart";
 import { resolveBirthInstantUtc } from "@/modules/astrology/services/resolve-birth-instant";
 
-// Натальная карта платная с самого начала (бесплатного уровня нет): цены в lib/pricing/natal-chart-pricing.ts.
-// Флаг NATAL_CHART_FREE_FOR_TESTING временно отключает всю проверку оплаты; подробности — в комментарии
-// к самой константе.
+// Натальная карта платная (бесплатного уровня нет): цены в lib/pricing/natal-chart-pricing.ts.
+// Построить карту может только вошедший пользователь с положительным остатком кредитов.
 
 export async function GET() {
-  if (NATAL_CHART_FREE_FOR_TESTING) {
-    // Infinity не переживает JSON: это просто «не блокировать по кредитам», а не реальный баланс.
-    return NextResponse.json({ credits: Number.MAX_SAFE_INTEGER, readings: [] });
-  }
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured", message: "Persistence isn't configured yet." }, { status: 503 });
   }
@@ -36,15 +30,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = NATAL_CHART_FREE_FOR_TESTING ? null : await auth();
-
-  if (!NATAL_CHART_FREE_FOR_TESTING) {
-    if (!isDatabaseConfigured()) {
-      return NextResponse.json({ error: "db_not_configured", message: "Persistence isn't configured yet." }, { status: 503 });
-    }
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-    }
+  if (!isDatabaseConfigured()) {
+    return NextResponse.json({ error: "db_not_configured", message: "Persistence isn't configured yet." }, { status: 503 });
+  }
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const body = await request.json().catch(() => null);
@@ -75,12 +66,8 @@ export async function POST(request: Request) {
     longitude: input.longitude,
   });
 
-  if (NATAL_CHART_FREE_FOR_TESTING) {
-    return NextResponse.json({ reading: null, chart }, { status: 201 });
-  }
-
   const saved = await spendCreditAndSaveNatalChart({
-    userId: session!.user.id,
+    userId: session.user.id,
     birthDate: birthDateUtc,
     hasExactTime: input.hasExactTime,
     birthPlace: input.placeLabel ?? null,

@@ -12,17 +12,6 @@ export const NATAL_CHART_PRICE_RUB = 1000;
  */
 export const NATAL_CHART_PRICE_STARS = 500;
 
-/**
- * ВРЕМЕННО: пока значение `true`, любой может построить натальную карту бесплатно, без сохранения,
- * без входа и без списания кредита: флаг проверяют и клиент (NatalChartFlow), и сервер
- * (`POST /api/natal-chart`), полностью пропуская оплату. Это же единственный способ вообще проверить
- * функцию в окружении без `DATABASE_URL`, потому что настоящая оплата требует и аккаунта, и хранения.
- *
- * Переключить на `false`, когда заработают аккаунты и платёжный провайдер: больше ничего менять
- * не нужно, вся логика кредитов и сохранения ниже готова. Обязательно выключить до запуска.
- */
-export const NATAL_CHART_FREE_FOR_TESTING = true;
-
 export function getNatalChartPrice(): { amount: number; currency: "RUB"; formatted: string } {
   return { amount: NATAL_CHART_PRICE_RUB, currency: "RUB", formatted: `${NATAL_CHART_PRICE_RUB} ₽` };
 }

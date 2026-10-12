@@ -1,3 +1,10 @@
+import { NATAL_CHART_PACK_CREDITS, NATAL_CHART_PRICE_RUB } from "@/lib/pricing/natal-chart-pricing";
+import { PREMIUM_PRICE_RUB } from "@/lib/pricing/premium-pricing";
+import { PLAN_POLICIES } from "@/modules/subscriptions/usage-limit.service";
+
+/** Стоимость одного неиспользованного кредита при возврате: цена пакета, делённая на число построений. */
+const PER_CREDIT_RUB = (NATAL_CHART_PRICE_RUB / NATAL_CHART_PACK_CREDITS).toFixed(2);
+
 /**
  * Английский словарь. Содержит строки интерфейса (навигация, формы, процесс расклада, вход, ошибки)
  * и тексты главной страницы: то, что нужно менять вместе при добавлении языка. Больших наборов
@@ -222,7 +229,7 @@ export const en = {
     offerNoticePrefix: "By paying you accept the",
     offerNoticeLink: "public offer",
     methodStars: "Telegram Stars",
-    methodCard: "Card or SBP (₽)",
+    methodCard: "Card or SBP (₽, via YooKassa)",
     signInToBuy: "Sign in to buy",
     checkoutFailed: "Couldn't start the payment. Please try again in a moment.",
     confirmingPayment: "Confirming your payment…",
@@ -262,7 +269,6 @@ export const en = {
     generateAnotherCta: "Generate another chart",
     savedNotice: "Saved to your Natal Chart history.",
     learnMoreCta: "Learn more",
-    testingModeNotice: "Free while we're testing this — not saved to your history yet, and no sign-in needed.",
   },
   lifePathPage: {
     back: "Calculate your own",
@@ -384,24 +390,52 @@ export const en = {
       title: "Questions, answered plainly",
       items: [
         {
-          q: "Is this real fortune telling?",
-          a: "No. Mystara presents Tarot as a tool for reflection, symbolism, and guided introspection — not a guaranteed prediction of the future, and not financial, medical, or legal advice.",
+          q: "What is Mystara, and is this real fortune telling?",
+          a: "Mystara is an entertainment and educational service: Tarot readings, numerology, astrology and the natal chart. These are symbolic interpretations for reflection and self-discovery — not a prediction of the future, and not psychological, medical, legal or financial advice. We do not guarantee that any event will happen.",
         },
         {
-          q: "Is the interpretation always accurate?",
-          a: '"Accurate" isn\'t really the right frame for Tarot. It is grounded in each card\'s traditional meaning and your question, using hedged language on purpose — think of it as a thoughtful second opinion, not an oracle.',
+          q: "What is free and what is paid?",
+          a: `Free: the One Card, Three Card, Five Card and Yes/No spreads (up to ${PLAN_POLICIES.free.maxReadingsPerDay} a day), numerology and the zodiac sign. Paid: the natal chart — a pack of ${NATAL_CHART_PACK_CREDITS} calculations for ${NATAL_CHART_PRICE_RUB} RUB. The Premium subscription (${PREMIUM_PRICE_RUB} RUB a month) is not on sale yet: payment will open later.`,
+        },
+        {
+          q: "What does the Natal Chart pack include and how much does it cost?",
+          a: `The pack costs ${NATAL_CHART_PRICE_RUB} RUB and includes ${NATAL_CHART_PACK_CREDITS} natal-chart calculations. From your birth date, time and place we calculate planet positions from ephemerides, the Ascendant, houses and aspects, with a short interpretation of each. It is a one-time purchase: no subscription and no automatic charges. Unused credits do not expire while the service is running.`,
+        },
+        {
+          q: "How do I pay?",
+          a: "On the website — by bank card or through the Faster Payments System (SBP), in roubles; the payment is processed by the payment service YooKassa. Open the natal chart page, press “Buy”, choose “Card or SBP” and pay on the YooKassa page. Inside Telegram, payment is accepted in Telegram Stars. To buy you need an account and to be 18 or older.",
+        },
+        {
+          q: "Is paying safe? Do you see my card details?",
+          a: "No. Card details are entered only on the payment service YooKassa’s page: we never receive or store them. We only get confirmation that the payment went through.",
+        },
+        {
+          q: "When do I get access after paying?",
+          a: "Automatically: as soon as YooKassa confirms the payment, credits are added to your account, usually within a few minutes. If the payment went through but you have no credits after more than 24 hours, write to us and we will add the credits or refund the money.",
+        },
+        {
+          q: "Will I get a receipt?",
+          a: "Yes. The provider is self-employed and applies the tax on professional income, so VAT is not charged. A receipt for each payment is issued in the “My Tax” app and sent to you. If it has not arrived, write to us with the date and amount of the payment.",
+        },
+        {
+          q: "Can I get a refund?",
+          a: `Yes. You can withdraw from unused credits: each one is refunded at ${PER_CREDIT_RUB} RUB (the pack price divided by ${NATAL_CHART_PACK_CREDITS}). Charts already calculated and shown to you are not refundable, because the service has been rendered. If a calculation fails because of a fault, the credit is restored. To request a refund, write to the e-mail in the “Contacts” section: the request is considered within 10 days and the money is returned by the method you paid with (when it arrives depends on your bank). Full terms are in section 8 of the public offer.`,
         },
         {
           q: "Do I need an account?",
-          a: "No — you can complete a full reading as a guest. Signing in lets you save readings and build a history over time.",
+          a: "For Tarot spreads, numerology and the zodiac sign — no: everything works without signing up. An account is needed to keep your history and to buy the natal chart, because credits are attached to the account. You can sign in with e-mail and password or through Telegram.",
         },
         {
-          q: "What's the difference between Free and Premium?",
-          a: "Free includes several spreads and a daily reading limit. Premium (coming soon) adds unlimited readings, advanced spreads like the Celtic Cross, and deeper interpretations.",
+          q: "How accurate is the natal chart?",
+          a: "Planet positions are calculated astronomically, from ephemerides. The Ascendant and houses depend on the birth time and place you enter being correct: if the time is unknown we do not guess them and show only the planets’ positions in the signs. The interpretation texts are generated automatically and are symbolic in nature.",
         },
         {
-          q: "Will there be more than Tarot?",
-          a: "Yes — Mystara is built as a platform. Numerology and astrology are already live, sharing the same account and interpretation engine.",
+          q: "What personal data do you process?",
+          a: "Only what the service needs: e-mail and name (or Telegram profile), saved readings and, for the natal chart, birth date, time and place. We do not receive payment details. You can withdraw your consent and ask for your account and data to be deleted. See the privacy policy for details.",
+        },
+        {
+          q: "How do I contact support?",
+          a: "Write to the e-mail or on Telegram: the current contacts and the provider’s details are on the “Contacts” page. For payment and refund questions, include the e-mail or Telegram name of your account, the date and the payment method.",
         },
       ],
     },

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/lib/i18n";
-import { NATAL_CHART_FREE_FOR_TESTING } from "@/lib/pricing/natal-chart-pricing";
 import type { NatalChart } from "@/modules/astrology/domain/types";
 import { NatalChartInputForm, type NatalChartFormValue } from "./natal-chart-input-form";
 import { NatalChartPricingPanel } from "./natal-chart-pricing-panel";
@@ -18,13 +17,10 @@ type Stage = "loading-credits" | "no-credits" | "form" | "generating" | "result"
 export function NatalChartFlow() {
   const t = useTranslation();
   const { status } = useSession();
-  // Ленивая инициализация, а не эффект: NATAL_CHART_FREE_FOR_TESTING — константа, а не то, что нужно
-  // «синхронизировать» после монтирования.
-  const [stage, setStage] = useState<Stage>(() => (NATAL_CHART_FREE_FOR_TESTING ? "form" : "loading-credits"));
+  const [stage, setStage] = useState<Stage>("loading-credits");
   const [chart, setChart] = useState<NatalChart | null>(null);
 
   useEffect(() => {
-    if (NATAL_CHART_FREE_FOR_TESTING) return;
     if (status !== "authenticated") return;
     let cancelled = false;
     // При возврате со страницы оплаты картой вебхук может ещё не отработать, поэтому даём несколько попыток.
@@ -86,7 +82,7 @@ export function NatalChartFlow() {
     }
   }
 
-  if (status === "loading" && !NATAL_CHART_FREE_FOR_TESTING) {
+  if (status === "loading") {
     return (
       <div className="mx-auto max-w-md px-4 py-24">
         <Skeleton className="h-40 w-full rounded-2xl" />
@@ -94,7 +90,7 @@ export function NatalChartFlow() {
     );
   }
 
-  if (status === "unauthenticated" && !NATAL_CHART_FREE_FOR_TESTING) {
+  if (status === "unauthenticated") {
     return (
       <div className="mx-auto max-w-md px-4 py-16 sm:py-24">
         <GlassPanel className="text-center">
@@ -141,7 +137,6 @@ export function NatalChartFlow() {
     return (
       <NatalChartResult
         chart={chart}
-        saved={!NATAL_CHART_FREE_FOR_TESTING}
         onGenerateAnother={() => {
           setChart(null);
           setStage("form");
@@ -152,11 +147,6 @@ export function NatalChartFlow() {
 
   return (
     <div className="px-4 py-16 sm:py-24">
-      {NATAL_CHART_FREE_FOR_TESTING && (
-        <p className="mx-auto mb-6 max-w-md rounded-xl border border-gold-500/25 bg-gold-500/5 p-3 text-center text-xs text-gold-300">
-          {t.natalChartPage.testingModeNotice}
-        </p>
-      )}
       <NatalChartInputForm onSubmit={handleSubmit} />
     </div>
   );
