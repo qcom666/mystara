@@ -1,5 +1,6 @@
 import { NATAL_CHART_PACK_CREDITS, NATAL_CHART_PRICE_RUB, NATAL_CHART_PRICE_STARS } from "@/lib/pricing/natal-chart-pricing";
-import { PREMIUM_PRICE_RUB } from "@/lib/pricing/premium-pricing";
+import { PREMIUM_PRICE_RUB, PREMIUM_PRICE_STARS } from "@/lib/pricing/premium-pricing";
+import { PREMIUM_NATAL_CHART_INTERVAL_DAYS, PREMIUM_PERIOD_DAYS } from "@/modules/subscriptions/premium";
 import { OPERATOR } from "./operator";
 import type { LegalSection } from "./privacy-policy";
 
@@ -75,7 +76,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
         "Исполнитель обязуется предоставить Пользователю доступ к платным функциям Сервиса — в виде цифровых услуг, оказываемых дистанционно через сеть «Интернет», а Пользователь обязуется оплатить их на условиях настоящей оферты.",
         [
           `пакет «Натальная карта» — ${NATAL_CHART_PACK_CREDITS} построения натальной карты (расчёт положений планет, асцендента, домов и аспектов по указанным Пользователем дате, времени и месту рождения);`,
-          "подписка Premium — доступ к безлимитным раскладам и всем раскладам Таро на оплаченный период (оказывается с момента открытия оплаты Premium в Сервисе).",
+          `подписка Premium — доступ на оплаченный срок (${PREMIUM_PERIOD_DAYS} дней) к безлимитным раскладам, ко всем раскладам Таро и к одному построению натальной карты в ${PREMIUM_NATAL_CHART_INTERVAL_DAYS} дней без списания Кредитов.`,
         ],
         "Бесплатные функции Сервиса предоставляются без оплаты и предметом настоящего договора не являются, но на них также распространяются разделы 4, 9 и 10.",
       ],
@@ -83,7 +84,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
         "The Provider undertakes to give the User access to the Service’s paid features — as digital services delivered remotely over the Internet — and the User undertakes to pay for them on the terms of this offer.",
         [
           `the “Natal Chart” pack — ${NATAL_CHART_PACK_CREDITS} natal-chart calculations (positions of the planets, the Ascendant, houses and aspects based on the birth date, time and place the User enters);`,
-          "the Premium subscription — access to unlimited readings and all Tarot spreads for the paid period (provided from the moment Premium payment is opened in the Service).",
+          `the Premium subscription — access for the paid period (${PREMIUM_PERIOD_DAYS} days) to unlimited readings, all Tarot spreads and one natal-chart calculation every ${PREMIUM_NATAL_CHART_INTERVAL_DAYS} days without using Credits.`,
         ],
         "The Service’s free features are provided at no charge and are not the subject of this contract, but sections 4, 9 and 10 apply to them too.",
       ],
@@ -128,20 +129,22 @@ export const OFFER_SECTIONS: LegalSection[] = [
       ru: [
         [
           `пакет «Натальная карта» (${NATAL_CHART_PACK_CREDITS} построения): ${NATAL_CHART_PRICE_RUB} ₽ (при оплате Telegram Stars — ${NATAL_CHART_PRICE_STARS} Stars);`,
-          `подписка Premium: ${PREMIUM_PRICE_RUB} ₽ в месяц.`,
+          `подписка Premium (${PREMIUM_PERIOD_DAYS} дней): ${PREMIUM_PRICE_RUB} ₽ (при оплате Telegram Stars — ${PREMIUM_PRICE_STARS} Stars).`,
         ],
         "Актуальные цены указаны на странице «Тарифы». Цена, показанная при оформлении Заказа, — окончательная; налог на добавленную стоимость не облагается (Исполнитель применяет специальный налоговый режим «Налог на профессиональный доход»).",
         "Способы оплаты, доступные на момент Заказа, показываются в интерфейсе Сервиса. На сайте это банковская карта и Система быстрых платежей (СБП) через подключённый к Сервису платёжный сервис (его наименование показывается при оформлении Заказа) — в российских рублях. Внутри Telegram оплата принимается в Telegram Stars. Сервис не хранит данные банковских карт: они вводятся на стороне платёжного сервиса.",
+        `Подписка Premium оплачивается заранее на ${PREMIUM_PERIOD_DAYS} дней. Автоматического продления и повторных списаний нет: чтобы продлить Premium, Пользователь оплачивает его ещё раз, и новый срок добавляется к уже оплаченному.`,
         "Исполнитель вправе изменять цены. Изменение не затрагивает уже оплаченные Заказы и применяется к Заказам, оформленным после публикации новой цены.",
         "Чек по каждому платежу формируется Исполнителем в приложении «Мой налог» и направляется Пользователю в порядке, установленном Федеральным законом от 27.11.2018 № 422-ФЗ.",
       ],
       en: [
         [
           `“Natal Chart” pack (${NATAL_CHART_PACK_CREDITS} calculations): ${NATAL_CHART_PRICE_RUB} RUB (${NATAL_CHART_PRICE_STARS} Stars when paying with Telegram Stars);`,
-          `Premium subscription: ${PREMIUM_PRICE_RUB} RUB per month.`,
+          `Premium subscription (${PREMIUM_PERIOD_DAYS} days): ${PREMIUM_PRICE_RUB} RUB (${PREMIUM_PRICE_STARS} Stars when paying with Telegram Stars).`,
         ],
         "Current prices are shown on the “Pricing” page. The price shown when the Order is placed is final; VAT is not charged (the Provider applies the special tax regime “Tax on Professional Income”).",
         "The payment methods available at the time of the Order are shown in the Service’s interface. On the website these are bank card and the Faster Payments System (SBP) through the payment service connected to the Service (its name is shown when the Order is placed), in Russian roubles. Inside Telegram payment is accepted in Telegram Stars. The Service does not store bank-card data: it is entered on the payment service’s side.",
+        `The Premium subscription is paid up front for ${PREMIUM_PERIOD_DAYS} days. There is no automatic renewal and no recurring charges: to extend Premium the User pays for it again, and the new period is added to the one already paid.`,
         "The Provider may change prices. A change does not affect Orders already paid and applies to Orders placed after the new price is published.",
         "A receipt for each payment is issued by the Provider in the “My Tax” app and sent to the User as required by Federal Law No. 422-FZ of 27 November 2018.",
       ],
@@ -152,14 +155,16 @@ export const OFFER_SECTIONS: LegalSection[] = [
     title: { ru: "7. Порядок оказания услуг", en: "7. How the services are provided" },
     body: {
       ru: [
-        "Услуги оказываются дистанционно и в цифровом виде. После подтверждения платежа платёжным сервисом Кредиты зачисляются на Аккаунт Пользователя автоматически, как правило в течение нескольких минут; подписка Premium активируется на тот же срок после оплаты.",
+        `Услуги оказываются дистанционно и в цифровом виде. После подтверждения платежа платёжным сервисом Кредиты зачисляются на Аккаунт Пользователя автоматически, как правило в течение нескольких минут; подписка Premium активируется так же и действует ${PREMIUM_PERIOD_DAYS} дней с момента оплаты (если Premium уже действует, новый срок добавляется к его окончанию).`,
         "Каждое построение натальной карты списывает один Кредит и считается оказанной услугой с момента, когда результат показан Пользователю. Кредиты не имеют срока действия, пока Сервис работает.",
+        `Пока Premium действует, Пользователю доступно одно построение натальной карты за каждые ${PREMIUM_NATAL_CHART_INTERVAL_DAYS} дней без списания Кредитов: срок отсчитывается от предыдущего такого построения, а неиспользованные построения не накапливаются. Если такое построение уже использовано, очередное построение списывает один Кредит, как обычно.`,
         "Если платёж прошёл, а Кредиты не поступили в течение 24 часов, Пользователю следует написать Исполнителю по адресу из раздела «Реквизиты» — Исполнитель зачислит Кредиты или вернёт деньги.",
         "Если из-за технического сбоя построение карты не было выполнено, списанный Кредит восстанавливается.",
       ],
       en: [
-        "The services are provided remotely and in digital form. Once the payment service confirms the payment, Credits are added to the User’s Account automatically, normally within a few minutes; a Premium subscription is activated for the paid period in the same way.",
+        `The services are provided remotely and in digital form. Once the payment service confirms the payment, Credits are added to the User’s Account automatically, normally within a few minutes; a Premium subscription is activated in the same way and runs for ${PREMIUM_PERIOD_DAYS} days from the payment (if Premium is already active, the new period is added to its end).`,
         "Each natal-chart calculation uses one Credit and counts as a service rendered from the moment the result is shown to the User. Credits do not expire while the Service is operating.",
+        `While Premium is active, the User may build one natal chart every ${PREMIUM_NATAL_CHART_INTERVAL_DAYS} days without using Credits: the period runs from the previous such calculation, and unused calculations do not accumulate. If that calculation has already been used, the next one uses one Credit as usual.`,
         "If a payment went through but no Credits arrived within 24 hours, the User should write to the Provider at the address in the “Details” section — the Provider will add the Credits or refund the money.",
         "If a calculation could not be completed because of a technical failure, the Credit used is restored.",
       ],
@@ -173,7 +178,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
         "Пользователь вправе в любое время отказаться от договора, оплатив Исполнителю фактически понесённые им расходы (статья 32 Закона о защите прав потребителей, статья 782 ГК РФ). Фактически оказанной услугой считается каждое построение натальной карты, результат которого уже показан Пользователю.",
         [
           `при отказе от неиспользованных Кредитов Исполнитель возвращает стоимость каждого неиспользованного Кредита: ${ru(perCredit)} ₽ за один Кредит пакета стоимостью ${NATAL_CHART_PRICE_RUB} ₽ (цена пакета, делённая на ${NATAL_CHART_PACK_CREDITS});`,
-          "при отказе от подписки Premium дальнейшие списания прекращаются, а Исполнитель возвращает оплату за неиспользованную часть оплаченного периода пропорционально оставшимся дням;",
+          "при отказе от подписки Premium Исполнитель возвращает оплату за неиспользованную часть оплаченного периода пропорционально оставшимся дням;",
           "построения натальной карты, уже выполненные и показанные Пользователю, возврату не подлежат, так как услуга оказана в полном объёме и надлежащего качества.",
         ],
         "Чтобы вернуть деньги, Пользователь направляет заявление на e-mail из раздела «Реквизиты» с указанием Аккаунта (e-mail или Telegram-имени), даты и способа оплаты. Заявление рассматривается в течение 10 дней со дня его получения (статья 31 Закона о защите прав потребителей).",
@@ -184,7 +189,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
         "The User may withdraw from the contract at any time by paying the Provider for the costs actually incurred (Article 32 of the Consumer Rights Protection Law, Article 782 of the Civil Code). A natal-chart calculation whose result has already been shown to the User counts as a service actually rendered.",
         [
           `when withdrawing from unused Credits the Provider refunds the value of each unused Credit: ${ru(perCredit)} RUB per Credit of a pack priced at ${NATAL_CHART_PRICE_RUB} RUB (the pack price divided by ${NATAL_CHART_PACK_CREDITS});`,
-          "when withdrawing from a Premium subscription further charges stop and the Provider refunds the unused part of the paid period in proportion to the remaining days;",
+          "when withdrawing from a Premium subscription the Provider refunds the unused part of the paid period in proportion to the remaining days;",
           "natal-chart calculations already completed and shown to the User are not refundable, because the service has been rendered in full and of proper quality.",
         ],
         "To get a refund the User sends a request to the e-mail address in the “Details” section, naming the Account (e-mail or Telegram name) and the date and method of payment. The request is considered within 10 days of receipt (Article 31 of the Consumer Rights Protection Law).",

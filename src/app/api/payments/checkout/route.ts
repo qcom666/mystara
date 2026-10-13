@@ -2,25 +2,39 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
-import { NATAL_CHART_PRICES, enabledProviders } from "@/lib/payments/catalog";
+import { PAYMENT_PRODUCT_IDS, PRODUCT_PRICES, enabledProviders } from "@/lib/payments/catalog";
 import { createStarsInvoiceLink } from "@/lib/payments/providers/stars";
 import { createYooKassaPayment } from "@/lib/payments/providers/yookassa";
 import { createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
 
 const checkoutSchema = z.object({
   provider: z.enum(["stars", "yookassa"]),
+  // По умолчанию пакет натальных карт: так работали клиенты до появления Premium.
+  product: z.enum(PAYMENT_PRODUCT_IDS).default("natal_pack"),
   locale: z.enum(["en", "ru"]).default("en"),
   // Где находится покупатель: Звёзды для Telegram, ЮKassa для сайта (см. lib/payments/catalog.ts).
   context: z.enum(["telegram", "web"]).default("web"),
 });
 
 const COPY = {
-  en: { title: "Natal Chart: 3 charts", description: "A pack of 3 Natal Chart readings on Mystara." },
-  ru: { title: "Натальная карта: 3 расклада", description: "Пакет из 3 раскладов натальной карты в Mystara." },
+  natal_pack: {
+    en: { title: "Natal Chart: 3 charts", description: "A pack of 3 Natal Chart readings on Mystara." },
+    ru: { title: "Натальная карта: 3 расклада", description: "Пакет из 3 раскладов натальной карты в Mystara." },
+  },
+  premium_month: {
+    en: { title: "Mystara Premium: 30 days", description: "Mystara Premium for 30 days: unlimited readings, all spreads, a Natal Chart every week." },
+    ru: { title: "Mystara Premium: 30 дней", description: "Mystara Premium на 30 дней: безлимитные расклады, все расклады, натальная карта раз в неделю." },
+  },
+} as const;
+
+/** Куда вернуть покупателя после оплаты на стороне провайдера. */
+const RETURN_PATH = {
+  natal_pack: "/astrology/natal-chart?payment=return",
+  premium_month: "/pricing?payment=return",
 } as const;
 
 /**
- * Начинает покупку пакета натальных карт: записывает покупку со статусом pending, запрашивает у выбранного
+ * Начинает покупку (пакет натальных карт или период Premium): записывает покупку со статусом pending, запрашивает у выбранного
  * провайдера ссылку на оплату и возвращает её. Кредиты здесь НЕ начисляются: это делает только вебхук
  * провайдера после реального перевода денег (см. fulfillPurchase в purchase.repository.ts).
  */
@@ -37,17 +51,18 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
-  const { provider, locale, context } = parsed.data;
+  const { provider, product, locale, context } = parsed.data;
 
   if (!enabledProviders(process.env, context).includes(provider)) {
     return NextResponse.json({ error: "provider_unavailable" }, { status: 400 });
   }
 
-  const price = NATAL_CHART_PRICES[provider];
-  const copy = COPY[locale];
-  const returnUrl = `${new URL(request.url).origin}/astrology/natal-chart?payment=return`;
+  const price = PRODUCT_PRICES[product][provider];
+  const copy = COPY[product][locale];
+  const returnUrl = `${new URL(request.url).origin}${RETURN_PATH[product]}`;
   const purchase = await createPendingPurchase({
     userId: session.user.id,
+    product,
     provider,
     amount: price.amount,
     currency: price.currency,

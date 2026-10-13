@@ -60,7 +60,7 @@ model User {
   numerologyReadings NumerologyReading[]
   astrologyReadings  AstrologyReading[]
   natalChartReadings NatalChartReading[]
-  natalChartPurchases NatalChartPurchase[]
+  purchases           Purchase[]
 }
 
 model Account {
@@ -253,6 +253,7 @@ model NatalChartReading {
   longitude  Float
   timezone   String // идентификатор зоны IANA, по которому местное время переводилось в UTC, например "Europe/Moscow"
   chart      Json // полностью рассчитанная NatalChart (см. modules/astrology/domain/types.ts); версионируемое содержимое, реляционная модель не нужна
+  source     String   @default("credit") // чем оплачено построение: "credit" (кредит пакета) | "premium" (недельное построение по подписке Premium)
   createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -260,11 +261,14 @@ model NatalChartReading {
   @@index([userId, createdAt])
 }
 
-model NatalChartPurchase {
+// Покупки: пакет натальных карт и период Premium. Таблица исторически называется NatalChartPurchase,
+// поэтому модель привязана к ней через @@map: данные и имена ограничений остаются прежними.
+model Purchase {
   id             String   @id @default(cuid())
   userId         String
-  creditsGranted Int
-  amount         Int // целое число единиц `currency`: 1000 для пакета за 1000 ₽; при такой цене дробные доли не нужны
+  product        String   @default("natal_pack") // "natal_pack" (пакет натальных карт) | "premium_month" (период Premium)
+  creditsGranted Int // сколько кредитов начисляется при оплате (0 для Premium)
+  amount         Int // целое число единиц `currency`: 1000 для пакета за 1000 ₽; при таких ценах дробные доли не нужны
   currency       String // "XTR" (Звёзды Telegram) | "RUB"; см. lib/payments/catalog.ts
   provider       String? // "stars" | "yookassa" (lib/payments/catalog.ts)
   externalId     String? // идентификатор транзакции у провайдера, проставляется при оплате
@@ -276,6 +280,7 @@ model NatalChartPurchase {
   // Транзакцию провайдера можно записать только один раз (Postgres допускает много NULL, так что неоплаченные строки не мешают).
   @@unique([provider, externalId])
   @@index([userId, createdAt])
+  @@map("NatalChartPurchase")
 }
 
 // Позже: CompatibilityReading, DailyHoroscope, Notification. Пока намеренно не заведены.

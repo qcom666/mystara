@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
+import { PremiumPurchase } from "./premium-purchase";
 import { formatReadingsPerDay, useLocale, useTranslation } from "@/lib/i18n";
 import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
 import { getPremiumPrice } from "@/lib/pricing/premium-pricing";
@@ -53,7 +54,7 @@ export function PricingContent() {
           <h2 className="font-display text-2xl text-gold-300">{t.pricingPage.premiumTitle}</h2>
           <p className="mt-1 text-sm text-silver-400">{t.pricingPage.premiumSubtitle}</p>
           <p className="mt-4 text-3xl text-silver-50">
-            {premiumPrice.formatted} <span className="text-sm text-silver-400">{t.pricingPage.perMonth}</span>
+            {premiumPrice.formatted} <span className="text-sm text-silver-400">{t.pricingPage.perPeriod}</span>
           </p>
           <ul className="mt-6 flex-1 space-y-3 text-sm text-silver-300">
             {t.pricingPage.premiumFeatures.map((feature) => (
@@ -63,9 +64,7 @@ export function PricingContent() {
               </li>
             ))}
           </ul>
-          <Button disabled className="mt-8">
-            {t.pricingPage.comingSoon}
-          </Button>
+          <PremiumPurchase />
         </GlassPanel>
       </div>
 

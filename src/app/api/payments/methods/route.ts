@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
-import { NATAL_CHART_PRICES, enabledProviders, type PaymentContext } from "@/lib/payments/catalog";
+import { PRODUCT_PRICES, enabledProviders, isPaymentProductId, type PaymentContext } from "@/lib/payments/catalog";
 
 /**
  * Какие способы оплаты доступны покупателю сейчас и сколько они стоят.
+ * Параметр `product` выбирает товар (по умолчанию пакет натальных карт, как до появления Premium).
  * Внутри Telegram возвращаются только Звёзды (правило Telegram для цифровых товаров).
  * Секретов в ответе нет: только идентификаторы провайдеров и цены.
  */
 export async function GET(request: Request) {
-  const context: PaymentContext = new URL(request.url).searchParams.get("context") === "telegram" ? "telegram" : "web";
-  const methods = enabledProviders(process.env, context).map((id) => ({ id, price: NATAL_CHART_PRICES[id] }));
+  const params = new URL(request.url).searchParams;
+  const context: PaymentContext = params.get("context") === "telegram" ? "telegram" : "web";
+  const requested = params.get("product");
+  const product = isPaymentProductId(requested) ? requested : "natal_pack";
+  const methods = enabledProviders(process.env, context).map((id) => ({ id, price: PRODUCT_PRICES[product][id] }));
   return NextResponse.json({ methods });
 }

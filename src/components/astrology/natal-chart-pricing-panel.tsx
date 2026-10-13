@@ -2,28 +2,13 @@
 
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { formatMethodPrice, sleep, useCheckout, type CheckoutControls } from "@/components/payments/use-checkout";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useLocale, useTranslation } from "@/lib/i18n";
-import type { PaymentProviderId, ProviderPrice } from "@/lib/payments/catalog";
+import type { PaymentProviderId } from "@/lib/payments/catalog";
 import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
-import { getTelegramWebApp } from "@/lib/telegram/webapp";
-
-interface PaymentMethod {
-  id: PaymentProviderId;
-  price: ProviderPrice;
-}
-
-function formatMethodPrice(price: ProviderPrice): string {
-  if (price.currency === "XTR") return `${price.amount} ⭐`;
-  return `${price.amount} ₽`;
-}
-
-/** true внутри Telegram-бота и мини-приложения: там Звёзды, на сайте ЮKassa. */
-const inTelegram = () => Boolean(getTelegramWebApp()?.initData);
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Кредиты приходят через вебхук провайдера чуть позже оплаты, поэтому после платежа мы недолго
@@ -41,83 +26,55 @@ async function waitForCredits(): Promise<boolean> {
   return false;
 }
 
+/** Состояние подписки Premium, нужное панели: подсказка про недельную карту или про оформление. */
+export interface PanelPremiumState {
+  active: boolean;
+  nextFreeChartAt: string | null;
+}
+
 /**
- * Показывается везде, где сейчас нельзя построить карту (нет аккаунта или на аккаунте ноль кредитов).
- * Предлагает способ оплаты по месту, где находится покупатель: Звёзды Telegram внутри бота и
- * мини-приложения (правило Telegram для цифровых товаров), карта и СБП через ЮKassa на сайте.
+ * Показывается везде, где сейчас нельзя построить карту (нет аккаунта или на аккаунте ноль кредитов и
+ * нет свободной недельной карты по Premium). Предлагает способ оплаты по месту, где находится покупатель:
+ * Звёзды Telegram внутри бота и мини-приложения (правило Telegram для цифровых товаров), карта и СБП
+ * через ЮKassa на сайте.
  */
 export function NatalChartPricingPanel({
   title,
   body,
   onPurchased,
+  premium,
 }: {
   title: string;
   body: string;
   onPurchased?: () => void;
+  premium?: PanelPremiumState;
 }) {
   const t = useTranslation();
   const { locale } = useLocale();
   const { status } = useSession();
   const price = getNatalChartPrice();
 
-  const [methods, setMethods] = useState<PaymentMethod[] | null>(null);
-  const [busy, setBusy] = useState<PaymentProviderId | "confirming" | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const confirmPayment = useCallback(
+    async ({ setBusy, setMessage }: CheckoutControls) => {
+      setBusy("confirming");
+      const paid = await waitForCredits();
+      setBusy(null);
+      if (paid) onPurchased?.();
+      else setMessage(t.natalChartPage.paymentPending);
+    },
+    [onPurchased, t.natalChartPage.paymentPending],
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/payments/methods?context=${inTelegram() ? "telegram" : "web"}`)
-      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("failed"))))
-      .then((data: { methods: PaymentMethod[] }) => {
-        if (!cancelled) setMethods(data.methods);
-      })
-      .catch(() => {
-        if (!cancelled) setMethods([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { methods, busy, message, buy } = useCheckout("natal_pack", confirmPayment);
 
   const labels: Record<PaymentProviderId, string> = {
     stars: t.natalChartPage.methodStars,
     yookassa: t.natalChartPage.methodCard,
   };
 
-  async function confirmPayment() {
-    setBusy("confirming");
-    const paid = await waitForCredits();
-    setBusy(null);
-    if (paid) onPurchased?.();
-    else setMessage(t.natalChartPage.paymentPending);
-  }
-
-  async function buy(provider: PaymentProviderId) {
-    setBusy(provider);
-    setMessage(null);
-    try {
-      const response = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider, locale, context: inTelegram() ? "telegram" : "web" }),
-      });
-      if (!response.ok) throw new Error("checkout_failed");
-      const { url } = (await response.json()) as { url: string };
-
-      const telegram = getTelegramWebApp();
-      if (provider === "stars" && typeof telegram?.openInvoice === "function") {
-        telegram.openInvoice(url, (outcome) => {
-          if (outcome === "paid") void confirmPayment();
-          else setBusy(null);
-        });
-        return;
-      }
-      window.location.assign(url);
-    } catch {
-      setBusy(null);
-      setMessage(t.natalChartPage.checkoutFailed);
-    }
-  }
+  const nextFree = premium?.active && premium.nextFreeChartAt
+    ? new Date(premium.nextFreeChartAt).toLocaleDateString(locale === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long" })
+    : null;
 
   return (
     <GlassPanel className="mx-auto w-full max-w-md text-center">
@@ -172,6 +129,19 @@ export function NatalChartPricingPanel({
 
         {message && <p className="mt-3 text-xs text-gold-300">{message}</p>}
       </div>
+
+      {nextFree ? (
+        <p className="mt-4 text-xs text-silver-400">{t.natalChartPage.premiumNextFreeBody.replace("{date}", nextFree)}</p>
+      ) : (
+        !premium?.active && (
+          <p className="mt-4 text-xs text-silver-400">
+            {t.natalChartPage.premiumHint}{" "}
+            <Link href="/pricing" className="text-gold-300 underline-offset-2 hover:underline">
+              {t.natalChartPage.premiumHintLink}
+            </Link>
+          </p>
+        )
+      )}
     </GlassPanel>
   );
 }

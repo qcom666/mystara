@@ -1,5 +1,6 @@
 import { NATAL_CHART_PACK_CREDITS, NATAL_CHART_PRICE_RUB } from "@/lib/pricing/natal-chart-pricing";
 import { PREMIUM_PRICE_RUB } from "@/lib/pricing/premium-pricing";
+import { PREMIUM_NATAL_CHART_INTERVAL_DAYS, PREMIUM_PERIOD_DAYS } from "@/modules/subscriptions/premium";
 import { PLAN_POLICIES } from "@/modules/subscriptions/usage-limit.service";
 
 /** Стоимость одного неиспользованного кредита при возврате: цена пакета, делённая на число построений. */
@@ -237,6 +238,11 @@ export const en = {
     creditsRemaining: "Natal Chart credits remaining",
     noCreditsTitle: "You're out of Natal Chart credits",
     noCreditsBody: "Each chart uses one credit from a pack of 3.",
+    premiumFreeNotice: "This chart is free with Premium: no credit will be used.",
+    premiumNextFreeNotice: "Your free Premium chart will be available again on {date}. One credit will be used now.",
+    premiumNextFreeBody: "Your free Premium chart will be available again on {date}.",
+    premiumHint: "With Premium you get one Natal Chart a week for free.",
+    premiumHintLink: "Get Premium",
     signInTitle: "Sign in to generate a Natal Chart",
     signInBody: "A Natal Chart is saved to your account, so you'll need to be signed in first.",
     formTitle: "Birth details",
@@ -395,15 +401,19 @@ export const en = {
         },
         {
           q: "What is free and what is paid?",
-          a: `Free: the One Card, Three Card, Five Card and Yes/No spreads (up to ${PLAN_POLICIES.free.maxReadingsPerDay} a day), numerology and the zodiac sign. Paid: the natal chart — a pack of ${NATAL_CHART_PACK_CREDITS} calculations for ${NATAL_CHART_PRICE_RUB} RUB. The Premium subscription (${PREMIUM_PRICE_RUB} RUB a month) is not on sale yet: payment will open later.`,
+          a: `Free: the One Card, Three Card, Five Card and Yes/No spreads (up to ${PLAN_POLICIES.free.maxReadingsPerDay} a day), numerology and the zodiac sign. Paid: the natal chart — a pack of ${NATAL_CHART_PACK_CREDITS} calculations for ${NATAL_CHART_PRICE_RUB} RUB. The Premium subscription (${PREMIUM_PRICE_RUB} RUB for ${PREMIUM_PERIOD_DAYS} days) removes the daily reading limit, opens every spread and gives one Natal Chart a week without using credits.`,
         },
         {
           q: "What does the Natal Chart pack include and how much does it cost?",
           a: `The pack costs ${NATAL_CHART_PRICE_RUB} RUB and includes ${NATAL_CHART_PACK_CREDITS} natal-chart calculations. From your birth date, time and place we calculate planet positions from ephemerides, the Ascendant, houses and aspects, with a short interpretation of each. It is a one-time purchase: no subscription and no automatic charges. Unused credits do not expire while the service is running.`,
         },
         {
+          q: "What does Premium include and how is it renewed?",
+          a: `Premium costs ${PREMIUM_PRICE_RUB} RUB for ${PREMIUM_PERIOD_DAYS} days and is paid up front: there are no automatic charges. It gives unlimited readings, all Tarot spreads (including the Celtic Cross, Love and Career) and one Natal Chart every ${PREMIUM_NATAL_CHART_INTERVAL_DAYS} days without using credits; unused charts do not accumulate. Paying again adds another ${PREMIUM_PERIOD_DAYS} days to the paid period. You can get Premium on the “Pricing” page: you need an account and to be 18 or older.`,
+        },
+        {
           q: "How do I pay?",
-          a: "On the website — by bank card or through the Faster Payments System (SBP), in roubles; the payment is processed by the payment service YooKassa. Open the natal chart page, press “Buy”, choose “Card or SBP” and pay on the YooKassa page. Inside Telegram, payment is accepted in Telegram Stars. To buy you need an account and to be 18 or older.",
+          a: "On the website — by bank card or through the Faster Payments System (SBP), in roubles; the payment is processed by the payment service YooKassa. Open the natal chart page (“Buy”) or the “Pricing” page (“Get Premium”), choose “Card or SBP” and pay on the YooKassa page. Inside Telegram, payment is accepted in Telegram Stars. To buy you need an account and to be 18 or older.",
         },
         {
           q: "Is paying safe? Do you see my card details?",
@@ -419,7 +429,7 @@ export const en = {
         },
         {
           q: "Can I get a refund?",
-          a: `Yes. You can withdraw from unused credits: each one is refunded at ${PER_CREDIT_RUB} RUB (the pack price divided by ${NATAL_CHART_PACK_CREDITS}). Charts already calculated and shown to you are not refundable, because the service has been rendered. If a calculation fails because of a fault, the credit is restored. To request a refund, write to the e-mail in the “Contacts” section: the request is considered within 10 days and the money is returned by the method you paid with (when it arrives depends on your bank). Full terms are in section 8 of the public offer.`,
+          a: `Yes. You can withdraw from unused credits: each one is refunded at ${PER_CREDIT_RUB} RUB (the pack price divided by ${NATAL_CHART_PACK_CREDITS}). Charts already calculated and shown to you are not refundable, because the service has been rendered. When you withdraw from Premium, the unused part of the paid period is refunded in proportion to the remaining days. If a calculation fails because of a fault, the credit is restored. To request a refund, write to the e-mail in the “Contacts” section: the request is considered within 10 days and the money is returned by the method you paid with (when it arrives depends on your bank). Full terms are in section 8 of the public offer.`,
         },
         {
           q: "Do I need an account?",
@@ -461,14 +471,20 @@ export const en = {
     premiumFeatures: [
       "Unlimited readings",
       "All spreads, including Celtic Cross, Love & Career",
-      "Deeper interpretations",
-      "Full reading history & favorites",
-      "Priority access to new modules (numerology, astrology)",
+      "One free Natal Chart a week, without using credits",
     ],
-    notifyMeCta: "Notify me",
-    perMonth: "per month",
+    premiumBuyCta: "Get Premium",
+    premiumRenewCta: "Extend by 30 days",
+    premiumSignInCta: "Sign in to subscribe",
+    premiumActiveUntil: "Premium is active until {date}",
+    premiumFreeChartReady: "Your free Natal Chart is available now.",
+    premiumNextFreeChart: "Next free Natal Chart: {date}.",
+    premiumConfirming: "Confirming payment…",
+    premiumPending: "We haven't received the payment yet. If you've paid, it can take a minute — refresh this page shortly.",
+    premiumPaymentsNotLive: "Payments aren't live yet — Premium can't be bought in-app just yet.",
+    perPeriod: "for 30 days",
     billingNote:
-      "Premium payments are opening soon — until then, everything marked Free is available now.",
+      "Premium is paid up front for 30 days with no automatic charges: paying again adds another 30 days. Everything marked Free is available without payment.",
   },
   contactsPage: {
     title: "Contacts & seller details",
@@ -484,9 +500,9 @@ export const en = {
     addressLabel: "Address",
     paymentHeading: "Payment and delivery",
     paymentPoints: [
-      "Paid services are digital: Credits appear on your Account right after the payment is confirmed, usually within minutes.",
+      "Paid services are digital: Credits or Premium time appear on your Account right after the payment is confirmed, usually within minutes.",
       "Payment: bank card or SBP in roubles on the website, Telegram Stars inside Telegram. A receipt is issued for every payment.",
-      "Refunds: unused Credits can be refunded on request within the terms of the public offer; we reply within 10 days.",
+      "Refunds: unused Credits and the unused part of a Premium period can be refunded on request within the terms of the public offer; we reply within 10 days.",
     ],
     documentsHeading: "Documents",
   },

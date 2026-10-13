@@ -4,14 +4,16 @@ import { isDatabaseConfigured } from "@/lib/db";
 import {
   getNatalChartCredits,
   listNatalChartReadingsForUser,
-  spendCreditAndSaveNatalChart,
+  saveNatalChartWithEntitlement,
 } from "@/lib/repositories/natal-chart.repository";
+import { getPremiumState } from "@/lib/repositories/subscription.repository";
 import { createNatalChartSchema } from "@/lib/validation/natal-chart.schema";
 import { calculateNatalChart } from "@/modules/astrology/services/calculate-natal-chart";
 import { resolveBirthInstantUtc } from "@/modules/astrology/services/resolve-birth-instant";
 
 // Натальная карта платная (бесплатного уровня нет): цены в lib/pricing/natal-chart-pricing.ts.
-// Построить карту может только вошедший пользователь с положительным остатком кредитов.
+// Построить карту может только вошедший пользователь: с положительным остатком кредитов либо с
+// действующей подпиской Premium, у которой свободно недельное построение.
 
 export async function GET() {
   if (!isDatabaseConfigured()) {
@@ -22,11 +24,21 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const [credits, readings] = await Promise.all([
+  const [credits, readings, premium] = await Promise.all([
     getNatalChartCredits(session.user.id),
     listNatalChartReadingsForUser(session.user.id),
+    getPremiumState(session.user.id),
   ]);
-  return NextResponse.json({ credits, readings });
+  return NextResponse.json({
+    credits,
+    readings,
+    premium: {
+      active: premium.planTier === "premium",
+      currentPeriodEnd: premium.currentPeriodEnd,
+      freeChartAvailable: premium.natalChartWeekly.available,
+      nextFreeChartAt: premium.natalChartWeekly.nextAvailableAt,
+    },
+  });
 }
 
 export async function POST(request: Request) {
@@ -66,7 +78,7 @@ export async function POST(request: Request) {
     longitude: input.longitude,
   });
 
-  const saved = await spendCreditAndSaveNatalChart({
+  const saved = await saveNatalChartWithEntitlement({
     userId: session.user.id,
     birthDate: birthDateUtc,
     hasExactTime: input.hasExactTime,
@@ -78,7 +90,7 @@ export async function POST(request: Request) {
   });
 
   if (!saved) {
-    return NextResponse.json({ error: "insufficient_credits", message: "No Natal Chart credits left." }, { status: 402 });
+    return NextResponse.json({ error: "insufficient_credits", message: "No Natal Chart credits left and no free weekly chart available." }, { status: 402 });
   }
 
   return NextResponse.json({ reading: saved, chart }, { status: 201 });

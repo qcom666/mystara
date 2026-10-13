@@ -4,6 +4,7 @@ import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { isDatabaseConfigured, prisma } from "./db";
+import { getPlanTier } from "./repositories/subscription.repository";
 import { validateTelegramInitData } from "./telegram/validate-init-data";
 
 const providers: NextAuthConfig["providers"] = [
@@ -99,8 +100,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user?.id) {
         token.userId = user.id;
         try {
-          const subscription = await prisma.subscription.findUnique({ where: { userId: user.id } });
-          token.planTier = subscription?.tier === "PREMIUM" ? "premium" : "free";
+          token.planTier = await getPlanTier(user.id);
         } catch {
           token.planTier = "free";
         }
@@ -110,7 +110,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = (token.userId as string) ?? "";
-        session.user.planTier = (token.planTier as "free" | "premium") ?? "free";
+        // Тариф берём из базы при каждом обращении, а не из JWT: после оплаты он меняется сразу, а по
+        // окончании срока Premium перестаёт действовать без повторного входа. JWT нужен лишь как запасной
+        // вариант, если база недоступна.
+        let planTier = (token.planTier as "free" | "premium") ?? "free";
+        if (session.user.id) {
+          try {
+            planTier = await getPlanTier(session.user.id);
+          } catch {
+            /* оставляем значение из токена */
+          }
+        }
+        session.user.planTier = planTier;
       }
       return session;
     },

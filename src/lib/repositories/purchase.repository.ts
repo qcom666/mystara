@@ -1,21 +1,24 @@
 import { prisma } from "@/lib/db";
-import type { PaymentCurrency, PaymentProviderId } from "@/lib/payments/catalog";
+import type { PaymentCurrency, PaymentProductId, PaymentProviderId } from "@/lib/payments/catalog";
 import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
+import { extendPremiumPeriodEnd } from "@/modules/subscriptions/premium";
 
 /**
- * Пока единственный товар — пакет кредитов натальной карты; у каждого провайдера своя цена
- * (lib/payments/catalog.ts).
+ * Создаёт покупку в статусе pending. У каждого провайдера своя цена (lib/payments/catalog.ts); пакет
+ * натальных карт при оплате начисляет кредиты, период Premium — продлевает подписку.
  */
 export async function createPendingPurchase(input: {
   userId: string;
+  product: PaymentProductId;
   provider: PaymentProviderId;
   amount: number;
   currency: PaymentCurrency;
 }) {
-  return prisma.natalChartPurchase.create({
+  return prisma.purchase.create({
     data: {
       userId: input.userId,
-      creditsGranted: NATAL_CHART_PACK_CREDITS,
+      product: input.product,
+      creditsGranted: input.product === "natal_pack" ? NATAL_CHART_PACK_CREDITS : 0,
       amount: input.amount,
       currency: input.currency,
       provider: input.provider,
@@ -25,7 +28,7 @@ export async function createPendingPurchase(input: {
 }
 
 export async function markPurchaseFailed(purchaseId: string): Promise<void> {
-  await prisma.natalChartPurchase.updateMany({ where: { id: purchaseId, status: "pending" }, data: { status: "failed" } });
+  await prisma.purchase.updateMany({ where: { id: purchaseId, status: "pending" }, data: { status: "failed" } });
 }
 
 export interface PaidPayment {
@@ -41,27 +44,36 @@ export interface PaidPayment {
 export type FulfillResult = "fulfilled" | "already_paid" | "not_found" | "mismatch";
 
 /**
- * Превращает подтверждённый платёж в кредиты — ровно один раз. Смена статуса (pending → paid) и
- * начисление кредитов выполняются в одной транзакции, а сама смена — условное обновление, поэтому
- * провайдер, доставивший то же уведомление дважды (или два уведомления одновременно), не сможет
- * начислить пакет дважды.
+ * Превращает подтверждённый платёж в то, что оплачено, ровно один раз: кредиты (пакет натальных карт)
+ * или продление Premium. Смена статуса (pending → paid) и выдача выполняются в одной транзакции, а
+ * сама смена — условное обновление, поэтому провайдер, доставивший то же уведомление дважды (или два
+ * уведомления одновременно), не выдаст оплаченное дважды.
  */
 export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResult> {
   return prisma.$transaction(async (tx) => {
-    const purchase = await tx.natalChartPurchase.findUnique({ where: { id: payment.purchaseId } });
+    const purchase = await tx.purchase.findUnique({ where: { id: payment.purchaseId } });
     if (!purchase) return "not_found";
     if (purchase.provider !== payment.provider || purchase.amount !== payment.amount || purchase.currency !== payment.currency) {
       return "mismatch";
     }
     if (purchase.status === "paid") return "already_paid";
 
-    const flipped = await tx.natalChartPurchase.updateMany({
+    const flipped = await tx.purchase.updateMany({
       where: { id: purchase.id, status: "pending" },
       data: { status: "paid", externalId: payment.externalId },
     });
     if (flipped.count === 0) return "already_paid";
 
-    await tx.user.update({ where: { id: purchase.userId }, data: { natalChartCredits: { increment: purchase.creditsGranted } } });
+    if (purchase.product === "premium_month") {
+      // Блокировка строки пользователя: две одновременные оплаты не должны прочитать один и тот же конец периода.
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${purchase.userId} FOR UPDATE`;
+      const existing = await tx.subscription.findUnique({ where: { userId: purchase.userId } });
+      const currentPeriodEnd = extendPremiumPeriodEnd(existing?.currentPeriodEnd ?? null, new Date());
+      const data = { tier: "PREMIUM" as const, status: "ACTIVE" as const, provider: payment.provider, externalId: payment.externalId, currentPeriodEnd };
+      await tx.subscription.upsert({ where: { userId: purchase.userId }, create: { userId: purchase.userId, ...data }, update: data });
+    } else {
+      await tx.user.update({ where: { id: purchase.userId }, data: { natalChartCredits: { increment: purchase.creditsGranted } } });
+    }
     return "fulfilled";
   });
 }
@@ -73,7 +85,7 @@ export async function isPurchasePayable(input: {
   amount: number;
   currency: PaymentCurrency;
 }): Promise<boolean> {
-  const purchase = await prisma.natalChartPurchase.findUnique({ where: { id: input.purchaseId } });
+  const purchase = await prisma.purchase.findUnique({ where: { id: input.purchaseId } });
   return (
     purchase !== null &&
     purchase.status === "pending" &&

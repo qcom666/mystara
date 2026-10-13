@@ -6,17 +6,27 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslation } from "@/lib/i18n";
+import { useLocale, useTranslation } from "@/lib/i18n";
 import type { NatalChart } from "@/modules/astrology/domain/types";
 import { NatalChartInputForm, type NatalChartFormValue } from "./natal-chart-input-form";
-import { NatalChartPricingPanel } from "./natal-chart-pricing-panel";
+import { NatalChartPricingPanel, type PanelPremiumState } from "./natal-chart-pricing-panel";
 import { NatalChartResult } from "./natal-chart-result";
 
 type Stage = "loading-credits" | "no-credits" | "form" | "generating" | "result" | "error";
 
+/** Ответ GET /api/natal-chart: остаток кредитов и состояние подписки Premium. */
+interface EntitlementResponse {
+  credits: number;
+  premium: { active: boolean; freeChartAvailable: boolean; nextFreeChartAt: string | null };
+}
+
+const hasAccess = (data: EntitlementResponse) => data.credits > 0 || data.premium.freeChartAvailable;
+
 export function NatalChartFlow() {
   const t = useTranslation();
+  const { locale } = useLocale();
   const { status } = useSession();
+  const [entitlement, setEntitlement] = useState<EntitlementResponse | null>(null);
   const [stage, setStage] = useState<Stage>("loading-credits");
   const [chart, setChart] = useState<NatalChart | null>(null);
 
@@ -27,20 +37,23 @@ export function NatalChartFlow() {
     const returningFromPayment = new URLSearchParams(window.location.search).get("payment") === "return";
     const attempts = returningFromPayment ? 8 : 1;
 
-    async function loadCredits() {
+    async function loadEntitlement(): Promise<EntitlementResponse> {
+      let data: EntitlementResponse | null = null;
       for (let attempt = 0; attempt < attempts; attempt++) {
         const response = await fetch("/api/natal-chart");
         if (!response.ok) throw new Error("failed");
-        const data = (await response.json()) as { credits: number };
-        if (data.credits > 0 || attempt === attempts - 1) return data.credits;
+        data = (await response.json()) as EntitlementResponse;
+        if (hasAccess(data)) return data;
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
-      return 0;
+      return data as EntitlementResponse;
     }
 
-    loadCredits()
-      .then((credits) => {
-        if (!cancelled) setStage(credits > 0 ? "form" : "no-credits");
+    loadEntitlement()
+      .then((data) => {
+        if (cancelled) return;
+        setEntitlement(data);
+        setStage(hasAccess(data) ? "form" : "no-credits");
       })
       .catch(() => {
         if (!cancelled) setStage("error");
@@ -74,13 +87,30 @@ export function NatalChartFlow() {
         return;
       }
       if (!response.ok) throw new Error("generation_failed");
-      const data: { chart: NatalChart } = await response.json();
+      const data: { chart: NatalChart; reading?: { source?: string } } = await response.json();
       setChart(data.chart);
       setStage("result");
+      // Следующее построение считается заново: недельная карта по Premium могла быть использована сейчас.
+      setEntitlement(null);
+      void fetch("/api/natal-chart")
+        .then((next) => (next.ok ? (next.json() as Promise<EntitlementResponse>) : null))
+        .then((next) => next && setEntitlement(next))
+        .catch(() => undefined);
     } catch {
       setStage("error");
     }
   }
+
+  const panelPremium: PanelPremiumState | undefined = entitlement
+    ? { active: entitlement.premium.active, nextFreeChartAt: entitlement.premium.nextFreeChartAt }
+    : undefined;
+  const formatDay = (iso: string) => new Date(iso).toLocaleDateString(locale === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long" });
+  // Чем будет оплачено это построение: недельной картой по Premium или кредитом пакета.
+  const paymentNote = entitlement?.premium.freeChartAvailable
+    ? t.natalChartPage.premiumFreeNotice
+    : entitlement?.premium.active && entitlement.premium.nextFreeChartAt
+      ? t.natalChartPage.premiumNextFreeNotice.replace("{date}", formatDay(entitlement.premium.nextFreeChartAt))
+      : null;
 
   if (status === "loading") {
     return (
@@ -120,6 +150,7 @@ export function NatalChartFlow() {
           title={t.natalChartPage.noCreditsTitle}
           body={t.natalChartPage.noCreditsBody}
           onPurchased={() => setStage("form")}
+          premium={panelPremium}
         />
       </div>
     );
@@ -147,6 +178,11 @@ export function NatalChartFlow() {
 
   return (
     <div className="px-4 py-16 sm:py-24">
+      {paymentNote && (
+        <p className="mx-auto mb-6 max-w-md rounded-xl border border-gold-500/25 bg-gold-500/5 p-3 text-center text-xs text-gold-300">
+          {paymentNote}
+        </p>
+      )}
       <NatalChartInputForm onSubmit={handleSubmit} />
     </div>
   );

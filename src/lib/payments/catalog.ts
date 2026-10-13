@@ -1,7 +1,8 @@
 import { NATAL_CHART_PRICE_RUB, NATAL_CHART_PRICE_STARS } from "@/lib/pricing/natal-chart-pricing";
+import { PREMIUM_PRICE_RUB, PREMIUM_PRICE_STARS } from "@/lib/pricing/premium-pricing";
 
 /**
- * Способы оплаты пакета натальных карт и их стоимость.
+ * Способы оплаты и стоимость товаров: пакета натальных карт и одного оплаченного периода Premium.
  *
  *  - stars     Telegram Stars (XTR): ТОЛЬКО внутри Telegram-бота и мини-приложения. Это единственный
  *              способ, который Telegram разрешает для цифровых товаров там (его собственное правило).
@@ -20,10 +21,27 @@ export interface ProviderPrice {
   currency: PaymentCurrency;
 }
 
-export const NATAL_CHART_PRICES: Record<PaymentProviderId, ProviderPrice> = {
-  stars: { amount: NATAL_CHART_PRICE_STARS, currency: "XTR" },
-  yookassa: { amount: NATAL_CHART_PRICE_RUB, currency: "RUB" },
+/** Что можно купить: пакет натальных карт (начисляет кредиты) и период Premium (продлевает подписку). */
+export const PAYMENT_PRODUCT_IDS = ["natal_pack", "premium_month"] as const;
+export type PaymentProductId = (typeof PAYMENT_PRODUCT_IDS)[number];
+
+export const PRODUCT_PRICES: Record<PaymentProductId, Record<PaymentProviderId, ProviderPrice>> = {
+  natal_pack: {
+    stars: { amount: NATAL_CHART_PRICE_STARS, currency: "XTR" },
+    yookassa: { amount: NATAL_CHART_PRICE_RUB, currency: "RUB" },
+  },
+  premium_month: {
+    stars: { amount: PREMIUM_PRICE_STARS, currency: "XTR" },
+    yookassa: { amount: PREMIUM_PRICE_RUB, currency: "RUB" },
+  },
 };
+
+export const NATAL_CHART_PRICES = PRODUCT_PRICES.natal_pack;
+export const PREMIUM_PRICES = PRODUCT_PRICES.premium_month;
+
+export function isPaymentProductId(value: unknown): value is PaymentProductId {
+  return typeof value === "string" && (PAYMENT_PRODUCT_IDS as readonly string[]).includes(value);
+}
 
 export const PAYMENT_PROVIDER_IDS = ["stars", "yookassa"] as const satisfies readonly PaymentProviderId[];
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { NATAL_CHART_PRICES, enabledProviders, isPaymentProviderId } from "./catalog";
+import { NATAL_CHART_PRICES, PREMIUM_PRICES, PRODUCT_PRICES, enabledProviders, isPaymentProductId, isPaymentProviderId } from "./catalog";
 import { createStarsInvoiceLink } from "./providers/stars";
 import { createYooKassaPayment, fetchYooKassaPayment } from "./providers/yookassa";
 
@@ -31,6 +31,22 @@ describe("catalog", () => {
     expect(NATAL_CHART_PRICES.stars.currency).toBe("XTR");
     expect(NATAL_CHART_PRICES.yookassa).toEqual({ amount: 1000, currency: "RUB" });
     expect(Object.keys(NATAL_CHART_PRICES).sort()).toEqual(["stars", "yookassa"]);
+  });
+
+  it("prices Premium for 300 RUB, or 150 Stars inside Telegram", () => {
+    expect(PREMIUM_PRICES.yookassa).toEqual({ amount: 300, currency: "RUB" });
+    expect(PREMIUM_PRICES.stars).toEqual({ amount: 150, currency: "XTR" });
+  });
+
+  it("has a price from every provider for every product", () => {
+    expect(Object.keys(PRODUCT_PRICES).sort()).toEqual(["natal_pack", "premium_month"]);
+    for (const prices of Object.values(PRODUCT_PRICES)) expect(Object.keys(prices).sort()).toEqual(["stars", "yookassa"]);
+  });
+
+  it("recognizes only known product ids", () => {
+    expect(isPaymentProductId("premium_month")).toBe(true);
+    expect(isPaymentProductId("natal_pack")).toBe(true);
+    expect(isPaymentProductId("gold")).toBe(false);
   });
 
   it("recognizes only known provider ids", () => {
