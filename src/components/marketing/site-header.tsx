@@ -3,16 +3,19 @@
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { Button } from "@/components/ui/button";
 import { useTelegram } from "@/components/telegram/telegram-provider";
 import { useTranslation } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   const t = useTranslation();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const { isTelegram } = useTelegram();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   // Собственная оболочка клиента Telegram (кнопка «Назад», закрытие, заголовок) заменяет эту шапку:
@@ -28,42 +31,62 @@ export function SiteHeader() {
     { href: "/pricing", label: t.nav.pricing },
   ];
 
+  // Подсвечивается самый длинный подходящий раздел: на странице натальной карты горит «Натальная карта», а не «Астрология».
+  const activeHref = navLinks
+    .filter((link) => pathname === link.href || pathname.startsWith(`${link.href}/`))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
+  const authenticated = status === "authenticated";
+  const isAdmin = authenticated && session?.user?.isAdmin === true;
+
+  const quietLink = "whitespace-nowrap text-sm text-silver-300 transition-colors hover:text-gold-300";
+
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-midnight-950/70 backdrop-blur-lg">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 xl:px-8">
-        <Link href="/" className="font-display text-xl text-gold-300">
+      <div className="mx-auto flex h-16 w-full max-w-[1800px] items-center gap-4 px-4 xl:gap-8 xl:px-10">
+        <Link href="/" className="shrink-0 font-display text-2xl text-gold-300">
           Mystara
         </Link>
 
-        {/* Шесть ссылок и блок аккаунта с кнопкой не помещаются в одну строку до настоящей ширины десктопа: в строку показываем только от `xl` (1280 px), а от планшета до узкого ноутбука используется меню-гамбургер ниже, без сжатия и переносов. */}
-        <nav className="hidden items-center gap-8 xl:flex">
+        {/* Разделы равномерно растянуты по свободному месту между логотипом и блоком действий. Целиком в строку они помещаются от `xl` (1280 px); на планшете и узком ноутбуке работает меню-гамбургер ниже. */}
+        <nav className="hidden flex-1 items-center justify-evenly xl:flex">
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm text-silver-300 transition-colors hover:text-gold-300">
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={link.href === activeHref ? "page" : undefined}
+              className={cn(
+                "whitespace-nowrap border-b border-transparent py-1 text-sm transition-colors hover:text-gold-300",
+                link.href === activeHref ? "border-gold-400/70 text-gold-300" : "text-silver-300",
+              )}
+            >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-3 xl:flex">
-            {status === "authenticated" ? (
+        <div className="ml-auto flex shrink-0 items-center gap-4 xl:ml-0 xl:gap-5">
+          <div className="hidden items-center gap-5 xl:flex">
+            {authenticated ? (
               <>
-                <Link href="/account" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
+                {isAdmin && (
+                  <Link href="/admin" className={quietLink}>
+                    {t.nav.admin}
+                  </Link>
+                )}
+                <Link
+                  href="/account"
+                  className="whitespace-nowrap rounded-full border border-gold-500/30 px-4 py-1.5 text-sm text-gold-300 transition-colors hover:bg-gold-500/10"
+                >
                   {t.nav.account}
                 </Link>
-                <Link href="/readings" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
-                  {t.nav.readings}
-                </Link>
-                <Link href="/favorites" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
-                  {t.nav.favorites}
-                </Link>
-                <Button variant="ghost" size="sm" onClick={() => signOut()}>
+                <button type="button" className={cn(quietLink, "focus-ring rounded")} onClick={() => signOut()}>
                   {t.common.signOut}
-                </Button>
+                </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
+                <Link href="/login" className={quietLink}>
                   {t.common.signIn}
                 </Link>
                 <Button asChild size="sm">
@@ -73,8 +96,10 @@ export function SiteHeader() {
             )}
           </div>
 
-          {status !== "authenticated" && (
-            <Link href="/login" className="text-sm text-silver-300 transition-colors hover:text-gold-300 xl:hidden">
+          <span aria-hidden className="hidden h-5 w-px bg-white/10 xl:block" />
+
+          {!authenticated && (
+            <Link href="/login" className={cn(quietLink, "xl:hidden")}>
               {t.common.signIn}
             </Link>
           )}
@@ -98,22 +123,27 @@ export function SiteHeader() {
           {/* Здесь только наши услуги и тарифы; действия с аккаунтом, например вход, сюда не относятся (для них есть постоянная ссылка рядом с переключателем языка), поэтому список остаётся про «что здесь можно сделать», а не про «кто я». */}
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="text-sm text-silver-300" onClick={() => setOpen(false)}>
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={link.href === activeHref ? "page" : undefined}
+                className={cn("text-sm", link.href === activeHref ? "text-gold-300" : "text-silver-300")}
+                onClick={() => setOpen(false)}
+              >
                 {link.label}
               </Link>
             ))}
           </nav>
-          {status === "authenticated" && (
+          {authenticated && (
             <nav className="mt-4 flex flex-col gap-4 border-t border-white/5 pt-4">
-              <Link href="/account" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
+              <Link href="/account" className="text-sm text-gold-300" onClick={() => setOpen(false)}>
                 {t.nav.account}
               </Link>
-              <Link href="/readings" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
-                {t.nav.readings}
-              </Link>
-              <Link href="/favorites" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
-                {t.nav.favorites}
-              </Link>
+              {isAdmin && (
+                <Link href="/admin" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
+                  {t.nav.admin}
+                </Link>
+              )}
               <button type="button" className="text-left text-sm text-silver-300" onClick={() => signOut()}>
                 {t.common.signOut}
               </button>

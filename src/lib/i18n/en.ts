@@ -51,6 +51,7 @@ export const en = {
     readings: "My Readings",
     favorites: "Favorites",
     account: "Account",
+    admin: "Admin",
     learn: "Learn Tarot",
     pricing: "Pricing",
   },

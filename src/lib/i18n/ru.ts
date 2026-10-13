@@ -51,6 +51,7 @@ export const ru: Dictionary = {
     readings: "Мои расклады",
     favorites: "Избранное",
     account: "Кабинет",
+    admin: "Админка",
     learn: "Изучить Таро",
     pricing: "Тарифы",
   },
