@@ -283,4 +283,20 @@ model Purchase {
   @@map("NatalChartPurchase")
 }
 
+// --- Админ-панель ---
+
+// Журнал действий администратора: кто, над кем и что сделал. Внешних ключей к User нет намеренно:
+// журнал должен пережить удаление аккаунта (и администратора, и пользователя).
+model AdminAction {
+  id           String   @id @default(cuid())
+  adminId      String
+  targetUserId String?
+  action       String // "credits.adjust" | "premium.extend" | "premium.end"
+  details      Json // параметры действия и причина, указанная администратором
+  createdAt    DateTime @default(now())
+
+  @@index([targetUserId, createdAt])
+  @@index([createdAt])
+}
+
 // Позже: CompatibilityReading, DailyHoroscope, Notification. Пока намеренно не заведены.

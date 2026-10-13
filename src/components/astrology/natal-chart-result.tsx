@@ -11,7 +11,8 @@ import { localizeZodiacSign, requireZodiacSignById } from "@/modules/astrology/d
 
 interface NatalChartResultProps {
   chart: NatalChart;
-  onGenerateAnother: () => void;
+  /** Нет у сохранённой карты из истории: «построить ещё» имеет смысл только сразу после построения. */
+  onGenerateAnother?: () => void;
 }
 
 function degreeLabel(placement: { degreeInSign: number; sign: PlanetPlacement["sign"] }, locale: "en" | "ru") {
@@ -119,11 +120,13 @@ export function NatalChartResult({ chart, onGenerateAnother }: NatalChartResultP
       <p className="mt-8 text-center text-xs text-silver-500">{t.natalChartPage.disclaimer}</p>
       <p className="mt-2 text-center text-sm text-gold-300">{t.natalChartPage.savedNotice}</p>
 
-      <div className="mt-6 text-center">
-        <Button variant="ghost" onClick={onGenerateAnother}>
-          {t.natalChartPage.generateAnotherCta}
-        </Button>
-      </div>
+      {onGenerateAnother && (
+        <div className="mt-6 text-center">
+          <Button variant="ghost" onClick={onGenerateAnother}>
+            {t.natalChartPage.generateAnotherCta}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

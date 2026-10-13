@@ -48,6 +48,9 @@ export function SiteHeader() {
           <div className="hidden items-center gap-3 xl:flex">
             {status === "authenticated" ? (
               <>
+                <Link href="/account" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
+                  {t.nav.account}
+                </Link>
                 <Link href="/readings" className="text-sm text-silver-300 transition-colors hover:text-gold-300">
                   {t.nav.readings}
                 </Link>
@@ -102,6 +105,9 @@ export function SiteHeader() {
           </nav>
           {status === "authenticated" && (
             <nav className="mt-4 flex flex-col gap-4 border-t border-white/5 pt-4">
+              <Link href="/account" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
+                {t.nav.account}
+              </Link>
               <Link href="/readings" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
                 {t.nav.readings}
               </Link>

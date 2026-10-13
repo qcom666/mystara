@@ -6,6 +6,8 @@ declare module "next-auth" {
     user: {
       id: string;
       planTier: PlanTier;
+      /** true для аккаунтов из ADMIN_USER_IDS / ADMIN_TELEGRAM_IDS (lib/admin.ts); сами права проверяются на сервере. */
+      isAdmin: boolean;
     } & DefaultSession["user"];
   }
 }

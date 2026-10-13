@@ -4,6 +4,8 @@ import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { isDatabaseConfigured, prisma } from "./db";
+import { hasConfiguredAdmins, isAdminAccount } from "./admin";
+import { getAdminCandidate } from "./repositories/account.repository";
 import { getPlanTier } from "./repositories/subscription.repository";
 import { validateTelegramInitData } from "./telegram/validate-init-data";
 
@@ -122,6 +124,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         }
         session.user.planTier = planTier;
+        // Признак нужен только чтобы показать ссылку на админ-панель; сама панель и её API при каждом
+        // обращении проверяют права на сервере заново (lib/admin-guard.ts).
+        let isAdmin = false;
+        if (session.user.id && hasConfiguredAdmins()) {
+          try {
+            const candidate = await getAdminCandidate(session.user.id);
+            isAdmin = candidate !== null && isAdminAccount(candidate);
+          } catch {
+            /* без базы администратором не считаем */
+          }
+        }
+        session.user.isAdmin = isAdmin;
       }
       return session;
     },

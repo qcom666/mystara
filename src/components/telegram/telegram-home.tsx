@@ -52,7 +52,10 @@ export function TelegramHome() {
       </div>
 
       {status === "authenticated" && (
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mt-8 grid grid-cols-3 gap-3">
+          <Link href="/account" className="text-center text-sm text-gold-300 hover:underline">
+            {t.nav.account}
+          </Link>
           <Link href="/readings" className="text-center text-sm text-silver-400 hover:text-gold-300">
             {t.nav.readings}
           </Link>
