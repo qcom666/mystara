@@ -77,7 +77,7 @@ export function SiteHeader() {
                 )}
                 <Link
                   href="/account"
-                  className="whitespace-nowrap rounded-full border border-gold-500/40! px-4 py-1.5 text-sm text-gold-300 transition-colors hover:bg-gold-500/10"
+                  className="whitespace-nowrap rounded-full border border-gold-500/40 px-4 py-1.5 text-sm text-gold-300 transition-colors hover:bg-gold-500/10"
                 >
                   {t.nav.account}
                 </Link>
