@@ -227,7 +227,7 @@ export const ru: Dictionary = {
     offerNoticePrefix: "Оплачивая, вы принимаете условия",
     offerNoticeLink: "публичной оферты",
     methodStars: "Звёзды Telegram",
-    methodCard: "Карта или СБП (₽, через ЮKassa)",
+    methodCard: "Карта или СБП",
     signInToBuy: "Войдите, чтобы купить",
     checkoutFailed: "Не удалось начать оплату. Попробуйте ещё раз чуть позже.",
     confirmingPayment: "Подтверждаем оплату…",

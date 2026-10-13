@@ -229,7 +229,7 @@ export const en = {
     offerNoticePrefix: "By paying you accept the",
     offerNoticeLink: "public offer",
     methodStars: "Telegram Stars",
-    methodCard: "Card or SBP (₽, via YooKassa)",
+    methodCard: "Card or SBP",
     signInToBuy: "Sign in to buy",
     checkoutFailed: "Couldn't start the payment. Please try again in a moment.",
     confirmingPayment: "Confirming your payment…",
