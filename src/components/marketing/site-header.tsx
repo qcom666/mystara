@@ -43,21 +43,22 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/5 bg-midnight-950/70 backdrop-blur-lg">
-      <div className="mx-auto flex h-16 w-full max-w-[1800px] items-center gap-4 px-4 xl:gap-8 xl:px-10">
+      {/* От 1800 px меню стоит ровно по центру страницы (боковые блоки разной ширины центр не сдвигают). Ниже этого порога оно растянуто между логотипом и блоком справа с одинаковыми промежутками. */}
+      <div className="relative mx-auto flex h-16 w-full max-w-[1800px] items-center gap-4 px-4 xl:gap-8 xl:px-10">
         <Link href="/" className="shrink-0 font-display text-2xl text-gold-300">
           Mystara
         </Link>
 
         {/* Разделы равномерно растянуты по свободному месту между логотипом и блоком действий. Целиком в строку они помещаются от `xl` (1280 px); на планшете и узком ноутбуке работает меню-гамбургер ниже. */}
-        <nav className="hidden flex-1 items-center justify-evenly xl:flex">
+        <nav className="hidden flex-1 items-center justify-evenly xl:flex min-[1800px]:absolute min-[1800px]:left-1/2 min-[1800px]:top-1/2 min-[1800px]:w-[50rem] min-[1800px]:-translate-x-1/2 min-[1800px]:-translate-y-1/2 min-[1800px]:flex-none min-[1800px]:justify-between">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               aria-current={link.href === activeHref ? "page" : undefined}
               className={cn(
-                "whitespace-nowrap border-b border-transparent py-1 text-sm transition-colors hover:text-gold-300",
-                link.href === activeHref ? "border-gold-400/70 text-gold-300" : "text-silver-300",
+                "whitespace-nowrap py-1 text-sm transition-colors hover:text-gold-300",
+                link.href === activeHref ? "text-gold-300 underline decoration-gold-400/70 decoration-1 underline-offset-[10px]" : "text-silver-300",
               )}
             >
               {link.label}
@@ -65,7 +66,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-4 xl:ml-0 xl:gap-5">
+        <div className="ml-auto flex shrink-0 items-center gap-4 xl:gap-5">
           <div className="hidden items-center gap-5 xl:flex">
             {authenticated ? (
               <>
@@ -76,7 +77,7 @@ export function SiteHeader() {
                 )}
                 <Link
                   href="/account"
-                  className="whitespace-nowrap rounded-full border border-gold-500/30 px-4 py-1.5 text-sm text-gold-300 transition-colors hover:bg-gold-500/10"
+                  className="whitespace-nowrap rounded-full border border-gold-500/40! px-4 py-1.5 text-sm text-gold-300 transition-colors hover:bg-gold-500/10"
                 >
                   {t.nav.account}
                 </Link>
