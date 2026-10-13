@@ -16,6 +16,7 @@ export async function GET() {
   const state = await getPremiumState(session.user.id);
   return NextResponse.json({
     active: state.planTier === "premium",
+    fullAccess: state.fullAccess,
     currentPeriodEnd: state.currentPeriodEnd,
     freeChartAvailable: state.natalChartWeekly.available,
     nextFreeChartAt: state.natalChartWeekly.nextAvailableAt,

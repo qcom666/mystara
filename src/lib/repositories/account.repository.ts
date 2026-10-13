@@ -44,6 +44,8 @@ export interface AccountData {
   credits: number;
   premium: {
     active: boolean;
+    /** Полный доступ администратора: оплата и кредиты не нужны. */
+    fullAccess: boolean;
     currentPeriodEnd: string | null;
     /** Сколько целых и неполных суток осталось до конца оплаченного срока (0, если Premium не действует). */
     daysLeft: number;
@@ -135,6 +137,7 @@ export async function getAccountData(userId: string): Promise<AccountData | null
     credits: user.natalChartCredits,
     premium: {
       active: premium.planTier === "premium",
+      fullAccess: premium.fullAccess,
       currentPeriodEnd: premium.currentPeriodEnd?.toISOString() ?? null,
       daysLeft: premium.currentPeriodEnd ? Math.max(0, Math.ceil((premium.currentPeriodEnd.getTime() - Date.now()) / 86_400_000)) : 0,
       freeChartAvailable: premium.natalChartWeekly.available,

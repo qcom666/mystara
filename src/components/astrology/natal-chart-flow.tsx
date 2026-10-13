@@ -17,7 +17,7 @@ type Stage = "loading-credits" | "no-credits" | "form" | "generating" | "result"
 /** Ответ GET /api/natal-chart: остаток кредитов и состояние подписки Premium. */
 interface EntitlementResponse {
   credits: number;
-  premium: { active: boolean; freeChartAvailable: boolean; nextFreeChartAt: string | null };
+  premium: { active: boolean; fullAccess: boolean; freeChartAvailable: boolean; nextFreeChartAt: string | null };
 }
 
 const hasAccess = (data: EntitlementResponse) => data.credits > 0 || data.premium.freeChartAvailable;
@@ -106,8 +106,10 @@ export function NatalChartFlow() {
     : undefined;
   const formatDay = (iso: string) => new Date(iso).toLocaleDateString(locale === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long" });
   // Чем будет оплачено это построение: недельной картой по Premium или кредитом пакета.
-  const paymentNote = entitlement?.premium.freeChartAvailable
-    ? t.natalChartPage.premiumFreeNotice
+  const paymentNote = entitlement?.premium.fullAccess
+    ? null
+    : entitlement?.premium.freeChartAvailable
+      ? t.natalChartPage.premiumFreeNotice
     : entitlement?.premium.active && entitlement.premium.nextFreeChartAt
       ? t.natalChartPage.premiumNextFreeNotice.replace("{date}", formatDay(entitlement.premium.nextFreeChartAt))
       : null;

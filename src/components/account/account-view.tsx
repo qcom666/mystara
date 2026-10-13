@@ -133,16 +133,23 @@ export function AccountView({ data }: { data: AccountViewData }) {
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               <GlassPanel>
                 <p className="text-xs uppercase tracking-wider text-silver-500">{a.creditsLabel}</p>
-                <p className="mt-2 text-4xl font-semibold text-gradient-gold">{account.credits}</p>
-                <p className="mt-2 text-xs text-silver-500">{a.creditsHint}</p>
-                <Button asChild variant="secondary" size="sm" className="mt-4">
-                  <Link href="/astrology/natal-chart">{a.buyCreditsCta}</Link>
-                </Button>
+                <p className="mt-2 text-4xl font-semibold text-gradient-gold">{account.premium.fullAccess ? "∞" : account.credits}</p>
+                <p className="mt-2 text-xs text-silver-500">{account.premium.fullAccess ? a.fullAccessHint : a.creditsHint}</p>
+                {!account.premium.fullAccess && (
+                  <Button asChild variant="secondary" size="sm" className="mt-4">
+                    <Link href="/astrology/natal-chart">{a.buyCreditsCta}</Link>
+                  </Button>
+                )}
               </GlassPanel>
 
               <GlassPanel>
                 <p className="text-xs uppercase tracking-wider text-silver-500">{a.premiumLabel}</p>
-                {account.premium.active && account.premium.currentPeriodEnd ? (
+                {account.premium.fullAccess ? (
+                  <>
+                    <p className="mt-2 font-display text-xl text-gold-300">{a.fullAccessTitle}</p>
+                    <p className="mt-1 text-xs text-silver-400">{a.fullAccessHint}</p>
+                  </>
+                ) : account.premium.active && account.premium.currentPeriodEnd ? (
                   <>
                     <p className="mt-2 font-display text-xl text-gold-300">
                       {a.premiumActiveUntil.replace("{date}", formatDate(account.premium.currentPeriodEnd, locale))}
@@ -161,9 +168,11 @@ export function AccountView({ data }: { data: AccountViewData }) {
                     <p className="mt-1 text-xs text-silver-400">{a.freeChartPremiumOnly}</p>
                   </>
                 )}
-                <Button asChild size="sm" className="mt-4">
-                  <Link href="/pricing">{account.premium.active ? a.renewPremiumCta : a.getPremiumCta}</Link>
-                </Button>
+                {!account.premium.fullAccess && (
+                  <Button asChild size="sm" className="mt-4">
+                    <Link href="/pricing">{account.premium.active ? a.renewPremiumCta : a.getPremiumCta}</Link>
+                  </Button>
+                )}
               </GlassPanel>
             </div>
           </section>
@@ -247,8 +256,8 @@ export function AccountView({ data }: { data: AccountViewData }) {
                           <p className="truncate text-sm text-silver-100">{chart.birthPlace ?? t.natalChartPage.title}</p>
                           <p className="text-xs text-silver-500">{formatDate(chart.createdAt, locale)}</p>
                         </div>
-                        <Badge variant={chart.source === "premium" ? "gold" : "violet"}>
-                          {chart.source === "premium" ? a.sourcePremium : a.sourceCredit}
+                        <Badge variant={chart.source === "credit" ? "violet" : "gold"}>
+                          {chart.source === "admin" ? a.sourceAdmin : chart.source === "premium" ? a.sourcePremium : a.sourceCredit}
                         </Badge>
                       </GlassPanel>
                     </Link>

@@ -34,6 +34,7 @@ export async function GET() {
     readings,
     premium: {
       active: premium.planTier === "premium",
+      fullAccess: premium.fullAccess,
       currentPeriodEnd: premium.currentPeriodEnd,
       freeChartAvailable: premium.natalChartWeekly.available,
       nextFreeChartAt: premium.natalChartWeekly.nextAvailableAt,

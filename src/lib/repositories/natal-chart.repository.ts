@@ -19,9 +19,10 @@ export interface SaveNatalChartInput {
 }
 
 /**
- * Определяет, чем оплачивается построение, и сохраняет карту. Сначала используется недельное
- * построение по подписке Premium (если оно доступно), иначе списывается один кредит пакета. Возвращает
- * null, если нет ни того ни другого (вызывающий код превращает это в ответ API в духе 402).
+ * Определяет, чем оплачивается построение, и сохраняет карту. У администраторов доступ полный: ничего
+ * не списывается. Иначе сначала используется недельное построение по подписке Premium (если оно
+ * доступно), потом списывается один кредит пакета. Возвращает null, если нет ничего из этого
+ * (вызывающий код превращает это в ответ API в духе 402).
  *
  * Всё выполняется в одной транзакции под блокировкой строки пользователя: без неё два одновременных
  * запроса могли бы оба увидеть свободное построение или последний кредит и воспользоваться им дважды.
@@ -31,8 +32,10 @@ export async function saveNatalChartWithEntitlement(input: SaveNatalChartInput) 
     await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${input.userId} FOR UPDATE`;
 
     const premium = await getPremiumState(input.userId, new Date(), tx);
-    let source: "premium" | "credit";
-    if (premium.natalChartWeekly.available) {
+    let source: "admin" | "premium" | "credit";
+    if (premium.fullAccess) {
+      source = "admin";
+    } else if (premium.natalChartWeekly.available) {
       source = "premium";
     } else {
       const user = await tx.user.findUnique({ where: { id: input.userId }, select: { natalChartCredits: true } });

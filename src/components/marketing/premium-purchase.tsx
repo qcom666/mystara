@@ -10,6 +10,7 @@ import type { PaymentProviderId } from "@/lib/payments/catalog";
 
 interface SubscriptionState {
   active: boolean;
+  fullAccess: boolean;
   currentPeriodEnd: string | null;
   freeChartAvailable: boolean;
   nextFreeChartAt: string | null;
@@ -92,6 +93,10 @@ export function PremiumPurchase() {
         <Link href="/login">{p.premiumSignInCta}</Link>
       </Button>
     );
+  }
+
+  if (state?.fullAccess) {
+    return <p className="mt-8 rounded-xl border border-gold-500/25 bg-gold-500/5 p-3 text-center text-sm text-gold-300">{p.premiumFullAccess}</p>;
   }
 
   const cta = state?.active ? p.premiumRenewCta : p.premiumBuyCta;

@@ -253,7 +253,7 @@ model NatalChartReading {
   longitude  Float
   timezone   String // идентификатор зоны IANA, по которому местное время переводилось в UTC, например "Europe/Moscow"
   chart      Json // полностью рассчитанная NatalChart (см. modules/astrology/domain/types.ts); версионируемое содержимое, реляционная модель не нужна
-  source     String   @default("credit") // чем оплачено построение: "credit" (кредит пакета) | "premium" (недельное построение по подписке Premium)
+  source     String   @default("credit") // чем оплачено построение: "credit" (кредит пакета) | "premium" (недельное построение по подписке Premium) | "admin" (полный доступ администратора)
   createdAt  DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

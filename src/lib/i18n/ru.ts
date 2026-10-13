@@ -483,6 +483,7 @@ export const ru: Dictionary = {
     premiumConfirming: "Подтверждаем оплату…",
     premiumPending: "Оплата пока не дошла. Если вы уже заплатили, это может занять минуту — обновите страницу чуть позже.",
     premiumPaymentsNotLive: "Оплата пока не подключена: купить Premium прямо в приложении пока нельзя.",
+    premiumFullAccess: "У вашего аккаунта полный доступ ко всем функциям: оплата не нужна.",
     perPeriod: "за 30 дней",
     billingNote:
       "Premium оплачивается заранее на 30 дней, автоматических списаний нет: повторная оплата добавляет ещё 30 дней. Всё, что отмечено как Free, доступно без оплаты.",
@@ -513,6 +514,9 @@ export const ru: Dictionary = {
     freeChartReady: "Доступна сейчас",
     freeChartNext: "Снова будет доступна {date}",
     freeChartPremiumOnly: "Входит в Premium: одна карта в неделю",
+    fullAccessTitle: "Полный доступ",
+    fullAccessHint: "Все функции доступны без оплаты и ограничений.",
+    sourceAdmin: "полный доступ",
     purchasesHeading: "Покупки",
     noPurchases: "Покупок пока нет.",
     productNatalPack: "Пакет «Натальная карта» (3 построения)",

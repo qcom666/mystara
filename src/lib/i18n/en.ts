@@ -484,6 +484,7 @@ export const en = {
     premiumConfirming: "Confirming payment…",
     premiumPending: "We haven't received the payment yet. If you've paid, it can take a minute — refresh this page shortly.",
     premiumPaymentsNotLive: "Payments aren't live yet — Premium can't be bought in-app just yet.",
+    premiumFullAccess: "Your account has full access to every feature: no payment needed.",
     perPeriod: "for 30 days",
     billingNote:
       "Premium is paid up front for 30 days with no automatic charges: paying again adds another 30 days. Everything marked Free is available without payment.",
@@ -514,6 +515,9 @@ export const en = {
     freeChartReady: "Available now",
     freeChartNext: "Available again on {date}",
     freeChartPremiumOnly: "Included in Premium: one chart a week",
+    fullAccessTitle: "Full access",
+    fullAccessHint: "Every feature is available, free and unlimited.",
+    sourceAdmin: "full access",
     purchasesHeading: "Purchases",
     noPurchases: "No purchases yet.",
     productNatalPack: "“Natal Chart” pack (3 calculations)",
