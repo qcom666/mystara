@@ -489,6 +489,23 @@ export const en = {
     billingNote:
       "Premium is paid up front for 30 days with no automatic charges: paying again adds another 30 days. Everything marked Free is available without payment.",
   },
+  datePicker: {
+    dialogLabel: "Choose a date",
+    openCalendar: "Open calendar",
+    previousMonth: "Previous month",
+    nextMonth: "Next month",
+    previousYear: "Previous year",
+    nextYear: "Next year",
+    previousYears: "Earlier years",
+    nextYears: "Later years",
+    chooseYear: "Choose a year",
+    chooseMonth: "Choose a month",
+    clear: "Clear",
+    today: "Today",
+    invalid: "Enter the full date: dd/mm/yyyy",
+    outOfRange: "This date can't be selected",
+  },
+
   accountPage: {
     title: "My account",
     unavailableTitle: "The account page isn't available yet",

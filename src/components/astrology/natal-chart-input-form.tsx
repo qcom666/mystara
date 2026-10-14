@@ -4,6 +4,7 @@ import { type FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { GlassPanel } from "@/components/ui/glass-panel";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -118,7 +119,7 @@ export function NatalChartInputForm({ onSubmit }: NatalChartInputFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="natal-date">{t.natalChartPage.dateLabel}</Label>
-          <Input id="natal-date" type="date" required max={TODAY} value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
+          <DatePicker id="natal-date" required max={TODAY} value={dateValue} onChange={setDateValue} />
         </div>
 
         <div className="flex items-start gap-2.5">

@@ -488,6 +488,23 @@ export const ru: Dictionary = {
     billingNote:
       "Premium оплачивается заранее на 30 дней, автоматических списаний нет: повторная оплата добавляет ещё 30 дней. Всё, что отмечено как Free, доступно без оплаты.",
   },
+  datePicker: {
+    dialogLabel: "Выбор даты",
+    openCalendar: "Открыть календарь",
+    previousMonth: "Предыдущий месяц",
+    nextMonth: "Следующий месяц",
+    previousYear: "Предыдущий год",
+    nextYear: "Следующий год",
+    previousYears: "Предыдущие годы",
+    nextYears: "Следующие годы",
+    chooseYear: "Выбрать год",
+    chooseMonth: "Выбрать месяц",
+    clear: "Очистить",
+    today: "Сегодня",
+    invalid: "Введите дату полностью: дд.мм.гггг",
+    outOfRange: "Эта дата недоступна для выбора",
+  },
+
   accountPage: {
     title: "Личный кабинет",
     unavailableTitle: "Кабинет пока недоступен",

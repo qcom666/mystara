@@ -4,6 +4,7 @@ import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
 import { GlassPanel } from "@/components/ui/glass-panel";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "@/lib/i18n";
@@ -59,7 +60,7 @@ export function NumerologyInputForm({ onSubmit }: NumerologyInputFormProps) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="birthDate">{t.common.dateOfBirthLabel}</Label>
-          <Input id="birthDate" type="date" required max={TODAY} value={dateValue} onChange={(event) => setDateValue(event.target.value)} />
+          <DatePicker id="birthDate" required max={TODAY} value={dateValue} onChange={setDateValue} />
         </div>
         {error && <p className="text-xs text-red-400">{t.common.invalidDateError}</p>}
         <PrimaryActionBar>

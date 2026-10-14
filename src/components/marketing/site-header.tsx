@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -11,12 +12,24 @@ import { useTelegram } from "@/components/telegram/telegram-provider";
 import { useTranslation } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
+/** Пункты мобильного меню появляются по очереди; при включённой системной настройке «уменьшить движение» — сразу. */
+const listVariants = (reduce: boolean | null): Variants => ({
+  hidden: {},
+  show: { transition: reduce ? {} : { staggerChildren: 0.045, delayChildren: 0.06 } },
+});
+
+const itemVariants = (reduce: boolean | null): Variants => ({
+  hidden: reduce ? { opacity: 1 } : { opacity: 0, y: -8 },
+  show: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : 0.22, ease: "easeOut" } },
+});
+
 export function SiteHeader() {
   const t = useTranslation();
   const { data: session, status } = useSession();
   const { isTelegram } = useTelegram();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   // Собственная оболочка клиента Telegram (кнопка «Назад», закрытие, заголовок) заменяет эту шапку:
   // вторая панель навигации внутри мини-приложения была бы лишней.
@@ -114,44 +127,73 @@ export function SiteHeader() {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
           >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={open ? "close" : "menu"}
+                className="block"
+                initial={reduceMotion ? false : { rotate: open ? -80 : 80, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={reduceMotion ? { opacity: 0 } : { rotate: open ? 80 : -80, opacity: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.16 }}
+              >
+                {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </motion.span>
+            </AnimatePresence>
           </button>
         </div>
       </div>
 
-      {open && (
-        <div className="border-t border-white/5 px-4 py-4 xl:hidden">
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="mobile-menu"
+            className="overflow-hidden border-t border-white/5 xl:hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <motion.div className="px-4 py-4" variants={listVariants(reduceMotion)} initial="hidden" animate="show">
           {/* Здесь только наши услуги и тарифы; действия с аккаунтом, например вход, сюда не относятся (для них есть постоянная ссылка рядом с переключателем языка), поэтому список остаётся про «что здесь можно сделать», а не про «кто я». */}
-          <nav className="flex flex-col gap-4">
+          <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={link.href === activeHref ? "page" : undefined}
-                className={cn("text-sm", link.href === activeHref ? "text-gold-300" : "text-silver-300")}
-                onClick={() => setOpen(false)}
-              >
-                {link.label}
-              </Link>
+              <motion.div key={link.href} variants={itemVariants(reduceMotion)}>
+                <Link
+                  href={link.href}
+                  aria-current={link.href === activeHref ? "page" : undefined}
+                  className={cn("block py-2 text-sm", link.href === activeHref ? "text-gold-300" : "text-silver-300")}
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              </motion.div>
             ))}
           </nav>
           {authenticated && (
-            <nav className="mt-4 flex flex-col gap-4 border-t border-white/5 pt-4">
-              <Link href="/account" className="text-sm text-gold-300" onClick={() => setOpen(false)}>
-                {t.nav.account}
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className="text-sm text-silver-300" onClick={() => setOpen(false)}>
-                  {t.nav.admin}
+            <nav className="mt-3 flex flex-col gap-1 border-t border-white/5 pt-3">
+              <motion.div variants={itemVariants(reduceMotion)}>
+                <Link href="/account" className="block py-2 text-sm text-gold-300" onClick={() => setOpen(false)}>
+                  {t.nav.account}
                 </Link>
+              </motion.div>
+              {isAdmin && (
+                <motion.div variants={itemVariants(reduceMotion)}>
+                  <Link href="/admin" className="block py-2 text-sm text-silver-300" onClick={() => setOpen(false)}>
+                    {t.nav.admin}
+                  </Link>
+                </motion.div>
               )}
-              <button type="button" className="text-left text-sm text-silver-300" onClick={() => signOut()}>
-                {t.common.signOut}
-              </button>
+              <motion.div variants={itemVariants(reduceMotion)}>
+                <button type="button" className="block w-full py-2 text-left text-sm text-silver-300" onClick={() => signOut()}>
+                  {t.common.signOut}
+                </button>
+              </motion.div>
             </nav>
           )}
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
