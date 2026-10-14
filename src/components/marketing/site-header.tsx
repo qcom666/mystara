@@ -45,7 +45,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-white/5 bg-midnight-950/70 backdrop-blur-lg">
       {/* От 1800 px меню стоит ровно по центру страницы (боковые блоки разной ширины центр не сдвигают). Ниже этого порога оно растянуто между логотипом и блоком справа с одинаковыми промежутками. */}
       <div className="relative mx-auto flex h-16 w-full max-w-[1800px] items-center gap-4 px-4 xl:gap-8 xl:px-10">
-        <Link href="/" className="shrink-0 font-display text-2xl text-gold-300">
+        <Link href="/" className="shrink-0 py-2 font-display text-2xl text-gold-300">
           Mystara
         </Link>
 
@@ -100,7 +100,7 @@ export function SiteHeader() {
           <span aria-hidden className="hidden h-5 w-px bg-white/10 xl:block" />
 
           {!authenticated && (
-            <Link href="/login" className={cn(quietLink, "xl:hidden")}>
+            <Link href="/login" className={cn(quietLink, "inline-flex h-10 items-center xl:hidden")}>
               {t.common.signIn}
             </Link>
           )}
@@ -109,7 +109,7 @@ export function SiteHeader() {
 
           <button
             type="button"
-            className="focus-ring rounded-md p-1 text-silver-200 xl:hidden"
+            className="focus-ring rounded-md p-2 text-silver-200 xl:hidden"
             onClick={() => setOpen((current) => !current)}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}

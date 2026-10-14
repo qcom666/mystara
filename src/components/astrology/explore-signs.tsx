@@ -20,7 +20,7 @@ export function ExploreSigns() {
             <Link
               key={sign.id}
               href={`/astrology/${sign.id}`}
-              className="rounded-full border border-silver-500/25 px-3 py-1 text-sm text-silver-400 transition-colors hover:border-gold-400/40 hover:text-gold-300"
+              className="rounded-full border border-silver-500/25 px-3 py-2 text-sm sm:py-1 text-silver-400 transition-colors hover:border-gold-400/40 hover:text-gold-300"
             >
               {sign.symbol} {sign.name}
             </Link>

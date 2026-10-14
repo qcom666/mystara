@@ -20,7 +20,7 @@ export function LanguageSwitcher() {
           onClick={() => setLocale(code)}
           aria-pressed={locale === code}
           className={cn(
-            "focus-ring rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+            "focus-ring rounded-full px-3 py-2 text-xs font-medium transition-colors sm:px-2.5 sm:py-1",
             locale === code ? "bg-gold-500/20 text-gold-300" : "text-silver-400 hover:text-silver-200",
           )}
         >

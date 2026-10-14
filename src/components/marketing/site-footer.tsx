@@ -55,7 +55,7 @@ export function SiteFooter() {
               <ul className="mt-3 space-y-2">
                 {group.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-silver-500 transition-colors hover:text-gold-300">
+                    <Link href={link.href} className="inline-block py-1 text-sm sm:py-0 text-silver-500 transition-colors hover:text-gold-300">
                       {link.label}
                     </Link>
                   </li>
@@ -66,16 +66,16 @@ export function SiteFooter() {
         </div>
         <div className="mt-10 border-t border-white/5 pt-6 text-xs text-silver-500">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-            <Link href="/privacy" className="transition-colors hover:text-gold-300">
+            <Link href="/privacy" className="inline-block py-1.5 transition-colors sm:py-0 hover:text-gold-300">
               {t.legal.policyLink}
             </Link>
-            <Link href="/consent" className="transition-colors hover:text-gold-300">
+            <Link href="/consent" className="inline-block py-1.5 transition-colors sm:py-0 hover:text-gold-300">
               {t.legal.consentLink}
             </Link>
-            <Link href="/offer" className="transition-colors hover:text-gold-300">
+            <Link href="/offer" className="inline-block py-1.5 transition-colors sm:py-0 hover:text-gold-300">
               {t.legal.offerLink}
             </Link>
-            <Link href="/contacts" className="transition-colors hover:text-gold-300">
+            <Link href="/contacts" className="inline-block py-1.5 transition-colors sm:py-0 hover:text-gold-300">
               {t.legal.contactsLink}
             </Link>
           </div>

@@ -27,7 +27,7 @@ export function ConsentCheckbox({ id, checked, onChange, invalid = false }: Cons
           checked={checked}
           onChange={(event) => onChange(event.target.checked)}
           aria-invalid={invalid}
-          className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-gold-400"
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-gold-400"
         />
         <label htmlFor={id} className="cursor-pointer text-xs leading-snug text-silver-400">
           {t.legal.consentLead}
