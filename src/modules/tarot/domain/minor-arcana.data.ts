@@ -314,36 +314,248 @@ const COURT_RANKS: CourtTemplate[] = [
   },
 ];
 
+/** Четыре тематических абзаца достоинства: самостоятельные предложения, не зависящие от масти. */
+interface RankTopics {
+  love: string;
+  career: string;
+  finance: string;
+  spiritual: string;
+}
+
+/**
+ * Значения достоинства по четырём темам. Ключ — английское название достоинства из шаблонов выше.
+ * Предложение достоинства дописывается после предложения масти, поэтому текст по каждой теме
+ * уникален для каждой из 56 карт и при этом не требует согласования с падежом масти.
+ */
+const RANK_TOPICS: Record<string, { en: RankTopics; ru: RankTopics }> = {
+  Ace: {
+    en: {
+      love: "A new chapter is opening: a first spark, a fresh start, or a renewed willingness to let someone closer.",
+      career: "A new opportunity, project, or offer is arriving — the seed is small, so it is worth acting on early.",
+      finance: "A fresh financial beginning: a new source, a first step toward a goal, or an offer worth a careful look.",
+      spiritual: "A clean slate for inner work — a moment of fresh intention, where one small honest step matters more than a grand plan.",
+    },
+    ru: {
+      love: "Открывается новая глава: первая искра, новый старт или готовность впустить кого-то ближе.",
+      career: "Появляется новая возможность, проект или предложение — это пока зерно, поэтому действовать стоит рано.",
+      finance: "Новое финансовое начало: новый источник, первый шаг к цели или предложение, которое стоит внимательно изучить.",
+      spiritual: "Чистый лист для внутренней работы — время новых намерений, когда один небольшой честный шаг важнее грандиозного плана.",
+    },
+  },
+  Two: {
+    en: {
+      love: "A bond at a crossroads: two people weighing how close to come, or one person choosing between two pulls.",
+      career: "A choice or partnership to weigh: two options, or two people who need to agree on a shared direction.",
+      finance: "A balancing act: two priorities competing for the same resources, and a decision best made calmly.",
+      spiritual: "A call to hold two sides in balance — doubt and trust, giving and receiving — without rushing to resolve them.",
+    },
+    ru: {
+      love: "Связь на перекрёстке: двое решают, насколько сблизиться, или один человек выбирает между двумя влечениями.",
+      career: "Выбор или партнёрство, которые стоит взвесить: два варианта или два человека, которым нужно согласовать общее направление.",
+      finance: "Баланс между двумя задачами, которые претендуют на одни и те же ресурсы; решение лучше принимать спокойно.",
+      spiritual: "Призыв удерживать две стороны в равновесии — сомнение и доверие, отдавание и принятие — не спеша с выводами.",
+    },
+  },
+  Three: {
+    en: {
+      love: "Warmth that is growing: shared joy, a relationship finding its footing, or friends and family widening the circle.",
+      career: "Early results are showing — teamwork and visible progress make this a good moment to share the effort and the credit.",
+      finance: "First returns on earlier effort: modest but real growth, best supported by steady follow-through.",
+      spiritual: "Growth through connection — what you have planted begins to show, and company helps it along.",
+    },
+    ru: {
+      love: "Тепло растёт: общая радость, отношения обретают опору, а друзья или семья расширяют круг.",
+      career: "Первые результаты уже видны — командная работа и заметный прогресс; хороший момент разделить усилия и заслуги.",
+      finance: "Первая отдача от прежних усилий: скромный, но реальный рост, который лучше поддержать последовательностью.",
+      spiritual: "Рост через связь с другими: посеянное начинает проявляться, и общение помогает ему расти.",
+    },
+  },
+  Four: {
+    en: {
+      love: "A stable, comfortable stretch: security and routine can be a gift, or a quiet signal that closeness needs fresh attention.",
+      career: "Consolidation: secure what you have built, rest briefly, and ask whether the current setup still fits you.",
+      finance: "A period of savings and security — a solid base, though holding too tightly can stall growth.",
+      spiritual: "A pause for stillness: inner stability is available now, and so is the question of what it is time to outgrow.",
+    },
+    ru: {
+      love: "Спокойный, устойчивый период: безопасность и привычный уклад могут быть даром — или тихим сигналом, что близости нужно свежее внимание.",
+      career: "Закрепление достигнутого: сохраните построенное, коротко передохните и спросите себя, подходит ли вам нынешний уклад.",
+      finance: "Время накоплений и надёжности — прочная основа, хотя слишком крепкая хватка может затормозить рост.",
+      spiritual: "Пауза для тишины: внутренняя устойчивость сейчас доступна — как и вопрос о том, из чего пора вырасти.",
+    },
+  },
+  Five: {
+    en: {
+      love: "Tension or hurt between people: arguments, rivalry, or a sense of loss — a prompt to repair rather than to win.",
+      career: "Competition and disagreement at work — friction that can sharpen you if you stay constructive and pick your battles.",
+      finance: "A stressful stretch: losses, disputes, or pressure on resources — best met with a clear count of what remains.",
+      spiritual: "A lesson in discomfort: conflict and loss point to what you are attached to, and where growth is asking to begin.",
+    },
+    ru: {
+      love: "Напряжение или обида между людьми: споры, соперничество или чувство утраты — повод восстанавливать, а не побеждать.",
+      career: "Соперничество и разногласия на работе — трения, которые могут закалить, если оставаться конструктивным и выбирать, за что бороться.",
+      finance: "Непростой период: потери, споры или давление на ресурсы — лучше встретить его, ясно посчитав, что осталось.",
+      spiritual: "Урок дискомфорта: конфликт и потеря показывают, к чему вы привязаны и где просит начаться рост.",
+    },
+  },
+  Six: {
+    en: {
+      love: "Kindness and reconciliation: generosity, nostalgia, or an old connection returning on gentler terms.",
+      career: "Fair exchange and support: help given or received, recognition shared, and cooperation that lifts everyone.",
+      finance: "Resources moving in a healthy balance — giving, receiving, or settling what is owed in a fair way.",
+      spiritual: "Ease in giving and receiving: balance returns through generosity, forgiveness, and gratitude.",
+    },
+    ru: {
+      love: "Доброта и примирение: щедрость, ностальгия или старая связь, возвращающаяся на более мягких условиях.",
+      career: "Честный обмен и поддержка: помощь, данная или полученная, общее признание и сотрудничество, которое поднимает всех.",
+      finance: "Ресурсы движутся в здоровом балансе: вы даёте, получаете или справедливо закрываете долги.",
+      spiritual: "Лёгкость в том, чтобы давать и принимать: равновесие возвращается через щедрость, прощение и благодарность.",
+    },
+  },
+  Seven: {
+    en: {
+      love: "A time to look honestly at what you want: doubts, mixed signals, or an urge to test the ground before committing.",
+      career: "Evaluate before acting: weigh strategy, protect your position, and avoid scattering effort across too many options.",
+      finance: "A moment to review the plan: the patient investment tends to outperform the tempting shortcut.",
+      spiritual: "A contemplative pause: sort real aims from illusions, and trust patience over haste.",
+    },
+    ru: {
+      love: "Время честно взглянуть на то, чего вы хотите: сомнения, неясные сигналы или желание проверить почву, прежде чем решиться.",
+      career: "Оценивайте, прежде чем действовать: взвесьте стратегию, защитите свою позицию и не распыляйте силы на слишком много вариантов.",
+      finance: "Момент пересмотреть план: терпеливое вложение обычно выигрывает у соблазнительного обходного пути.",
+      spiritual: "Созерцательная пауза: отделите настоящие цели от иллюзий и доверьтесь терпению, а не спешке.",
+    },
+  },
+  Eight: {
+    en: {
+      love: "Movement and focus: attention is being poured into the relationship, or into leaving behind what no longer feeds it.",
+      career: "Skill and speed: a productive stretch of focused effort, where practice and discipline show results.",
+      finance: "Steady, disciplined effort pays: building through skill and repetition rather than a single leap.",
+      spiritual: "Devoted practice: progress through steady repetition — or the courage to walk away from what has been outgrown.",
+    },
+    ru: {
+      love: "Движение и сосредоточенность: внимание вкладывается в отношения — или в то, чтобы отпустить то, что их больше не питает.",
+      career: "Мастерство и скорость: продуктивный период сосредоточенной работы, в котором практика и дисциплина дают результат.",
+      finance: "Размеренные, дисциплинированные усилия окупаются: строить через умение и повторение, а не одним прыжком.",
+      spiritual: "Преданная практика: прогресс через ровное повторение — или смелость уйти от того, из чего вы выросли.",
+    },
+  },
+  Nine: {
+    en: {
+      love: "Strength drawn from experience: a guarded heart, hard-won independence, or a bond that has weathered a lot.",
+      career: "You are close to the goal: persistence matters now, along with protecting your energy for the last stretch.",
+      finance: "Near-security: resilience and prudence have built a cushion, and the final steps ask for patience.",
+      spiritual: "Inner resilience: what you have endured has made you wiser, and the finish line asks for one more act of trust.",
+    },
+    ru: {
+      love: "Сила, выросшая из опыта: настороженное сердце, с трудом завоёванная независимость или связь, пережившая многое.",
+      career: "Цель близка: сейчас важна настойчивость и умение беречь силы для последнего рывка.",
+      finance: "Почти надёжность: стойкость и благоразумие создали подушку, а последние шаги требуют терпения.",
+      spiritual: "Внутренняя стойкость: пережитое сделало вас мудрее, а у самого финиша стоит довериться ещё раз.",
+    },
+  },
+  Ten: {
+    en: {
+      love: "A cycle in the relationship reaches fullness: lasting commitment and shared life, or a burden it is time to set down.",
+      career: "A project or chapter reaches its end point: results arrive in full, along with the chance to delegate or let go.",
+      finance: "A financial cycle completes: either the weight of everything carried, or the reward of long effort.",
+      spiritual: "Completion and release: an old story ends, making space for what comes next.",
+    },
+    ru: {
+      love: "Цикл в отношениях достигает полноты: прочные обязательства и общая жизнь — или ноша, которую пора опустить.",
+      career: "Проект или глава подходит к концу: результат приходит в полном объёме, вместе с возможностью делегировать или отпустить.",
+      finance: "Финансовый цикл завершается: тяжесть всего, что приходилось нести, — или награда за долгие усилия.",
+      spiritual: "Завершение и освобождение: старая история заканчивается, оставляя место для следующей.",
+    },
+  },
+  Page: {
+    en: {
+      love: "A tender, curious beginning: a message, a shy gesture, or a chance to learn what someone really feels.",
+      career: "A student's stance: news, a new skill to learn, or a small task that opens a door.",
+      finance: "A small first step: learn the basics, ask questions, and begin modestly before committing more.",
+      spiritual: "Beginner's mind: openness to a lesson or a sign, and curiosity as a form of practice.",
+    },
+    ru: {
+      love: "Нежное, любопытное начало: сообщение, робкий жест или шанс узнать, что на самом деле чувствует другой человек.",
+      career: "Позиция ученика: новость, новый навык или небольшая задача, которая открывает дверь.",
+      finance: "Небольшой первый шаг: изучить основы, задавать вопросы и начать скромно, прежде чем вкладываться больше.",
+      spiritual: "Ум новичка: открытость уроку или знаку, а любопытство как форма практики.",
+    },
+  },
+  Knight: {
+    en: {
+      love: "Ardour and movement: a passionate pursuit or a swift change, which asks for follow-through as much as enthusiasm.",
+      career: "Drive and action: a push forward on a goal, where speed helps but a plan keeps it from burning out.",
+      finance: "A bold move or quick change: momentum is available, so pair it with careful checks.",
+      spiritual: "A quest in motion: devotion to a path, tempered by patience so the journey does not outrun its meaning.",
+    },
+    ru: {
+      love: "Пыл и движение: страстное преследование или быстрые перемены, которым нужна не только горячность, но и постоянство.",
+      career: "Напор и действие: рывок к цели, где скорость помогает, а план не даёт выгореть.",
+      finance: "Смелый шаг или быстрая перемена: импульс есть, поэтому подкрепите его тщательными проверками.",
+      spiritual: "Поиск в движении: преданность пути, смягчённая терпением, чтобы путешествие не опережало свой смысл.",
+    },
+  },
+  Queen: {
+    en: {
+      love: "Emotionally mature care: warmth, steady attention, and the confidence to be both open and self-possessed.",
+      career: "Skilled, nurturing leadership: competence expressed through care, intuition, and a trusted presence.",
+      finance: "Wise stewardship: managing resources with intuition and practicality, providing without overspending.",
+      spiritual: "Inner authority: trusting intuition, tending your own well-being, and drawing from experience rather than theory.",
+    },
+    ru: {
+      love: "Эмоционально зрелая забота: тепло, устойчивое внимание и уверенность быть одновременно открытым и собранным.",
+      career: "Умелое, заботливое лидерство: компетентность, выраженная через чуткость, интуицию и надёжное присутствие.",
+      finance: "Мудрое управление: распоряжаться ресурсами с интуицией и практичностью, обеспечивая нужное без лишних трат.",
+      spiritual: "Внутренний авторитет: доверие интуиции, забота о собственном благополучии и опора на опыт, а не на теорию.",
+    },
+  },
+  King: {
+    en: {
+      love: "Steady, reliable commitment: a partner who leads with maturity, protection, and clear boundaries.",
+      career: "Authority and mastery: decisive leadership, clear vision, and accountability for the outcome.",
+      finance: "Command of resources: sound, experienced judgment and a long view of security.",
+      spiritual: "Mastery of self: discipline, integrity, and the calm that comes from living by your own values.",
+    },
+    ru: {
+      love: "Устойчивая, надёжная преданность: партнёр, который ведёт зрело, защищает и чётко обозначает границы.",
+      career: "Авторитет и мастерство: решительное лидерство, чёткое видение и ответственность за результат.",
+      finance: "Владение ресурсами: трезвое, опытное суждение и взгляд на безопасность в долгосрочной перспективе.",
+      spiritual: "Владение собой: дисциплина, цельность и спокойствие, которое приходит от жизни по собственным ценностям.",
+    },
+  },
+};
+
+function requireRankTopics(rankTitle: string): { en: RankTopics; ru: RankTopics } {
+  const topics = RANK_TOPICS[rankTitle];
+  if (!topics) throw new Error(`Нет тематических значений для достоинства «${rankTitle}»`);
+  return topics;
+}
+
 function slugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-");
 }
 
-function buildMeanings(
-  domain: string,
-  angles: SuitTheme,
-  upright: string,
-  reversed: string,
-  yesNo: YesNoLeaning,
-): TarotCardMeanings {
+function buildMeanings(angles: SuitTheme, topics: RankTopics, upright: string, reversed: string, yesNo: YesNoLeaning): TarotCardMeanings {
   return {
     upright,
     reversed,
-    love: `In matters of the heart, this card leans on ${angles.loveAngle} — symbolically, ${domain} playing out between two people.`,
-    career: `At work, this points to ${angles.careerAngle}.`,
-    finance: `Financially, this suggests ${angles.financeAngle}.`,
-    spiritual: `Spiritually, one possible interpretation centers on ${angles.spiritualAngle}.`,
+    love: `In matters of the heart, this card leans on ${angles.loveAngle}. ${topics.love}`,
+    career: `At work, this points to ${angles.careerAngle}. ${topics.career}`,
+    finance: `Financially, this suggests ${angles.financeAngle}. ${topics.finance}`,
+    spiritual: `Spiritually, one possible interpretation centers on ${angles.spiritualAngle}. ${topics.spiritual}`,
     yesNo,
   };
 }
 
-function buildMeaningsRu(theme: SuitTheme, upright: string, reversed: string): TarotCardMeaningTexts {
+function buildMeaningsRu(theme: SuitTheme, topics: RankTopics, upright: string, reversed: string): TarotCardMeaningTexts {
   return {
     upright,
     reversed,
-    love: `В делах сердца эта карта опирается на ${theme.loveAngleRu} — символически, сфера ${theme.domainRuGenitive} разворачивается между двумя людьми.`,
-    career: `На работе это указывает на ${theme.careerAngleRu}.`,
-    finance: `В финансах это говорит о ${theme.financeAngleRu}.`,
-    spiritual: `В духовном плане одна из возможных трактовок связана с ${theme.spiritualAngleRu}.`,
+    love: `В делах сердца эта карта опирается на ${theme.loveAngleRu}. ${topics.love}`,
+    career: `На работе это указывает на ${theme.careerAngleRu}. ${topics.career}`,
+    finance: `В финансах это говорит о ${theme.financeAngleRu}. ${topics.finance}`,
+    spiritual: `В духовном плане одна из возможных трактовок связана с ${theme.spiritualAngleRu}. ${topics.spiritual}`,
   };
 }
 
@@ -358,6 +570,7 @@ function buildMinorArcana(): TarotCard[] {
       const number = index + 1;
       const name = `${rank.title} of ${theme.title}`;
       const nameRu = `${rank.titleRu} ${theme.titleRuGenitive}`;
+      const topics = requireRankTopics(rank.title);
       cards.push({
         id: slugify(name),
         name,
@@ -369,9 +582,9 @@ function buildMinorArcana(): TarotCard[] {
         keywords: [rank.keyword, theme.element, theme.title.toLowerCase()],
         keywordsRu: [rank.keywordRu, theme.elementRu, theme.titleRu],
         description: `The ${rank.title.toLowerCase()} of the ${theme.title.toLowerCase()} suit, carrying ${theme.domain} through the lens of ${rank.keyword}.`,
-        descriptionRu: `Карта «${nameRu}» отражает ${theme.domainRuGenitive} через призму темы «${rank.keywordRu}».`,
-        meanings: buildMeanings(theme.domain, theme, rank.upright(theme.domain), rank.reversed(theme.domain), rank.yesNo),
-        meaningsRu: buildMeaningsRu(theme, rank.uprightRu(theme.domainRuGenitive), rank.reversedRu(theme.domainRuGenitive)),
+        descriptionRu: `Карта «${nameRu}» раскрывает тему «${rank.keywordRu}» в сфере ${theme.domainRuGenitive}.`,
+        meanings: buildMeanings(theme, topics.en, rank.upright(theme.domain), rank.reversed(theme.domain), rank.yesNo),
+        meaningsRu: buildMeaningsRu(theme, topics.ru, rank.uprightRu(theme.domainRuGenitive), rank.reversedRu(theme.domainRuGenitive)),
       });
     });
 
@@ -379,6 +592,7 @@ function buildMinorArcana(): TarotCard[] {
       const number = 11 + courtIndex;
       const name = `${court.title} of ${theme.title}`;
       const nameRu = `${court.titleRu} ${theme.titleRuGenitive}`;
+      const topics = requireRankTopics(court.title);
       cards.push({
         id: slugify(name),
         name,
@@ -390,9 +604,9 @@ function buildMinorArcana(): TarotCard[] {
         keywords: [court.keyword, theme.element, theme.title.toLowerCase()],
         keywordsRu: [court.keywordRu, theme.elementRu, theme.titleRu],
         description: `${court.archetype[0].toUpperCase()}${court.archetype.slice(1)} within the ${theme.title.toLowerCase()} suit, embodying ${theme.domain}.`,
-        descriptionRu: `Карта «${nameRu}» воплощает архетип ${court.archetypeRuGenitive} в стихии ${theme.domainRuGenitive}.`,
-        meanings: buildMeanings(theme.domain, theme, court.upright(theme.domain), court.reversed(theme.domain), court.yesNo),
-        meaningsRu: buildMeaningsRu(theme, court.uprightRu(theme.domainRuGenitive), court.reversedRu(theme.domainRuGenitive)),
+        descriptionRu: `Карта «${nameRu}» воплощает архетип ${court.archetypeRuGenitive} в сфере ${theme.domainRuGenitive}.`,
+        meanings: buildMeanings(theme, topics.en, court.upright(theme.domain), court.reversed(theme.domain), court.yesNo),
+        meaningsRu: buildMeaningsRu(theme, topics.ru, court.uprightRu(theme.domainRuGenitive), court.reversedRu(theme.domainRuGenitive)),
       });
     });
   }

@@ -45,7 +45,7 @@ export function TarotCardsContent() {
       {SUITS.map((suit) => (
         <Section
           key={suit}
-          title={`${suit[0].toUpperCase()}${suit.slice(1)}`}
+          title={t.reading.suits[suit]}
           cards={all.filter((card) => card.suit === suit)}
           locale={locale}
         />

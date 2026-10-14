@@ -25,7 +25,7 @@ export function CardDetailContent({ card, orientation }: CardDetailContentProps)
         </div>
         <div>
           <p className="text-xs uppercase tracking-wide text-silver-500">
-            {card.arcana === "major" ? t.reading.majorArcana : card.suit ? `${card.suit[0].toUpperCase()}${card.suit.slice(1)}` : ""}
+            {card.arcana === "major" ? t.reading.majorArcana : card.suit ? t.reading.suits[card.suit] : ""}
           </p>
           <h3 className="font-display text-2xl text-silver-100">{getCardName(card, locale)}</h3>
           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -39,6 +39,11 @@ export function CardDetailContent({ card, orientation }: CardDetailContentProps)
       </div>
 
       <p className="text-sm italic text-silver-400">{getCardDescription(card, locale)}</p>
+
+      <p className="text-sm text-silver-300">
+        <span className="text-silver-500">{t.reading.yesNoLabel}: </span>
+        {t.reading.yesNoAnswers[meanings.yesNo]}
+      </p>
 
       <Tabs defaultValue={orientation === "reversed" ? "reversed" : "upright"}>
         <TabsList>

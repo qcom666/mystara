@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { FULL_DECK } from "@/modules/tarot/domain/deck";
 import { requireSpreadById } from "@/modules/tarot/domain/spreads.data";
 import { drawForSpread } from "@/modules/tarot/services/draw-engine";
 import { MockAIProvider } from "./mock-provider";
@@ -66,6 +67,47 @@ describe("MockAIProvider", () => {
       const result = await new MockAIProvider().generate({ question: null, spread, cards });
       expect(result.overall).not.toMatch(CYRILLIC);
     });
+  });
+
+  describe("every card in both languages", () => {
+    const QUESTIONS = {
+      ru: [null, "Что с моими отношениями?", "Стоит ли менять работу?", "Как с деньгами?"],
+      en: [null, "How is my relationship going?", "Should I change my job?", "How are my finances?"],
+    } as const;
+
+    for (const locale of ["ru", "en"] as const) {
+      it(`reads each of the 78 cards, upright and reversed, on every topic of the question (${locale})`, async () => {
+        const spread = requireSpreadById("one-card");
+        const provider = new MockAIProvider();
+        for (const card of FULL_DECK) {
+          for (const orientation of ["upright", "reversed"] as const) {
+            for (const question of QUESTIONS[locale]) {
+              const result = await provider.generate({
+                question,
+                spread,
+                locale,
+                cards: [{ card, orientation, position: spread.positions[0] }],
+              });
+              const where = `${locale}/${card.id}/${orientation}/${question ?? "без вопроса"}`;
+              const text = [
+                result.summary,
+                result.overall,
+                ...result.advice,
+                ...result.challenges,
+                ...result.themes,
+                ...result.cardInterpretations.map((item) => item.interpretation),
+              ].join(" ");
+              expect(result.cardInterpretations, where).toHaveLength(1);
+              expect(result.cardInterpretations[0].interpretation.length, where).toBeGreaterThan(40);
+              expect(result.themes.length, where).toBeGreaterThan(0);
+              expect(text, where).not.toMatch(/undefined|\bnull\b|\bNaN\b|\[object|\$\{/);
+              if (locale === "ru") expect(text, where).not.toMatch(/[A-Za-z]/);
+              else expect(text, where).not.toMatch(/[А-Яа-яЁё]/);
+            }
+          }
+        }
+      });
+    }
   });
 
   it("handles a reading with no question", async () => {

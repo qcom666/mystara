@@ -33,6 +33,21 @@ describe("spreads", () => {
     }
   });
 
+  it("keeps the Russian spread text free of untranslated Latin fragments and the English text free of Cyrillic", () => {
+    for (const spread of SPREADS) {
+      expect(spread.nameRu, spread.id).not.toMatch(/[A-Za-z]/);
+      expect(spread.descriptionRu, spread.id).not.toMatch(/[A-Za-z]/);
+      expect(spread.name, spread.id).not.toMatch(/[А-Яа-яЁё]/);
+      expect(spread.description, spread.id).not.toMatch(/[А-Яа-яЁё]/);
+      for (const position of spread.positions) {
+        expect(position.labelRu, `${spread.id}/${position.id}`).not.toMatch(/[A-Za-z]/);
+        expect(position.meaningRu, `${spread.id}/${position.id}`).not.toMatch(/[A-Za-z]/);
+        expect(position.label, `${spread.id}/${position.id}`).not.toMatch(/[А-Яа-яЁё]/);
+        expect(position.meaning, `${spread.id}/${position.id}`).not.toMatch(/[А-Яа-яЁё]/);
+      }
+    }
+  });
+
   it("returns the English or Russian spread text depending on locale", () => {
     const spread = getSpreadById("three-card")!;
     expect(getSpreadName(spread, "en")).toBe("Three Card");

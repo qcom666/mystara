@@ -278,6 +278,11 @@ const MAJOR_GLYPHS: Record<string, (color: string) => ReactNode> = {
   ),
 };
 
+/** Есть ли у старшего аркана собственный значок (иначе рисуется запасной «солнечный»). */
+export function hasMajorGlyph(cardId: string): boolean {
+  return cardId in MAJOR_GLYPHS;
+}
+
 function MajorGlyph({ cardId, color }: { cardId: string; color: string }) {
   const render = MAJOR_GLYPHS[cardId];
   return <>{render ? render(color) : <SunburstGlyph color={color} />}</>;

@@ -29,6 +29,97 @@ describe("deck", () => {
     }
   });
 
+  describe("structure of the deck", () => {
+    it("numbers the major arcana 0–21 without gaps and gives them no suit", () => {
+      const major = FULL_DECK.filter((card) => card.arcana === "major");
+      expect(major.map((card) => card.number).sort((a, b) => a - b)).toEqual(Array.from({ length: 22 }, (_, i) => i));
+      for (const card of major) expect(card.suit, card.id).toBeNull();
+    });
+
+    it("gives each suit exactly the 14 cards numbered 1–14", () => {
+      for (const suit of ["wands", "cups", "swords", "pentacles"] as const) {
+        const numbers = FULL_DECK.filter((card) => card.suit === suit)
+          .map((card) => card.number)
+          .sort((a, b) => a - b);
+        expect(numbers, suit).toEqual(Array.from({ length: 14 }, (_, i) => i + 1));
+      }
+    });
+
+    it("keeps every card id a lowercase slug and every yes/no leaning a known value", () => {
+      for (const card of FULL_DECK) {
+        expect(card.id).toMatch(/^[a-z]+(-[a-z]+)*$/);
+        expect(["yes", "no", "maybe", "yes-if-cautious"], card.id).toContain(card.meanings.yesNo);
+      }
+    });
+  });
+
+  describe("completeness of every card in both languages", () => {
+    const TOPICS = ["upright", "reversed", "love", "career", "finance", "spiritual"] as const;
+    const CYRILLIC = /[А-Яа-яЁё]/;
+    const LATIN = /[A-Za-z]/;
+    const SERVICE_JUNK = /undefined|\bnull\b|\bNaN\b|\$\{|\[object|TODO|FIXME/;
+
+    // Каждый текст читается как законченное предложение: без пробелов по краям, двойных пробелов,
+    // пробела перед знаком препинания, служебного мусора и с точкой (или другим знаком) в конце.
+    function expectWellFormed(text: string, where: string) {
+      expect(text.trim(), where).toBe(text);
+      expect(text, where).not.toMatch(/\s{2,}|\s[,.;:!?]/);
+      expect(text, where).not.toMatch(SERVICE_JUNK);
+      expect(text, where).toMatch(/[.!?…»)]$/);
+    }
+
+    it("fills the description and all six topics in English and Russian with well-formed sentences", () => {
+      for (const card of FULL_DECK) {
+        expectWellFormed(card.description, `${card.id}.description`);
+        expectWellFormed(card.descriptionRu, `${card.id}.descriptionRu`);
+        expect(card.description, `${card.id}.description`).not.toMatch(CYRILLIC);
+        expect(card.descriptionRu, `${card.id}.descriptionRu`).not.toMatch(LATIN);
+        for (const topic of TOPICS) {
+          expectWellFormed(card.meanings[topic], `${card.id}.meanings.${topic}`);
+          expectWellFormed(card.meaningsRu[topic], `${card.id}.meaningsRu.${topic}`);
+          expect(card.meanings[topic].length, `${card.id}.meanings.${topic}`).toBeGreaterThanOrEqual(25);
+          expect(card.meaningsRu[topic].length, `${card.id}.meaningsRu.${topic}`).toBeGreaterThanOrEqual(25);
+          expect(card.meanings[topic], `${card.id}.meanings.${topic}`).not.toMatch(CYRILLIC);
+          expect(card.meaningsRu[topic], `${card.id}.meaningsRu.${topic}`).not.toMatch(LATIN);
+        }
+      }
+    });
+
+    it("never carries an untranslated copy of the English text into the Russian one", () => {
+      for (const card of FULL_DECK) {
+        expect(card.nameRu, card.id).not.toBe(card.name);
+        expect(card.descriptionRu, card.id).not.toBe(card.description);
+        for (const topic of TOPICS) expect(card.meaningsRu[topic], `${card.id}.${topic}`).not.toBe(card.meanings[topic]);
+      }
+    });
+
+    it("gives every card at least three distinct keywords in each language", () => {
+      for (const card of FULL_DECK) {
+        expect(card.keywords.length, card.id).toBeGreaterThanOrEqual(3);
+        expect(new Set(card.keywords).size, card.id).toBe(card.keywords.length);
+        expect(new Set(card.keywordsRu).size, card.id).toBe(card.keywordsRu.length);
+      }
+    });
+
+    it("gives all 78 cards different text for every topic, so no tab repeats across cards", () => {
+      for (const topic of TOPICS) {
+        const english = FULL_DECK.map((card) => card.meanings[topic]);
+        const russian = FULL_DECK.map((card) => card.meaningsRu[topic]);
+        expect(new Set(english).size, `meanings.${topic}`).toBe(FULL_DECK.length);
+        expect(new Set(russian).size, `meaningsRu.${topic}`).toBe(FULL_DECK.length);
+      }
+      expect(new Set(FULL_DECK.map((card) => card.description)).size).toBe(FULL_DECK.length);
+      expect(new Set(FULL_DECK.map((card) => card.descriptionRu)).size).toBe(FULL_DECK.length);
+    });
+
+    it("keeps the generated Minor Arcana descriptions grammatical: 'в сфере' + genitive, no stray accusative", () => {
+      const aceOfWands = getCardById("ace-of-wands")!;
+      expect(aceOfWands.descriptionRu).toBe("Карта «Туз Жезлов» раскрывает тему «новое начало» в сфере страсти, амбиций и творческого порыва.");
+      const pageOfCups = getCardById("page-of-cups")!;
+      expect(pageOfCups.descriptionRu).toBe("Карта «Паж Кубков» воплощает архетип любознательного ученика в сфере эмоций, любви и интуиции.");
+    });
+  });
+
   describe("Russian localization", () => {
     it("gives every card a Russian name and description written in Cyrillic", () => {
       for (const card of FULL_DECK) {
