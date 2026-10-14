@@ -18,7 +18,8 @@ export function CardShowcase() {
         <h2 className="mt-3 font-display text-3xl text-silver-50">{t.marketing.cardShowcase.title}</h2>
         <p className="mx-auto mt-2 max-w-xl text-silver-400">{t.marketing.cardShowcase.body}</p>
       </div>
-      <div className="mx-auto mt-10 flex max-w-6xl gap-4 overflow-x-auto px-4 pb-4">
+      {/* Контейнер сжимается до ширины карт и центрируется; когда они не помещаются (телефон), он занимает всю доступную ширину и прокручивается, а первая карта остаётся доступной (justify-center обрезал бы её слева). */}
+      <div className="mx-auto mt-10 flex w-fit max-w-full gap-4 overflow-x-auto px-4 pb-4">
         {cards.map((card) => (
           <div key={card.id} className="w-32 shrink-0 sm:w-36">
             <TarotCardFace card={card} locale={locale} className="card-glow w-full" />
