@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { buildPgConnection } from "@/lib/db-connection";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
@@ -10,12 +11,14 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
  * гарантирует `isDatabaseConfigured()`, закрывающая все маршруты, которые обращаются к базе.
  */
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL ?? "postgresql://localhost:5432/not-configured";
+  // Адрес и (если хостер выдал свой корневой сертификат) строгая проверка SSL: см. db-connection.ts.
+  const { connectionString, ssl } = buildPgConnection(process.env);
   // Serverless: каждый экземпляр функции открывает собственный пул, поэтому много экземпляров × большой
   // пул быстро исчерпывают лимит соединений базы. Держим пул маленьким и быстро отпускаем простаивающие
   // соединения (можно переопределить через DATABASE_POOL_MAX, если тариф позволяет).
   const adapter = new PrismaPg({
     connectionString,
+    ssl,
     max: Number(process.env.DATABASE_POOL_MAX) || 3,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 10_000,

@@ -43,6 +43,11 @@ model User {
   privacyConsentAt      DateTime?
   privacyPolicyVersion  String?
 
+  // Когда пользователь удалил аккаунт (src/lib/repositories/account-deletion.repository.ts): личные
+  // данные стёрты, а строка остаётся только как владелец платежей, которые нужно хранить по закону.
+  // Пусто у живых аккаунтов.
+  deletedAt DateTime?
+
   // Натальная карта платная (см. lib/pricing/natal-chart-pricing.ts): здесь хранится остаток
   // кредитов. Одна построенная карта списывает 1, оплаченная покупка начисляет
   // NATAL_CHART_PACK_CREDITS. По умолчанию 0: бесплатного пробного периода нет, но менять

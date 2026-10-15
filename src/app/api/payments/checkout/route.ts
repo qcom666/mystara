@@ -6,6 +6,7 @@ import { PAYMENT_PRODUCT_IDS, PRODUCT_PRICES, enabledProviders } from "@/lib/pay
 import { createStarsInvoiceLink } from "@/lib/payments/providers/stars";
 import { createYooKassaPayment } from "@/lib/payments/providers/yookassa";
 import { createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const checkoutSchema = z.object({
   provider: z.enum(["stars", "yookassa"]),
@@ -39,6 +40,8 @@ const RETURN_PATH = {
  * провайдера после реального перевода денег (см. fulfillPurchase в purchase.repository.ts).
  */
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "checkout", { limit: 10, windowSeconds: 60 });
+  if (limited) return limited;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured" }, { status: 503 });
   }

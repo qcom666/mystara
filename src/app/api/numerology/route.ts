@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { createNumerologyReading, listNumerologyReadingsForUser } from "@/lib/repositories/numerology.repository";
 import { createNumerologyReadingSchema } from "@/lib/validation/numerology-astrology.schema";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   if (!isDatabaseConfigured()) {
@@ -20,6 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "numerology-save", { limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured", message: "Persistence isn't configured yet." }, { status: 503 });
   }

@@ -5,10 +5,14 @@ import { generateInterpretation } from "@/modules/ai/ai-interpretation.service";
 import { requireCardById } from "@/modules/tarot/domain/deck";
 import { requireSpreadById } from "@/modules/tarot/domain/spreads.data";
 import type { DrawnCard } from "@/modules/tarot/domain/types";
+import { logError } from "@/lib/logger";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Намеренно открыт для гостей (без проверки входа): толкование — часть расклада, который можно
-// попробовать до регистрации. Ограничение частоты запросов пока не реализовано.
+// попробовать до регистрации, поэтому защищён только ограничением частоты запросов.
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "ai-interpret", { limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
   const body = await request.json().catch(() => null);
   const parsed = aiInterpretRequestSchema.safeParse(body);
   if (!parsed.success) {
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
     track({ name: "ai_interpretation_requested", spreadId: spread.id, provider: interpretation.provider });
     return NextResponse.json({ interpretation });
   } catch (error) {
-    console.error("[api/ai/interpret]", error);
+    logError("api/ai/interpret", error);
     return NextResponse.json({ error: "interpretation_failed", message: "Couldn't generate an interpretation right now." }, { status: 502 });
   }
 }

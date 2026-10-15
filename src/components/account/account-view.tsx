@@ -3,6 +3,7 @@
 import { Star } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatCardCount, useLocale, useTranslation, type Locale } from "@/lib/i18n";
@@ -211,6 +212,8 @@ export function AccountView({ data }: { data: AccountViewData }) {
               </Row>
             </dl>
           </section>
+
+          <DeleteAccountSection />
         </div>
       )}
 

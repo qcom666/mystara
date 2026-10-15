@@ -3,14 +3,17 @@ import { auth } from "@/lib/auth";
 import { isDatabaseConfigured, prisma } from "@/lib/db";
 import { PRIVACY_POLICY_VERSION } from "@/lib/legal/operator";
 import { privacyConsentSchema } from "@/lib/validation/reading.schema";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
- * Сохраняет согласие вошедшего пользователя на обработку персональных данных. При регистрации по e-mail
- * согласие записывается само; этот маршрут нужен для остальных способов входа (Google, Telegram), где
- * аккаунт создаёт провайдер входа, а согласие дано на этом устройстве чуть раньше.
+ * Сохраняет согласие вошедшего пользователя на обработку персональных данных. Аккаунт создаётся при
+ * входе через Telegram, а согласие дано на этом устройстве чуть раньше, поэтому оно записывается
+ * в базу уже после входа этим маршрутом.
  * Идемпотентен для каждой версии политики, поэтому вызов при каждом визите стоит одного чтения.
  */
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "privacy-consent", { limit: 30, windowSeconds: 60 });
+  if (limited) return limited;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured" }, { status: 503 });
   }

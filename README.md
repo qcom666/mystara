@@ -17,7 +17,8 @@
 - **Интерфейс** на русском и английском, переключается без перезагрузки страницы.
 
 Устройство проекта подробно описано в [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md), настройка бота —
-в [TELEGRAM_SETUP.md](./TELEGRAM_SETUP.md), работа с локальной базой — в [db/README.md](./db/README.md).
+в [TELEGRAM_SETUP.md](./TELEGRAM_SETUP.md), работа с локальной базой — в [db/README.md](./db/README.md),
+переезд на базу в РФ — в [docs/LAUNCH_RF.md](./docs/LAUNCH_RF.md).
 
 ## Стек
 
@@ -58,6 +59,7 @@ npm run dev
 | `npm run dev` | Сервер разработки (Turbopack) |
 | `npm run build` | Продакшен-сборка |
 | `npm run vercel-build` | Миграции базы (если она настроена) и сборка; запускается на Vercel |
+| `npm run db:check` | Проверка подключения к базе: сервер, шифрование, миграции, задержка |
 | `npm run lint` | ESLint |
 | `npm run test` | Vitest: колода, расклады, генератор, лимиты, оплата, юридические тексты |
 | `npx tsc --noEmit` | Проверка типов |

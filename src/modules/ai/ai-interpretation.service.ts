@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { AnthropicAIProvider } from "./providers/anthropic-provider";
 import { MockAIProvider } from "./providers/mock-provider";
 import { getInterpretationDisclaimer, type AIInterpretationProvider, type AIInterpretationRequest, type AIInterpretationResult, type InterpretationLocale } from "./types";
@@ -44,7 +45,7 @@ export async function generateInterpretation(request: AIInterpretationRequest): 
   try {
     return withDisclaimer(await provider.generate(request), locale);
   } catch (error) {
-    console.error(`[ai-interpretation] provider "${provider.id}" failed, falling back to mock:`, error);
+    logError("ai-interpretation", error, { provider: provider.id, fallback: "mock" });
     return withDisclaimer(await mockProvider.generate(request), locale);
   }
 }

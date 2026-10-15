@@ -1,43 +1,30 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import bcrypt from "bcryptjs";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import { isDatabaseConfigured, prisma } from "./db";
 import { hasConfiguredAdmins, isAdminAccount } from "./admin";
 import { getAdminCandidate } from "./repositories/account.repository";
+import { isUserGone } from "./repositories/account-deletion.repository";
 import { getPlanTier } from "./repositories/subscription.repository";
+import { upsertTelegramUser } from "./repositories/telegram-user.repository";
 import { validateTelegramInitData } from "./telegram/validate-init-data";
+import { validateTelegramLoginWidget } from "./telegram/validate-login-widget";
 
+/** Приводит значения произвольного JSON к строкам: подпись Telegram считается по их строковому виду. */
+function toStringRecord(value: unknown): Record<string, string> | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const result: Record<string, string> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (typeof item === "string" || typeof item === "number") result[key] = String(item);
+    else if (item !== null && item !== undefined) return null;
+  }
+  return result;
+}
+
+// Единственный способ входа: через Telegram. Пароля нет, учётными данными служит подпись Telegram.
 const providers: NextAuthConfig["providers"] = [
-  Credentials({
-    id: "credentials",
-    name: "Credentials",
-    credentials: {
-      email: { label: "Email", type: "email" },
-      password: { label: "Password", type: "password" },
-    },
-    async authorize(credentials) {
-      // Закрываем доступ (сессии нет), а не бросаем «сырую» ошибку подключения, когда приложению
-      // ещё не задан DATABASE_URL.
-      if (!isDatabaseConfigured()) return null;
-
-      const email = typeof credentials?.email === "string" ? credentials.email : undefined;
-      const password = typeof credentials?.password === "string" ? credentials.password : undefined;
-      if (!email || !password) return null;
-
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user?.passwordHash) return null;
-
-      const isValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isValid) return null;
-
-      return { id: user.id, name: user.name, email: user.email, image: user.image };
-    },
-  }),
   // Вход из Telegram Mini App: клиент присылает исходную строку `initData`, подписанную самим Telegram
   // (window.Telegram.WebApp.initData); без проверки HMAC в validateTelegramInitData ей доверять нельзя.
-  // Пароля здесь нет: учётными данными служит сама подпись.
   Credentials({
     id: "telegram",
     name: "Telegram",
@@ -45,6 +32,8 @@ const providers: NextAuthConfig["providers"] = [
       initData: { label: "initData", type: "text" },
     },
     async authorize(credentials) {
+      // Закрываем доступ (сессии нет), а не бросаем «сырую» ошибку подключения, когда приложению
+      // ещё не задан DATABASE_URL.
       if (!isDatabaseConfigured()) return null;
 
       const initData = typeof credentials?.initData === "string" ? credentials.initData : undefined;
@@ -54,51 +43,60 @@ const providers: NextAuthConfig["providers"] = [
       const result = validateTelegramInitData(initData, botToken);
       if (!result.valid || !result.user) return null;
 
-      const telegramId = String(result.user.id);
-      const displayName =
-        [result.user.firstName, result.user.lastName].filter(Boolean).join(" ") || result.user.username || "Telegram User";
+      const user = await upsertTelegramUser(result.user);
+      return { id: user.id, name: user.name, email: user.email, image: user.image };
+    },
+  }),
+  // Вход с обычного сайта через виджет «Войти через Telegram»: клиент присылает ответ виджета целиком
+  // одной JSON-строкой, подпись проверяется по токену бота (validateTelegramLoginWidget).
+  Credentials({
+    id: "telegram-widget",
+    name: "Telegram",
+    credentials: {
+      widgetData: { label: "widgetData", type: "text" },
+    },
+    async authorize(credentials) {
+      if (!isDatabaseConfigured()) return null;
 
-      const user = await prisma.user.upsert({
-        where: { telegramId },
-        create: {
-          telegramId,
-          telegramUsername: result.user.username ?? null,
-          telegramPhotoUrl: result.user.photoUrl ?? null,
-          name: displayName,
-          image: result.user.photoUrl ?? null,
-          language: result.user.languageCode ?? "en",
-        },
-        update: {
-          telegramUsername: result.user.username ?? null,
-          telegramPhotoUrl: result.user.photoUrl ?? null,
-          name: displayName,
-        },
-      });
+      const raw = typeof credentials?.widgetData === "string" ? credentials.widgetData : undefined;
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!raw || !botToken) return null;
 
+      let payload: Record<string, string> | null;
+      try {
+        payload = toStringRecord(JSON.parse(raw));
+      } catch {
+        return null;
+      }
+      if (!payload) return null;
+
+      const result = validateTelegramLoginWidget(payload, botToken);
+      if (!result.valid || !result.user) return null;
+
+      const user = await upsertTelegramUser(result.user);
       return { id: user.id, name: user.name, email: user.email, image: user.image };
     },
   }),
 ];
 
-// Регистрируется только если настроен, чтобы приложение не падало при импорте в окружениях,
-// где Google OAuth ещё не настроен.
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  providers.push(
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-  );
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  // Credentials требует JWT-сессий (Auth.js не поддерживает провайдер Credentials с сессиями в базе).
+  // Провайдер Credentials требует JWT-сессий (Auth.js не поддерживает его вместе с сессиями в базе).
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers,
   callbacks: {
     async jwt({ token, user }) {
+      // Удалённый пользователь (или пользователь, которого нет в этой базе, например после переезда на
+      // другую базу) больше не авторизован, даже если cookie с подписанным токеном ещё действует:
+      // null из этого колбэка сбрасывает сессию.
+      if (!user && typeof token.userId === "string" && isDatabaseConfigured()) {
+        try {
+          if (await isUserGone(token.userId)) return null;
+        } catch {
+          /* база недоступна: оставляем сессию, остальные проверки всё равно обратятся к базе */
+        }
+      }
       if (user?.id) {
         token.userId = user.id;
         try {

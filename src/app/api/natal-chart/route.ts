@@ -10,6 +10,7 @@ import { getPremiumState } from "@/lib/repositories/subscription.repository";
 import { createNatalChartSchema } from "@/lib/validation/natal-chart.schema";
 import { calculateNatalChart } from "@/modules/astrology/services/calculate-natal-chart";
 import { resolveBirthInstantUtc } from "@/modules/astrology/services/resolve-birth-instant";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Натальная карта платная (бесплатного уровня нет): цены в lib/pricing/natal-chart-pricing.ts.
 // Построить карту может только вошедший пользователь: с положительным остатком кредитов либо с
@@ -43,6 +44,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "natal-chart", { limit: 10, windowSeconds: 60 });
+  if (limited) return limited;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured", message: "Persistence isn't configured yet." }, { status: 503 });
   }

@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { isDatabaseConfigured } from "@/lib/db";
+import { logError } from "@/lib/logger";
 import { NATAL_CHART_PRICES } from "@/lib/payments/catalog";
 import { fulfillPurchase, isPurchasePayable } from "@/lib/repositories/purchase.repository";
 import { buildBotReply, type TelegramUpdate } from "@/lib/telegram/bot-reply";
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
         currency: "XTR",
       });
       if (result === "mismatch" || result === "not_found") {
-        console.error("[stars] paid purchase could not be matched", { purchaseId: stars.purchaseId, result });
+        logError("stars", "paid purchase could not be matched", { purchaseId: stars.purchaseId, result: JSON.stringify(result) });
       }
     }
     return NextResponse.json({ ok: true });

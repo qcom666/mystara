@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { addFavorite, listFavorites, removeFavorite } from "@/lib/repositories/favorite.repository";
 import { favoriteInputSchema } from "@/lib/validation/reading.schema";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function GET() {
   if (!isDatabaseConfigured()) {
@@ -17,6 +18,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, "favorites", { limit: 60, windowSeconds: 60 });
+  if (limited) return limited;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured" }, { status: 503 });
   }
@@ -36,6 +39,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const limited = enforceRateLimit(request, "favorites", { limit: 60, windowSeconds: 60 });
+  if (limited) return limited;
   if (!isDatabaseConfigured()) {
     return NextResponse.json({ error: "db_not_configured" }, { status: 503 });
   }

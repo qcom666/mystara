@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isDatabaseConfigured } from "@/lib/db";
+import { logError } from "@/lib/logger";
 import { fetchYooKassaPayment } from "@/lib/payments/providers/yookassa";
 import { fulfillPurchase } from "@/lib/repositories/purchase.repository";
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
     currency: "RUB",
   });
   if (result === "mismatch") {
-    console.error("[yookassa] paid amount does not match the purchase", { purchaseId, paid: payment.amount });
+    logError("yookassa", "paid amount does not match the purchase", { purchaseId, paid: String(payment.amount) });
   }
   return NextResponse.json({ ok: true });
 }
