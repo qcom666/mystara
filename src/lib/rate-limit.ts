@@ -81,3 +81,13 @@ export function enforceRateLimit(request: Request, name: string, rule: RateLimit
     { status: 429, headers: { "Retry-After": String(result.retryAfterSeconds) } },
   );
 }
+
+/** То же ограничение, но по произвольному ключу (например, по адресу почты), а не по IP клиента. */
+export function enforceKeyedRateLimit(name: string, key: string, rule: RateLimitRule): NextResponse | null {
+  const result = sharedLimiter.check(`${name}:${key}`, rule);
+  if (result.allowed) return null;
+  return NextResponse.json(
+    { error: "rate_limited", retryAfterSeconds: result.retryAfterSeconds },
+    { status: 429, headers: { "Retry-After": String(result.retryAfterSeconds) } },
+  );
+}

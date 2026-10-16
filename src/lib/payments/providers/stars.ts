@@ -23,3 +23,21 @@ export async function createStarsInvoiceLink(
   if (!response.ok || !data?.ok || typeof data.result !== "string") throw new Error("stars_invoice_failed");
   return data.result;
 }
+
+/**
+ * Возврат Звёзд покупателю. Telegram возвращает платёж целиком по идентификатору транзакции из
+ * `successful_payment` (он хранится в `Purchase.externalId`) и Telegram ID покупателя.
+ * https://core.telegram.org/bots/api#refundstarpayment
+ */
+export async function refundStarPayment(
+  params: { botToken: string; telegramUserId: number; chargeId: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<boolean> {
+  const response = await fetchImpl(`https://api.telegram.org/bot${params.botToken}/refundStarPayment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: params.telegramUserId, telegram_payment_charge_id: params.chargeId }),
+  });
+  const data = (await response.json().catch(() => null)) as { ok?: boolean } | null;
+  return response.ok && data?.ok === true;
+}

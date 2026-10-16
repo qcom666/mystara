@@ -1,0 +1,73 @@
+/**
+ * Настройка бота через Bot API: команды, описание, кнопка меню с Mini App и (по желанию) вебхук. То же
+ * самое можно сделать руками в @BotFather; здесь тексты и порядок собраны в одном месте, чтобы настройку
+ * можно было повторить одной командой (`npm run bot:setup`) на любом домене.
+ * Чистая функция: возвращает список запросов и ничего не отправляет.
+ */
+
+export interface BotApiRequest {
+  method: string;
+  body: Record<string, unknown>;
+}
+
+export interface BotSetupOptions {
+  /** Публичный адрес сайта: https, без слэша в конце. */
+  siteUrl: string;
+  /** Секрет вебхука; если задан, в набор добавляется setWebhook. */
+  webhookSecret?: string;
+}
+
+const COMMANDS = {
+  ru: [
+    { command: "start", description: "Открыть Mystara" },
+    { command: "help", description: "Как это работает" },
+    { command: "docs", description: "Политика, оферта, контакты" },
+    { command: "support", description: "Связаться с поддержкой" },
+  ],
+  en: [
+    { command: "start", description: "Open Mystara" },
+    { command: "help", description: "How it works" },
+    { command: "docs", description: "Privacy, offer, contacts" },
+    { command: "support", description: "Contact support" },
+  ],
+} as const;
+
+const DESCRIPTION = {
+  ru: "Mystara: расклады Таро, нумерология, астрология и натальная карта. Ясность через символы и толкования. Развлекательный сервис: расклады не являются предсказанием.",
+  en: "Mystara: tarot spreads, numerology, astrology and natal charts. Clarity through symbolism and interpretation. An entertainment service: readings are not predictions.",
+} as const;
+
+const SHORT_DESCRIPTION = {
+  ru: "Таро, нумерология и астрология в одном приложении",
+  en: "Tarot, numerology and astrology in one app",
+} as const;
+
+export function buildBotSetupRequests({ siteUrl, webhookSecret }: BotSetupOptions): BotApiRequest[] {
+  if (!/^https:\/\/[^/\s]+$/.test(siteUrl)) {
+    throw new Error("Адрес сайта должен быть вида https://example.ru, без слэша в конце: Telegram не принимает другие.");
+  }
+
+  const requests: BotApiRequest[] = [
+    // Без language_code - команды для всех, остальные языки переопределяют их.
+    { method: "setMyCommands", body: { commands: COMMANDS.en } },
+    { method: "setMyCommands", body: { commands: COMMANDS.ru, language_code: "ru" } },
+    { method: "setMyDescription", body: { description: DESCRIPTION.en } },
+    { method: "setMyDescription", body: { description: DESCRIPTION.ru, language_code: "ru" } },
+    { method: "setMyShortDescription", body: { short_description: SHORT_DESCRIPTION.en } },
+    { method: "setMyShortDescription", body: { short_description: SHORT_DESCRIPTION.ru, language_code: "ru" } },
+    { method: "setChatMenuButton", body: { menu_button: { type: "web_app", text: "Mystara", web_app: { url: siteUrl } } } },
+  ];
+
+  if (webhookSecret) {
+    requests.push({
+      method: "setWebhook",
+      body: {
+        url: `${siteUrl}/api/telegram/webhook`,
+        secret_token: webhookSecret,
+        allowed_updates: ["message", "pre_checkout_query"],
+        drop_pending_updates: false,
+      },
+    });
+  }
+  return requests;
+}

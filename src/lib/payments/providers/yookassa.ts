@@ -11,6 +11,14 @@ export interface YooKassaCredentials {
   secretKey: string;
 }
 
+export interface YooKassaRefund {
+  id: string;
+  /** "pending" | "succeeded" | "canceled" */
+  status: string;
+  payment_id?: string;
+  amount?: { value: string; currency: string };
+}
+
 export interface YooKassaPayment {
   id: string;
   status: string;
@@ -61,4 +69,40 @@ export async function fetchYooKassaPayment(
   });
   if (!response.ok) return null;
   return (await response.json().catch(() => null)) as YooKassaPayment | null;
+}
+
+/**
+ * Возврат платежа целиком. Ключ идемпотентности привязан к покупке, поэтому повторный запрос вернёт
+ * тот же возврат, а не создаст второй. Статус "succeeded" означает, что деньги возвращены; "pending" -
+ * возврат в обработке, о его завершении сообщит уведомление `refund.succeeded`.
+ */
+export async function createYooKassaRefund(
+  credentials: YooKassaCredentials,
+  params: { paymentId: string; amountRub: number; purchaseId: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<YooKassaRefund> {
+  const response = await fetchImpl(`${API}/refunds`, {
+    method: "POST",
+    headers: {
+      Authorization: authHeader(credentials),
+      "Content-Type": "application/json",
+      "Idempotence-Key": `refund-${params.purchaseId}`,
+    },
+    body: JSON.stringify({ payment_id: params.paymentId, amount: { value: params.amountRub.toFixed(2), currency: "RUB" } }),
+  });
+  const refund = (await response.json().catch(() => null)) as YooKassaRefund | null;
+  if (!response.ok || !refund?.id) throw new Error("yookassa_refund_failed");
+  return refund;
+}
+
+export async function fetchYooKassaRefund(
+  credentials: YooKassaCredentials,
+  refundId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<YooKassaRefund | null> {
+  const response = await fetchImpl(`${API}/refunds/${encodeURIComponent(refundId)}`, {
+    headers: { Authorization: authHeader(credentials) },
+  });
+  if (!response.ok) return null;
+  return (await response.json().catch(() => null)) as YooKassaRefund | null;
 }

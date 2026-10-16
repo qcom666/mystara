@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { PaymentCurrency, PaymentProductId, PaymentProviderId } from "@/lib/payments/catalog";
 import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
-import { extendPremiumPeriodEnd } from "@/modules/subscriptions/premium";
+import { extendPremiumPeriodEnd, PREMIUM_PERIOD_DAYS } from "@/modules/subscriptions/premium";
 
 /**
  * Создаёт покупку в статусе pending. У каждого провайдера своя цена (lib/payments/catalog.ts); пакет
@@ -93,4 +93,74 @@ export async function isPurchasePayable(input: {
     purchase.amount === input.amount &&
     purchase.currency === input.currency
   );
+}
+
+export type RefundResult = "refunded" | "not_found" | "not_paid" | "already_refunded";
+
+/** Кто оформил возврат: администратор из панели или система по уведомлению платёжного провайдера. */
+export interface RefundAudit {
+  actor: string;
+  reason: string;
+}
+
+/**
+ * Фиксирует возврат оплаченной покупки и забирает то, что за неё выдано: кредиты пакета натальных карт
+ * (не больше текущего остатка: баланс не уходит в минус, а потраченное не вернуть) или месяц Premium
+ * (конец периода сдвигается на длину периода назад, при исчерпании подписка прекращается).
+ * Повторный вызов безопасен: смена статуса paid → refunded условная, поэтому возврат и уведомление о нём
+ * от провайдера, пришедшие одновременно, заберут выданное один раз. Действие пишется в журнал.
+ */
+export async function markPurchaseRefunded(purchaseId: string, audit: RefundAudit): Promise<RefundResult> {
+  return prisma.$transaction(async (tx) => {
+    const purchase = await tx.purchase.findUnique({ where: { id: purchaseId } });
+    if (!purchase) return "not_found";
+    if (purchase.status === "refunded") return "already_refunded";
+    if (purchase.status !== "paid") return "not_paid";
+
+    // Блокировка строки пользователя: возврат не должен перемешаться с другим изменением баланса или срока.
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${purchase.userId} FOR UPDATE`;
+
+    const flipped = await tx.purchase.updateMany({ where: { id: purchase.id, status: "paid" }, data: { status: "refunded" } });
+    if (flipped.count === 0) return "already_refunded";
+
+    const now = new Date();
+    const details: Record<string, string | number | null> = {
+      purchaseId: purchase.id,
+      product: purchase.product,
+      provider: purchase.provider,
+      amount: purchase.amount,
+      currency: purchase.currency,
+      reason: audit.reason,
+    };
+
+    if (purchase.product === "premium_month") {
+      const subscription = await tx.subscription.findUnique({ where: { userId: purchase.userId } });
+      if (subscription?.currentPeriodEnd) {
+        const shifted = new Date(subscription.currentPeriodEnd.getTime() - PREMIUM_PERIOD_DAYS * 86_400_000);
+        const ended = shifted.getTime() <= now.getTime();
+        await tx.subscription.update({
+          where: { userId: purchase.userId },
+          data: ended ? { status: "CANCELED", currentPeriodEnd: now } : { currentPeriodEnd: shifted },
+        });
+        details.premiumEndBefore = subscription.currentPeriodEnd.toISOString();
+        details.premiumEndAfter = (ended ? now : shifted).toISOString();
+      }
+    } else if (purchase.creditsGranted > 0) {
+      const user = await tx.user.findUnique({ where: { id: purchase.userId }, select: { natalChartCredits: true } });
+      const revoked = Math.min(user?.natalChartCredits ?? 0, purchase.creditsGranted);
+      if (revoked > 0) await tx.user.update({ where: { id: purchase.userId }, data: { natalChartCredits: { decrement: revoked } } });
+      details.creditsGranted = purchase.creditsGranted;
+      details.creditsRevoked = revoked;
+    }
+
+    await tx.adminAction.create({
+      data: { adminId: audit.actor, targetUserId: purchase.userId, action: "purchase.refund", details },
+    });
+    return "refunded";
+  });
+}
+
+/** Оплаченная покупка у ЮKassa по идентификатору платежа: для уведомления о возврате. */
+export async function findYooKassaPurchaseByPaymentId(paymentId: string) {
+  return prisma.purchase.findFirst({ where: { provider: "yookassa", externalId: paymentId } });
 }

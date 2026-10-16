@@ -40,6 +40,10 @@ export interface AccountData {
     email: string | null;
     telegramUsername: string | null;
     createdAt: string;
+    /** Привязан ли Telegram и есть ли вход по паролю: от этого зависит раздел «Способы входа». */
+    telegramLinked: boolean;
+    hasPassword: boolean;
+    emailVerified: boolean;
   };
   credits: number;
   premium: {
@@ -96,7 +100,7 @@ function toReadingSummary(reading: {
 export async function getAccountData(userId: string): Promise<AccountData | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, telegramUsername: true, createdAt: true, natalChartCredits: true },
+    select: { id: true, name: true, email: true, emailVerified: true, telegramId: true, telegramUsername: true, passwordHash: true, createdAt: true, natalChartCredits: true },
   });
   if (!user) return null;
 
@@ -133,6 +137,9 @@ export async function getAccountData(userId: string): Promise<AccountData | null
       email: user.email,
       telegramUsername: user.telegramUsername,
       createdAt: user.createdAt.toISOString(),
+      telegramLinked: user.telegramId !== null,
+      hasPassword: user.passwordHash !== null,
+      emailVerified: user.emailVerified !== null,
     },
     credits: user.natalChartCredits,
     premium: {

@@ -1,8 +1,14 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { isDatabaseConfigured, prisma } from "@/lib/db";
+import { EMAIL_VERIFICATION_TTL_MS } from "@/lib/auth-tokens";
 import { PRIVACY_POLICY_VERSION } from "@/lib/legal/operator";
+import { logError } from "@/lib/logger";
+import { getMailer } from "@/lib/mail/mailer";
+import { emailVerificationMessage } from "@/lib/mail/templates";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { issueToken } from "@/lib/repositories/auth-token.repository";
+import { getSiteUrl } from "@/lib/site-url";
 import { signupSchema } from "@/lib/validation/reading.schema";
 
 const BCRYPT_ROUNDS = 12;
@@ -35,6 +41,18 @@ export async function POST(request: Request) {
       privacyPolicyVersion: PRIVACY_POLICY_VERSION,
     },
   });
+
+  // Письмо для подтверждения адреса, если почта настроена. Подтверждение ничего не блокирует, поэтому
+  // сбой отправки регистрацию не отменяет: пользователь сможет запросить письмо из личного кабинета.
+  const mailer = getMailer();
+  if (mailer && user.email) {
+    try {
+      const token = await issueToken("verify", `${user.id}:${user.email}`, EMAIL_VERIFICATION_TTL_MS);
+      await mailer.send(emailVerificationMessage(user.email, `${getSiteUrl(request)}/verify-email?token=${encodeURIComponent(token)}`));
+    } catch (error) {
+      logError("signup-verification-mail", error);
+    }
+  }
 
   return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name } }, { status: 201 });
 }

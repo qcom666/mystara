@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RefundButton } from "@/components/admin/refund-button";
 import { formatDateTime, formatMoney, PRODUCT_LABELS, STATUS_LABELS, userLabel } from "@/components/admin/format";
 import { requireAdmin } from "@/lib/admin-guard";
 import { listPurchases } from "@/lib/repositories/admin.repository";
@@ -14,6 +15,7 @@ const FILTERS = [
   { value: "paid", label: "Оплаченные" },
   { value: "pending", label: "Ожидают оплаты" },
   { value: "failed", label: "Не прошли" },
+  { value: "refunded", label: "Возвраты" },
 ];
 
 export default async function AdminPurchasesPage({ searchParams }: PageProps) {
@@ -52,12 +54,13 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
               <th>Способ</th>
               <th>Сумма</th>
               <th>Статус</th>
+              <th></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
             {purchases.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-4 text-silver-500">
+                <td colSpan={7} className="py-4 text-silver-500">
                   Покупок нет.
                 </td>
               </tr>
@@ -74,6 +77,7 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
                 <td className="text-silver-400">{purchase.provider ?? "—"}</td>
                 <td className="text-silver-200">{formatMoney(purchase.amount, purchase.currency)}</td>
                 <td className="text-silver-400">{STATUS_LABELS[purchase.status] ?? purchase.status}</td>
+                <td className="text-right">{purchase.status === "paid" && <RefundButton purchaseId={purchase.id} />}</td>
               </tr>
             ))}
           </tbody>

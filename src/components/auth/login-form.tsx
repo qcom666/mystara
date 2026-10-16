@@ -61,6 +61,11 @@ export function LoginForm({ botUsername }: LoginFormProps) {
           />
         </div>
         {status === "error" && <p className="text-xs text-red-400">{t.auth.incorrectCredentials}</p>}
+        <p className="text-right text-xs">
+          <Link href="/forgot-password" className="text-silver-400 hover:text-gold-300">
+            {t.auth.forgotLink}
+          </Link>
+        </p>
         <Button type="submit" className="w-full" disabled={status === "loading"}>
           {status === "loading" ? t.common.loading : t.auth.loginCta}
         </Button>

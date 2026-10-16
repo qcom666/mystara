@@ -30,6 +30,7 @@ export const STATUS_LABELS: Record<string, string> = {
   paid: "оплачено",
   pending: "ожидает",
   failed: "не прошла",
+  refunded: "возвращено",
 };
 
 /** Подпись пользователя для списков: e-mail, иначе Telegram, иначе имя, иначе id. */

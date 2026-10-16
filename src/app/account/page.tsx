@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AccountView, type AccountTab } from "@/components/account/account-view";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
+import { isMailConfigured } from "@/lib/mail/mailer";
 import { getAccountData } from "@/lib/repositories/account.repository";
 
 export const metadata: Metadata = { title: "My account", robots: { index: false, follow: false } };
@@ -31,6 +32,8 @@ export default async function AccountPage({ searchParams }: PageProps) {
         status: "ready",
         account,
         isAdmin: session.user.isAdmin === true,
+        telegramBotUsername: process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "",
+        mailConfigured: isMailConfigured(),
         tab: TABS.find((item) => item === tab) ?? "overview",
       }}
     />
