@@ -110,6 +110,8 @@ export const en = {
     telegramUnavailable: "Telegram sign-in isn't set up yet. Please try again later.",
     telegramFailed: "We couldn't sign you in. Please try again.",
     telegramSigningIn: "Signing you in…",
+    telegramConfirmHint:
+      "After you enter your phone number, Telegram sends a confirmation to your Telegram app (a message from “Telegram”). Open the app and tap Accept; the page will continue by itself. Signed in to Telegram on your phone? Open Mystara from the bot instead.",
     telegramOpenBot: "Open Mystara in Telegram",
   },
   errors: {

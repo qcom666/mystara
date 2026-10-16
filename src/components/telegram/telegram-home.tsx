@@ -15,7 +15,7 @@ import { setPrivacyConsent, usePrivacyConsent } from "@/lib/legal/use-privacy-co
  */
 export function TelegramHome() {
   const t = useTranslation();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const consent = usePrivacyConsent();
 
   const modules = [
@@ -63,6 +63,16 @@ export function TelegramHome() {
             {t.nav.favorites}
           </Link>
         </div>
+      )}
+
+      {/* Внутри Telegram нет шапки сайта, поэтому ссылка на админ-панель живёт здесь. Показывается только
+          администратору; сама панель всё равно проверяет права на сервере. */}
+      {status === "authenticated" && session?.user?.isAdmin === true && (
+        <p className="mt-4 text-center">
+          <Link href="/admin" className="text-sm text-gold-300 hover:underline">
+            {t.nav.admin}
+          </Link>
+        </p>
       )}
 
       {consent === "declined" && status === "unauthenticated" && (

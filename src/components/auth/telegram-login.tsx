@@ -98,6 +98,7 @@ export function TelegramLogin({ botUsername }: TelegramLoginProps) {
           ) : (
             <p className="text-xs text-silver-500">{t.auth.telegramConsentFirst}</p>
           )}
+          {consentGiven && <p className="text-center text-xs text-silver-500">{t.auth.telegramConfirmHint}</p>}
           {status === "signing-in" && <p className="text-center text-xs text-silver-400">{t.auth.telegramSigningIn}</p>}
           {status === "error" && <p className="text-center text-xs text-red-400">{t.auth.telegramFailed}</p>}
           <a

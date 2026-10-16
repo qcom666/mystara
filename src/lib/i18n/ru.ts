@@ -110,6 +110,8 @@ export const ru: Dictionary = {
     telegramUnavailable: "Вход через Telegram ещё не настроен. Попробуйте позже.",
     telegramFailed: "Не удалось войти. Попробуйте ещё раз.",
     telegramSigningIn: "Выполняем вход…",
+    telegramConfirmHint:
+      "После ввода номера Telegram пришлёт подтверждение в ваше приложение Telegram (сообщение от «Telegram»). Откройте приложение и нажмите «Подтвердить»: страница продолжит сама. Telegram уже на телефоне? Откройте Mystara из бота: вход там автоматический.",
     telegramOpenBot: "Открыть Mystara в Telegram",
   },
   errors: {
