@@ -79,6 +79,8 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
       ru: [
         "Данные учётной записи:",
         [
+          "имя и адрес электронной почты — при регистрации по e-mail;",
+          "хеш пароля — сам пароль мы не храним и не видим;",
           "при входе через Telegram — идентификатор пользователя Telegram, имя, фамилия, имя пользователя (username), ссылка на фотографию профиля и код языка интерфейса, которые Telegram передаёт мини-приложению в подписанных данных запуска.",
         ],
         "Данные, которые вы вводите в Сервис:",
@@ -104,6 +106,8 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
       en: [
         "Account data:",
         [
+          "name and e-mail address — when registering by e-mail;",
+          "a password hash — we neither store nor see the password itself;",
           "when signing in with Telegram — the Telegram user ID, first and last name, username, profile-photo link and interface language code that Telegram passes to the Mini App in its signed launch data.",
         ],
         "Data you enter into the Service:",
@@ -169,7 +173,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "хостинг-провайдер Vercel Inc. (США) — размещение и работа Сервиса; функции Сервиса выполняются в центре обработки данных во Франкфурте-на-Майне (Германия);",
           "провайдер базы данных — хранение данных учётных записей и истории: [указать провайдера и место размещения базы данных на территории РФ];",
           "платёжные провайдеры — приём оплаты и возвраты: на сайте банковские карты и СБП принимает подключённый к Сервису платёжный сервис (его наименование показывается при оформлении заказа), в Telegram оплата проходит звёздами Telegram (Telegram Stars) внутри Telegram;",
-          "провайдер языковой модели (если включена генерация толкований с помощью ИИ) — текст вопроса, сведения о выбранном раскладе и вытянутых картах передаются для формирования толкования. Ваше имя, идентификатор Telegram и иные идентификаторы при этом не передаются. Если генерация с помощью внешнего ИИ не включена, толкование формируется встроенным алгоритмом без передачи данных вовне. Провайдер: в настоящее время внешний провайдер ИИ не используется;",
+          "провайдер языковой модели (если включена генерация толкований с помощью ИИ) — текст вопроса, сведения о выбранном раскладе и вытянутых картах передаются для формирования толкования. Ваше имя, адрес электронной почты и иные идентификаторы при этом не передаются. Если генерация с помощью внешнего ИИ не включена, толкование формируется встроенным алгоритмом без передачи данных вовне. Провайдер: в настоящее время внешний провайдер ИИ не используется;",
           "Telegram — при использовании Сервиса как мини-приложения Telegram; Telegram самостоятельно определяет порядок обработки данных на своей стороне;",
           "государственные органы — в случаях и порядке, прямо предусмотренных законодательством Российской Федерации.",
         ],
@@ -182,7 +186,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "the hosting provider Vercel Inc. (USA) — to host and run the Service; the Service’s functions run in a data centre in Frankfurt am Main (Germany);",
           "the database provider — to store account data and history: [state the provider and the location of the database in the Russian Federation];",
           "payment providers — to take payments and make refunds: on the website bank cards and SBP are accepted by the payment service connected to the Service (its name is shown when the Order is placed); in Telegram payment is made in Telegram Stars inside Telegram;",
-          "a language-model provider (if AI-generated interpretations are enabled) — the text of the question, the chosen spread and the drawn cards are sent to generate the interpretation. Your name, Telegram ID and other identifiers are not sent. If external AI generation is not enabled, the interpretation is produced by a built-in algorithm and nothing leaves the Service. Provider: currently no external AI provider is used;",
+          "a language-model provider (if AI-generated interpretations are enabled) — the text of the question, the chosen spread and the drawn cards are sent to generate the interpretation. Your name, e-mail address and other identifiers are not sent. If external AI generation is not enabled, the interpretation is produced by a built-in algorithm and nothing leaves the Service. Provider: currently no external AI provider is used;",
           "Telegram — when the Service is used as a Telegram Mini App; Telegram independently determines how it processes data on its side;",
           "public authorities — in cases and in the manner expressly provided for by the legislation of the Russian Federation.",
         ],
@@ -233,12 +237,12 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
       ru: [
         "Данные учётной записи, история раскладов, сохранённые результаты и избранное хранятся, пока у вас есть учётная запись, либо до отзыва вами согласия или получения от вас требования об удалении — в зависимости от того, что наступит раньше. После этого данные удаляются или обезличиваются, если законодательство не требует их дальнейшего хранения.",
         "Если вы пользуетесь Сервисом без учётной записи, текст вашего вопроса и вытянутые карты обрабатываются только для формирования ответа и в базе данных Сервиса не сохраняются. Технические журналы хостинг-провайдера хранятся в течение срока, установленного этим провайдером: не более 30 дней.",
-        "Оператор принимает правовые, организационные и технические меры защиты, предусмотренные ст. 18.1 и 19 152-ФЗ, в том числе: вход выполняется без пароля, через подписанные данные Telegram; передача данных между вашим устройством и Сервисом осуществляется по защищённому соединению (HTTPS); подлинность данных запуска Telegram проверяется по криптографической подписи; доступ к базе данных ограничен.",
+        "Оператор принимает правовые, организационные и технические меры защиты, предусмотренные ст. 18.1 и 19 152-ФЗ, в том числе: пароли хранятся только в виде хеша; передача данных между вашим устройством и Сервисом осуществляется по защищённому соединению (HTTPS); подлинность данных запуска Telegram проверяется по криптографической подписи; доступ к базе данных ограничен.",
       ],
       en: [
         "Account data, reading history, saved results and favorites are kept while you have an account, or until you withdraw consent or ask for deletion — whichever happens first. After that the data is deleted or anonymised, unless the law requires it to be kept.",
         "If you use the Service without an account, the text of your question and the drawn cards are processed only to produce the response and are not stored in the Service’s database. The hosting provider’s technical logs are kept for the period set by that provider: no more than 30 days.",
-        "The operator takes the legal, organisational and technical protection measures required by Arts. 18.1 and 19 of 152-FZ, including: sign-in needs no password and relies on data signed by Telegram; data is transmitted between your device and the Service over a secure connection (HTTPS); the authenticity of Telegram launch data is verified by its cryptographic signature; access to the database is restricted.",
+        "The operator takes the legal, organisational and technical protection measures required by Arts. 18.1 and 19 of 152-FZ, including: passwords are stored only as a hash; data is transmitted between your device and the Service over a secure connection (HTTPS); the authenticity of Telegram launch data is verified by its cryptographic signature; access to the database is restricted.",
       ],
     },
   },
@@ -254,7 +258,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "отозвать согласие на обработку персональных данных;",
           "обжаловать действия или бездействие Оператора в уполномоченном органе по защите прав субъектов персональных данных (Роскомнадзор) или в суде.",
         ],
-        `Удалить аккаунт и данные, а вместе с этим отозвать согласие, можно самостоятельно в личном кабинете (раздел «Данные и приватность»). Остальные обращения направляются на ${op.email}${ADDRESS_CLAUSE.ru}. Чтобы мы могли найти ваши данные, укажите имя пользователя (username) или идентификатор вашего аккаунта Telegram либо иные сведения, позволяющие вас идентифицировать.`,
+        `Удалить аккаунт и данные, а вместе с этим отозвать согласие, можно самостоятельно в личном кабинете (раздел «Данные и приватность»). Остальные обращения направляются на ${op.email}${ADDRESS_CLAUSE.ru}. Чтобы мы могли найти ваши данные, укажите адрес электронной почты учётной записи, имя пользователя (username) в Telegram либо иные сведения, позволяющие вас идентифицировать.`,
         "Мы ответим на обращение в срок, установленный законом (как правило, в течение 10 рабочих дней; этот срок может быть продлён не более чем на 5 рабочих дней с мотивированным уведомлением). При отзыве согласия обработка прекращается, а данные уничтожаются в срок, не превышающий 30 дней, если иное не предусмотрено законом. После отзыва согласия доступ к функциям, требующим учётной записи, может быть прекращён.",
       ],
       en: [
@@ -265,7 +269,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "withdraw your consent to the processing of personal data;",
           "appeal the operator’s actions or inaction to the authorised body for the protection of data-subject rights (Roskomnadzor) or in court.",
         ],
-        `You can delete your account and data, and thereby withdraw consent, yourself in your account page (the “Data and privacy” section). Other requests are sent to ${op.email}${ADDRESS_CLAUSE.en}. So that we can find your data, include your Telegram username or account ID, or other details that identify you.`,
+        `You can delete your account and data, and thereby withdraw consent, yourself in your account page (the “Data and privacy” section). Other requests are sent to ${op.email}${ADDRESS_CLAUSE.en}. So that we can find your data, include the e-mail address of your account, your Telegram username, or other details that identify you.`,
         "We will respond within the period set by law (as a rule, within 10 working days, extendable by no more than 5 working days with a reasoned notice). When consent is withdrawn, processing stops and the data is destroyed within no more than 30 days unless the law provides otherwise. After consent is withdrawn, access to features that require an account may be discontinued.",
       ],
     },

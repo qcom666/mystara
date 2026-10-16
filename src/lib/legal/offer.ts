@@ -51,7 +51,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
       ru: [
         [
           "«Сервис» — мини-приложение и сайт «Mystara», в которых Пользователю доступны расклады Таро, нумерологические и астрологические расчёты и построение натальной карты.",
-          "«Аккаунт» — учётная запись Пользователя в Сервисе (создаётся при входе через Telegram, в том числе автоматически при открытии Mini App в Telegram).",
+          "«Аккаунт» — учётная запись Пользователя в Сервисе (создаётся при регистрации по e-mail или при входе через Telegram, в том числе автоматически при открытии Mini App в Telegram).",
           `«Кредит» — единица платной услуги на Аккаунте: один Кредит даёт право на одно построение натальной карты. Пакет «Натальная карта» содержит ${NATAL_CHART_PACK_CREDITS} Кредита.`,
           "«Premium» — платный тариф Сервиса, открывающий безлимитные расклады и все расклады Таро (в том числе «Кельтский крест»), на условиях, указанных на странице «Тарифы».",
           "«Заказ» — выбор Пользователем платной услуги и способа оплаты в интерфейсе Сервиса.",
@@ -60,7 +60,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
       en: [
         [
           "“Service” — the “Mystara” Mini App and website, where the User can get Tarot readings, numerology and astrology calculations and a natal chart.",
-          "“Account” — the User’s profile in the Service (created by signing in with Telegram, including automatically when the Mini App is opened in Telegram).",
+          "“Account” — the User’s profile in the Service (created by registering with e-mail or by signing in with Telegram, including automatically when the Mini App is opened in Telegram).",
           `“Credit” — a unit of the paid service on an Account: one Credit entitles the User to one natal-chart calculation. The “Natal Chart” pack contains ${NATAL_CHART_PACK_CREDITS} Credits.`,
           "“Premium” — the Service’s paid plan that unlocks unlimited readings and all Tarot spreads (including the Celtic Cross), on the terms shown on the “Pricing” page.",
           "“Order” — the User’s selection of a paid service and a payment method in the Service’s interface.",

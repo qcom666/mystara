@@ -1,7 +1,12 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { SignupForm } from "@/components/auth/signup-form";
 
-// Регистрации по e-mail больше нет: аккаунт создаётся при первом входе через Telegram.
-// Страница оставлена, чтобы старые ссылки вели на вход, а не в 404.
+export const metadata: Metadata = { title: "Create your account" };
+
 export default function SignupPage() {
-  redirect("/login");
+  return (
+    <div className="mx-auto flex min-h-[80vh] max-w-md items-center px-4 py-16">
+      <SignupForm />
+    </div>
+  );
 }

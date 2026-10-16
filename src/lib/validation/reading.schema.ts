@@ -54,7 +54,17 @@ export const favoriteInputSchema = z.object({
 
 export type FavoriteInput = z.infer<typeof favoriteInputSchema>;
 
+export const signupSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  email: z.string().trim().email(),
+  password: z.string().min(8).max(72),
+  // Должно быть именно `true`: отсутствующее или false отклоняется, поэтому аккаунт нельзя создать
+  // без отмеченной галочки согласия.
+  acceptPrivacy: z.literal(true),
+});
+
 export const privacyConsentSchema = z.object({
   version: z.string().trim().min(1).max(32),
 });
 
+export type SignupInput = z.infer<typeof signupSchema>;

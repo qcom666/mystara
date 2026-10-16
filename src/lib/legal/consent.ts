@@ -56,7 +56,7 @@ export const CONSENT_SECTIONS: LegalSection[] = [
     body: {
       ru: [
         [
-          "имя, которым я представился в Telegram;",
+          "имя, которым я представился при регистрации или в Telegram, адрес электронной почты;",
           "идентификатор пользователя Telegram, имя пользователя (username), ссылка на фотографию профиля, код языка — при входе через Telegram;",
           "дата рождения;",
           "текст моих вопросов к раскладам, выбранные расклады, вытянутые карты, полученные толкования, избранное;",
@@ -67,7 +67,7 @@ export const CONSENT_SECTIONS: LegalSection[] = [
       ],
       en: [
         [
-          "my name as shown in Telegram;",
+          "my name (as given at registration or shown in Telegram) and e-mail address;",
           "my Telegram user ID, username, profile-photo link and language code — when signing in with Telegram;",
           "my date of birth;",
           "the text of my questions, chosen spreads, drawn cards, received interpretations and favorites;",
@@ -99,7 +99,7 @@ export const CONSENT_SECTIONS: LegalSection[] = [
         [
           "хостинг-провайдеру Vercel Inc. (США; центр обработки данных во Франкфурте-на-Майне, Германия) и провайдеру базы данных: [указать];",
           "платёжным провайдерам — для приёма оплаты и возвратов;",
-          "провайдеру языковой модели (в случае включения генерации толкований с помощью ИИ) — только текст вопроса, выбранный расклад и вытянутые карты, без имени и идентификатора Telegram: не используется;",
+          "провайдеру языковой модели (в случае включения генерации толкований с помощью ИИ) — только текст вопроса, выбранный расклад и вытянутые карты, без имени и адреса электронной почты: не используется;",
           "Telegram (при входе через Telegram и при использовании мини-приложения Telegram).",
         ],
         "Мне известно, что часть этих лиц находится или может обрабатывать данные за пределами Российской Федерации, в том числе в государствах, не обеспечивающих адекватной защиты прав субъектов персональных данных: США, Германия, а также государства, где расположена инфраструктура Telegram. Я даю согласие на такую трансграничную передачу.",
@@ -109,7 +109,7 @@ export const CONSENT_SECTIONS: LegalSection[] = [
         [
           "the hosting provider Vercel Inc. (USA; data centre in Frankfurt am Main, Germany) and the database provider: [state];",
           "payment providers — to take payments and make refunds;",
-          "the language-model provider (if AI-generated interpretations are enabled) — only the question text, the chosen spread and the drawn cards, without name or Telegram ID: not used;",
+          "the language-model provider (if AI-generated interpretations are enabled) — only the question text, the chosen spread and the drawn cards, without name or e-mail: not used;",
           "Telegram (when signing in with Telegram and when using the Telegram Mini App).",
         ],
         "I understand that some of these persons are located, or may process data, outside the Russian Federation, including in states that do not provide adequate protection of data-subject rights: the USA, Germany, and the states where Telegram’s infrastructure is located. I consent to such cross-border transfer.",

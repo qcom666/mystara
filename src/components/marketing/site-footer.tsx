@@ -33,6 +33,7 @@ export function SiteFooter() {
       title: t.footer.groups.account.title,
       links: [
         { href: "/login", label: t.footer.groups.account.signIn },
+        { href: "/signup", label: t.footer.groups.account.createAccount },
         { href: "/account", label: t.nav.account },
         { href: "/readings", label: t.footer.groups.account.myReadings },
         { href: "/favorites", label: t.footer.groups.account.favorites },

@@ -24,7 +24,7 @@ export function useTelegram(): TelegramContextValue {
  * Загружает SDK Telegram WebApp, инициализирует его (ready/expand/тема) и, если мы внутри Telegram,
  * автоматически выполняет вход через провайдер Credentials «telegram» (src/lib/auth.ts), используя
  * initData, уже подписанный самим Telegram. Вне Telegram (в обычном браузере) `webApp` остаётся null
- * и ничего больше не меняется: приложение работает как обычный сайт, а вход идёт через виджет «Войти через Telegram».
+ * и ничего больше не меняется: приложение работает как обычный сайт: вход по e-mail и паролю или через виджет «Войти через Telegram».
  */
 export function TelegramProvider({ children }: { children: ReactNode }) {
   const { status } = useSession();

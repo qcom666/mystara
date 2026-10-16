@@ -17,6 +17,7 @@ const STATIC_PATHS = [
   "/tarot/how-to-read-tarot",
   "/pricing",
   "/login",
+  "/signup",
   "/privacy",
   "/offer",
   "/contacts",

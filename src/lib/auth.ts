@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { isDatabaseConfigured, prisma } from "./db";
@@ -21,8 +22,35 @@ function toStringRecord(value: unknown): Record<string, string> | null {
   return result;
 }
 
-// Единственный способ входа: через Telegram. Пароля нет, учётными данными служит подпись Telegram.
+// Два способа входа: e-mail и пароль, а также Telegram. Для Telegram пароля нет: учётными данными
+// служит подпись Telegram.
 const providers: NextAuthConfig["providers"] = [
+  Credentials({
+    id: "credentials",
+    name: "Credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      // Закрываем доступ (сессии нет), а не бросаем «сырую» ошибку подключения, когда приложению
+      // ещё не задан DATABASE_URL.
+      if (!isDatabaseConfigured()) return null;
+
+      const email = typeof credentials?.email === "string" ? credentials.email : undefined;
+      const password = typeof credentials?.password === "string" ? credentials.password : undefined;
+      if (!email || !password) return null;
+
+      const user = await prisma.user.findUnique({ where: { email } });
+      // Удалённый аккаунт входить не может, даже если e-mail каким-то образом остался.
+      if (!user?.passwordHash || user.deletedAt) return null;
+
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isValid) return null;
+
+      return { id: user.id, name: user.name, email: user.email, image: user.image };
+    },
+  }),
   // Вход из Telegram Mini App: клиент присылает исходную строку `initData`, подписанную самим Telegram
   // (window.Telegram.WebApp.initData); без проверки HMAC в validateTelegramInitData ей доверять нельзя.
   Credentials({
