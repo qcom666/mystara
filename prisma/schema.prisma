@@ -52,13 +52,20 @@ model User {
   // сбросе пароля и по кнопке «Выйти на всех устройствах», и все прежние сессии перестают работать.
   sessionVersion Int @default(0)
 
+  // Приглашения: собственный код для ссылки, кто пригласил (только при создании аккаунта) и когда за
+  // приглашённого уже выдан бонус пригласившему (один раз, после первой оплаты).
+  referralCode       String?   @unique
+  referredById       String?
+  referralRewardedAt DateTime?
+
   // Натальная карта платная (см. lib/pricing/natal-chart-pricing.ts): здесь хранится остаток
   // кредитов. Одна построенная карта списывает 1, оплаченная покупка начисляет
   // NATAL_CHART_PACK_CREDITS. По умолчанию 0: бесплатного пробного периода нет, но менять
   // это решение в коде легко.
   natalChartCredits Int @default(0)
 
-  createdAt DateTime @updatedAt @default(now())
+  // Дата регистрации: только default, без @updatedAt, иначе Prisma перезаписывает её при каждом изменении профиля.
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   accounts           Account[]
@@ -70,6 +77,7 @@ model User {
   astrologyReadings  AstrologyReading[]
   natalChartReadings NatalChartReading[]
   purchases           Purchase[]
+  promoRedemptions    PromoRedemption[]
 }
 
 model Account {
@@ -335,4 +343,34 @@ model AnalyticsEvent {
   createdAt DateTime @default(now())
 
   @@index([day, name])
+}
+
+// Промокоды выдают бонус (кредиты натальной карты или дни Premium), а не скидку на оплату: так их не нужно
+// учитывать в чеках. Создаются и отключаются администратором.
+model PromoCode {
+  id               String    @id @default(cuid())
+  code             String    @unique // в верхнем регистре
+  kind             String // "natal_credits" | "premium_days"
+  amount           Int
+  maxRedemptions   Int? // пусто - без ограничения
+  redemptionsCount Int       @default(0)
+  expiresAt        DateTime?
+  active           Boolean   @default(true)
+  note             String?
+  createdBy        String
+  createdAt        DateTime  @default(now())
+
+  redemptions PromoRedemption[]
+}
+
+model PromoRedemption {
+  id          String   @id @default(cuid())
+  promoCodeId String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([promoCodeId, userId])
 }

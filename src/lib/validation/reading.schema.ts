@@ -61,6 +61,8 @@ export const signupSchema = z.object({
   // Должно быть именно `true`: отсутствующее или false отклоняется, поэтому аккаунт нельзя создать
   // без отмеченной галочки согласия.
   acceptPrivacy: z.literal(true),
+  // Код приглашения из ссылки `?ref=`; неизвестный код просто игнорируется.
+  ref: z.string().trim().max(40).optional(),
 });
 
 export const privacyConsentSchema = z.object({

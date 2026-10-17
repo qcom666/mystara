@@ -7,6 +7,7 @@ import { TelegramWidget } from "@/components/auth/telegram-widget";
 import { ConsentCheckbox } from "@/components/legal/consent-checkbox";
 import { useTranslation } from "@/lib/i18n";
 import { setPrivacyConsent, usePrivacyConsent } from "@/lib/legal/use-privacy-consent";
+import { getRememberedReferral } from "@/lib/referral-client";
 
 interface TelegramLoginSectionProps {
   /** Имя бота без @ (NEXT_PUBLIC_TELEGRAM_BOT_USERNAME). Домен сайта должен быть привязан к боту через /setdomain в BotFather. */
@@ -43,7 +44,7 @@ export function TelegramLoginSection({ botUsername }: TelegramLoginSectionProps)
   function handleAuth(widgetData: string) {
     setStatus("signing-in");
     setPrivacyConsent("accepted");
-    signIn("telegram-widget", { widgetData, redirect: false })
+    signIn("telegram-widget", { widgetData, ref: getRememberedReferral() ?? "", redirect: false })
       .then((result) => {
         if (result?.error) setStatus("error");
       })

@@ -94,8 +94,8 @@ export const ADDRESS_CLAUSE = {
  * Версия и дата вступления в силу публичной оферты: повышать при любом существенном изменении,
  * как и версию политики.
  */
-export const OFFER_VERSION = "2026-10-13";
-export const OFFER_EFFECTIVE_DATE = { ru: "13.10.2026", en: "13 October 2026" } as const;
+export const OFFER_VERSION = "2026-10-17";
+export const OFFER_EFFECTIVE_DATE = { ru: "17.10.2026", en: "17 October 2026" } as const;
 
 /** Дата вступления в силу текущей версии в читаемом виде (дд.мм.гггг для русского текста). */
 export const PRIVACY_POLICY_EFFECTIVE_DATE = { ru: "17.10.2026", en: "17 October 2026" } as const;

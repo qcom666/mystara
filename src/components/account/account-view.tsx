@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { LoginMethodsSection } from "@/components/account/login-methods-section";
+import { PromoCodeSection } from "@/components/account/promo-code-section";
+import { ReferralSection } from "@/components/account/referral-section";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatCardCount, useLocale, useTranslation, type Locale } from "@/lib/i18n";
@@ -16,9 +18,15 @@ import { getSpreadById, getSpreadName } from "@/modules/tarot/domain/spreads.dat
 
 export type AccountTab = "overview" | "history" | "favorites";
 
+export interface ReferralInfo {
+  code: string | null;
+  invited: number;
+  rewarded: number;
+}
+
 export type AccountViewData =
   | { status: "unconfigured" }
-  | { status: "ready"; account: AccountData; isAdmin: boolean; tab: AccountTab; telegramBotUsername: string; mailConfigured: boolean };
+  | { status: "ready"; account: AccountData; isAdmin: boolean; tab: AccountTab; telegramBotUsername: string; mailConfigured: boolean; referral: ReferralInfo };
 
 function formatDate(iso: string, locale: Locale): string {
   return new Date(iso).toLocaleDateString(locale === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -91,7 +99,7 @@ export function AccountView({ data }: { data: AccountViewData }) {
     );
   }
 
-  const { account, isAdmin, tab, telegramBotUsername, mailConfigured } = data;
+  const { account, isAdmin, tab, telegramBotUsername, mailConfigured, referral } = data;
   const tabs: { id: AccountTab; label: string; href: string }[] = [
     { id: "overview", label: a.tabOverview, href: "/account" },
     { id: "history", label: a.tabHistory, href: "/account?tab=history" },
@@ -215,6 +223,10 @@ export function AccountView({ data }: { data: AccountViewData }) {
               </Row>
             </dl>
           </section>
+
+          <ReferralSection referral={referral} botUsername={telegramBotUsername} />
+
+          <PromoCodeSection />
 
           <LoginMethodsSection profile={account.profile} botUsername={telegramBotUsername} mailConfigured={mailConfigured} />
 

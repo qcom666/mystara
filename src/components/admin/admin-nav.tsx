@@ -4,6 +4,7 @@ const LINKS = [
   { href: "/admin", label: "Обзор" },
   { href: "/admin/users", label: "Пользователи" },
   { href: "/admin/purchases", label: "Покупки" },
+  { href: "/admin/promo", label: "Промокоды" },
   { href: "/admin/analytics", label: "Статистика" },
 ];
 

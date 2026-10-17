@@ -36,6 +36,7 @@ export async function deleteAccountData(userId: string): Promise<boolean> {
         telegramPhotoUrl: null,
         birthDate: null,
         natalChartCredits: 0,
+        referralCode: null,
         deletedAt: new Date(),
       },
     });

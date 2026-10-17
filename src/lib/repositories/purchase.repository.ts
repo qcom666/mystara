@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import type { PaymentCurrency, PaymentProductId, PaymentProviderId } from "@/lib/payments/catalog";
 import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
 import { extendPremiumPeriodEnd, PREMIUM_PERIOD_DAYS } from "@/modules/subscriptions/premium";
+import { rewardReferrerOnFirstPayment } from "./referral.repository";
 
 /**
  * Создаёт покупку в статусе pending. У каждого провайдера своя цена (lib/payments/catalog.ts); пакет
@@ -74,6 +75,8 @@ export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResu
     } else {
       await tx.user.update({ where: { id: purchase.userId }, data: { natalChartCredits: { increment: purchase.creditsGranted } } });
     }
+    // Первая оплата приглашённого приносит бонус пригласившему (один раз, в той же транзакции).
+    await rewardReferrerOnFirstPayment(tx, purchase.userId);
     return "fulfilled";
   });
 }

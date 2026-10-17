@@ -29,6 +29,8 @@ export interface ValidatedTelegramUser {
 export interface ValidateInitDataResult {
   valid: boolean;
   user?: ValidatedTelegramUser;
+  /** Параметр ссылки запуска Mini App (`t.me/<бот>?startapp=…`), подписан вместе с остальными данными. */
+  startParam?: string;
   reason?: string;
 }
 
@@ -79,6 +81,7 @@ export function validateTelegramInitData(initData: string, botToken: string): Va
     };
     return {
       valid: true,
+      startParam: params.get("start_param") ?? undefined,
       user: {
         id: rawUser.id,
         firstName: rawUser.first_name,

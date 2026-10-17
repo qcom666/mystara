@@ -81,6 +81,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         [
           "имя и адрес электронной почты — при регистрации по e-mail;",
           "хеш пароля — сам пароль мы не храним и не видим;",
+          "сведения о приглашении (чей код приглашения использован) — если вы создали аккаунт по ссылке друга; использованные промокоды;",
           "идентификатор чата Telegram и язык — если вы подписались в боте на «Карту дня» (команда /daily; отписаться: /daily off);",
           "при входе через Telegram — идентификатор пользователя Telegram, имя, фамилия, имя пользователя (username), ссылка на фотографию профиля и код языка интерфейса, которые Telegram передаёт мини-приложению в подписанных данных запуска.",
         ],
@@ -109,6 +110,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         [
           "name and e-mail address — when registering by e-mail;",
           "a password hash — we neither store nor see the password itself;",
+          "invitation details (whose invitation code was used) — if you created an account through a friend’s link; promo codes you used;",
           "your Telegram chat ID and language — if you subscribed to the “Card of the day” in the bot (the /daily command; to stop: /daily off);",
           "when signing in with Telegram — the Telegram user ID, first and last name, username, profile-photo link and interface language code that Telegram passes to the Mini App in its signed launch data.",
         ],

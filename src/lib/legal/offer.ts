@@ -136,6 +136,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
         `Подписка Premium оплачивается заранее на ${PREMIUM_PERIOD_DAYS} дней. Автоматического продления и повторных списаний нет: чтобы продлить Premium, Пользователь оплачивает его ещё раз, и новый срок добавляется к уже оплаченному.`,
         "Исполнитель вправе изменять цены. Изменение не затрагивает уже оплаченные Заказы и применяется к Заказам, оформленным после публикации новой цены.",
         "Чек по каждому платежу формируется Исполнителем в приложении «Мой налог» и направляется Пользователю в порядке, установленном Федеральным законом от 27.11.2018 № 422-ФЗ.",
+        "Исполнитель может предоставлять бонусы без оплаты: по промокодам и за приглашение друзей (пригласивший получает кредит натальной карты после первой оплаты приглашённого). Бонусы не имеют денежного выражения, не обмениваются на деньги и не возвращаются; условия и сроки конкретного промокода указываются при его распространении. Исполнитель вправе отменить бонус, полученный в нарушение условий (например, приглашение самого себя).",
       ],
       en: [
         [
@@ -147,6 +148,7 @@ export const OFFER_SECTIONS: LegalSection[] = [
         `The Premium subscription is paid up front for ${PREMIUM_PERIOD_DAYS} days. There is no automatic renewal and no recurring charges: to extend Premium the User pays for it again, and the new period is added to the one already paid.`,
         "The Provider may change prices. A change does not affect Orders already paid and applies to Orders placed after the new price is published.",
         "A receipt for each payment is issued by the Provider in the “My Tax” app and sent to the User as required by Federal Law No. 422-FZ of 27 November 2018.",
+        "The Provider may grant bonuses free of charge: through promo codes and for inviting friends (the inviter receives a natal chart credit after the invited person’s first payment). Bonuses have no monetary value, cannot be exchanged for money and are not refunded; the terms and validity of a particular promo code are stated when it is distributed. The Provider may cancel a bonus obtained in breach of these terms (for example, by inviting oneself).",
       ],
     },
   },

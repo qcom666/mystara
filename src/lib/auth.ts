@@ -8,6 +8,7 @@ import { getAdminCandidate } from "./repositories/account.repository";
 import { getSessionUserState } from "./repositories/account-deletion.repository";
 import { isSessionStillValid } from "./session-check";
 import { getPlanTier } from "./repositories/subscription.repository";
+import { attachReferrer } from "./repositories/referral.repository";
 import { upsertTelegramUser } from "./repositories/telegram-user.repository";
 import { validateTelegramInitData } from "./telegram/validate-init-data";
 import { validateTelegramLoginWidget } from "./telegram/validate-login-widget";
@@ -72,7 +73,9 @@ const providers: NextAuthConfig["providers"] = [
       const result = validateTelegramInitData(initData, botToken);
       if (!result.valid || !result.user) return null;
 
-      const user = await upsertTelegramUser(result.user);
+      const { user, created } = await upsertTelegramUser(result.user);
+      // Ссылка приглашения в Mini App приходит в подписанных данных запуска (start_param).
+      if (created) await attachReferrer(user.id, result.startParam).catch(() => false);
       return { id: user.id, name: user.name, email: user.email, image: user.image };
     },
   }),
@@ -83,6 +86,7 @@ const providers: NextAuthConfig["providers"] = [
     name: "Telegram",
     credentials: {
       widgetData: { label: "widgetData", type: "text" },
+      ref: { label: "ref", type: "text" },
     },
     async authorize(credentials) {
       if (!isDatabaseConfigured()) return null;
@@ -102,7 +106,8 @@ const providers: NextAuthConfig["providers"] = [
       const result = validateTelegramLoginWidget(payload, botToken);
       if (!result.valid || !result.user) return null;
 
-      const user = await upsertTelegramUser(result.user);
+      const { user, created } = await upsertTelegramUser(result.user);
+      if (created) await attachReferrer(user.id, typeof credentials?.ref === "string" ? credentials.ref : undefined).catch(() => false);
       return { id: user.id, name: user.name, email: user.email, image: user.image };
     },
   }),

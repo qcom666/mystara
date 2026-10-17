@@ -29,6 +29,9 @@ const state = vi.hoisted(() => ({
   locks: 0,
 }));
 
+// Бонус за приглашение проверяется отдельно (referral.repository.test.ts).
+vi.mock("./referral.repository", () => ({ rewardReferrerOnFirstPayment: async () => false }));
+
 vi.mock("@/lib/db", () => {
   const purchase = {
     findUnique: async ({ where }: { where: { id: string } }) => state.purchases.get(where.id) ?? null,

@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail/mailer";
 import { getAccountData } from "@/lib/repositories/account.repository";
+import { getOrCreateReferralCode, getReferralStats } from "@/lib/repositories/referral.repository";
 
 export const metadata: Metadata = { title: "My account", robots: { index: false, follow: false } };
 
@@ -25,6 +26,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
   const { tab } = await searchParams;
   const account = await getAccountData(session.user.id);
   if (!account) redirect("/login");
+  const [referralCode, referralStats] = await Promise.all([getOrCreateReferralCode(session.user.id), getReferralStats(session.user.id)]);
 
   return (
     <AccountView
@@ -34,6 +36,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
         isAdmin: session.user.isAdmin === true,
         telegramBotUsername: process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME ?? "",
         mailConfigured: isMailConfigured(),
+        referral: { code: referralCode, ...referralStats },
         tab: TABS.find((item) => item === tab) ?? "overview",
       }}
     />

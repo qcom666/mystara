@@ -9,6 +9,7 @@ import { getMailer } from "@/lib/mail/mailer";
 import { emailVerificationMessage } from "@/lib/mail/templates";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { issueToken } from "@/lib/repositories/auth-token.repository";
+import { attachReferrer } from "@/lib/repositories/referral.repository";
 import { getSiteUrl } from "@/lib/site-url";
 import { signupSchema } from "@/lib/validation/reading.schema";
 
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
     },
   });
 
+  await attachReferrer(user.id, parsed.data.ref).catch(() => false);
   await recordEvent({ name: "signup_completed" }, { shell: "web" });
 
   // Письмо для подтверждения адреса, если почта настроена. Подтверждение ничего не блокирует, поэтому

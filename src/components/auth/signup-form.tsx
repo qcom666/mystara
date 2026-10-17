@@ -11,6 +11,7 @@ import { ConsentCheckbox } from "@/components/legal/consent-checkbox";
 import { Label } from "@/components/ui/label";
 import { useTranslation } from "@/lib/i18n";
 import { setPrivacyConsent } from "@/lib/legal/use-privacy-consent";
+import { getRememberedReferral } from "@/lib/referral-client";
 
 export function SignupForm() {
   const t = useTranslation();
@@ -34,7 +35,7 @@ export function SignupForm() {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, acceptPrivacy: true }),
+        body: JSON.stringify({ name, email, password, acceptPrivacy: true, ref: getRememberedReferral() }),
       });
       const data = await response.json();
       if (!response.ok) {
