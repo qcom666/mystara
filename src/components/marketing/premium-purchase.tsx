@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { useCallback, useEffect, useState } from "react";
 import { formatMethodPrice, sleep, useCheckout, type CheckoutControls } from "@/components/payments/use-checkout";
 import { Button } from "@/components/ui/button";

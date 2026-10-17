@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { useMemo, useState } from "react";
 import { FunFactCard } from "@/components/shared/fun-fact-card";
 import { Badge } from "@/components/ui/badge";

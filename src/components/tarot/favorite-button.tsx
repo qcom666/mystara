@@ -2,7 +2,7 @@
 
 import { Star } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";

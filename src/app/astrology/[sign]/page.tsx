@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ZodiacSignView } from "@/components/astrology/zodiac-sign-view";
 import type { ZodiacSignId } from "@/modules/astrology/domain/types";
 import { getAllZodiacSigns, getZodiacSignById } from "@/modules/astrology/domain/zodiac-signs.data";
+import { languageAlternates } from "@/lib/i18n/localized-routes";
 
 interface PageProps {
   params: Promise<{ sign: string }>;
@@ -19,6 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${sign.name} — Zodiac Sign Meaning`,
     description: sign.description,
+    alternates: languageAlternates(`/astrology/${sign.id}`, "en"),
   };
 }
 

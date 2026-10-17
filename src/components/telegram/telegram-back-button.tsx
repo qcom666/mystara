@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { stripLocalePrefix } from "@/lib/i18n/localized-routes";
 import { useTelegram } from "./telegram-provider";
 
 /**
@@ -17,7 +18,8 @@ export function TelegramBackButton() {
   useEffect(() => {
     if (!isTelegram || !webApp) return;
 
-    if (pathname === "/") {
+    // Главный экран и его русская версия (/ru).
+    if (stripLocalePrefix(pathname) === "/") {
       webApp.BackButton.hide();
       return;
     }

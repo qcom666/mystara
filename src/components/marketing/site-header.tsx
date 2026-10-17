@@ -3,8 +3,9 @@
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { usePathname } from "next/navigation";
+import { stripLocalePrefix } from "@/lib/i18n/localized-routes";
 import { useState } from "react";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,10 @@ export function SiteHeader() {
   ];
 
   // Подсвечивается самый длинный подходящий раздел: на странице натальной карты горит «Натальная карта», а не «Астрология».
+  // На русских адресах (/ru/...) сравниваем с адресом без префикса.
+  const currentPath = stripLocalePrefix(pathname);
   const activeHref = navLinks
-    .filter((link) => pathname === link.href || pathname.startsWith(`${link.href}/`))
+    .filter((link) => currentPath === link.href || currentPath.startsWith(`${link.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   const authenticated = status === "authenticated";
@@ -124,7 +127,7 @@ export function SiteHeader() {
             type="button"
             className="focus-ring rounded-md p-2 text-silver-200 xl:hidden"
             onClick={() => setOpen((current) => !current)}
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t.common.closeMenu : t.common.openMenu}
             aria-expanded={open}
           >
             <AnimatePresence mode="wait" initial={false}>

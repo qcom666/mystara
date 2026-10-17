@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TarotSpreadDetailView } from "@/components/tarot/tarot-spread-detail-view";
 import { getAllSpreads, getSpreadById } from "@/modules/tarot/domain/spreads.data";
+import { languageAlternates } from "@/lib/i18n/localized-routes";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const spread = getSpreadById(slug);
   if (!spread) return {};
-  return { title: `${spread.name} Tarot Spread`, description: spread.description };
+  return { title: `${spread.name} Tarot Spread`, description: spread.description, alternates: languageAlternates(`/tarot/spreads/${spread.slug}`, "en") };
 }
 
 export default async function TarotSpreadDetailPage({ params }: PageProps) {

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { TarotCardDetailView } from "@/components/tarot/tarot-card-detail-view";
+import { TarotCardPage } from "@/components/tarot/tarot-card-page";
 import { getAllCards, getCardById } from "@/modules/tarot/domain/deck";
+import { languageAlternates } from "@/lib/i18n/localized-routes";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -18,6 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${card.name} — Tarot Card Meaning`,
     description: `${card.name}: ${card.meanings.upright}`,
+    alternates: languageAlternates(`/tarot/cards/${card.id}`, "en"),
   };
 }
 
@@ -26,17 +28,5 @@ export default async function TarotCardDetailPage({ params }: PageProps) {
   const card = getCardById(slug);
   if (!card) notFound();
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Thing",
-    name: card.name,
-    description: card.description,
-  };
-
-  return (
-    <>
-      <TarotCardDetailView card={card} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-    </>
-  );
+  return <TarotCardPage card={card} locale="en" />;
 }

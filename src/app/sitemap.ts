@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { hasRussianVersion, toRussianPath } from "@/lib/i18n/localized-routes";
 import { getAllZodiacSigns } from "@/modules/astrology/domain/zodiac-signs.data";
 import { allCompatibilitySlugs } from "@/modules/astrology/services/compatibility";
 import { LIFE_PATH_MEANINGS } from "@/modules/numerology/domain/life-path-meanings.data";
@@ -8,10 +9,11 @@ import { getAllSpreads } from "@/modules/tarot/domain/spreads.data";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 const STATIC_PATHS = [
-  "",
+  "/",
   "/reading",
   "/numerology",
   "/astrology",
+  "/astrology/natal-chart",
   "/astrology/horoscope",
   "/astrology/compatibility",
   "/tarot",
@@ -27,16 +29,33 @@ const STATIC_PATHS = [
   "/consent",
 ];
 
+/** Все адреса сайта без языкового префикса. */
+function sitemapPaths(): string[] {
+  return [
+    ...STATIC_PATHS,
+    ...getAllCards().map((card) => `/tarot/cards/${card.id}`),
+    ...getAllSpreads().map((spread) => `/tarot/spreads/${spread.slug}`),
+    ...Object.keys(LIFE_PATH_MEANINGS).map((number) => `/numerology/${number}`),
+    ...getAllZodiacSigns().map((sign) => `/astrology/${sign.id}`),
+    ...getAllZodiacSigns().map((sign) => `/astrology/horoscope/${sign.id}`),
+    ...allCompatibilitySlugs().map((pair) => `/astrology/compatibility/${pair}`),
+  ];
+}
+
+const absolute = (path: string) => `${SITE_URL}${path === "/" ? "" : path}`;
+
+/**
+ * Карта сайта. У страниц с русской версией (lib/i18n/localized-routes.ts) в карту попадают оба адреса,
+ * и у каждого указаны hreflang-альтернативы.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-
-  const staticRoutes = STATIC_PATHS.map((path) => ({ url: `${SITE_URL}${path}`, lastModified }));
-  const cardRoutes = getAllCards().map((card) => ({ url: `${SITE_URL}/tarot/cards/${card.id}`, lastModified }));
-  const spreadRoutes = getAllSpreads().map((spread) => ({ url: `${SITE_URL}/tarot/spreads/${spread.slug}`, lastModified }));
-  const lifePathRoutes = Object.keys(LIFE_PATH_MEANINGS).map((number) => ({ url: `${SITE_URL}/numerology/${number}`, lastModified }));
-  const zodiacRoutes = getAllZodiacSigns().map((sign) => ({ url: `${SITE_URL}/astrology/${sign.id}`, lastModified }));
-  const horoscopeRoutes = getAllZodiacSigns().map((sign) => ({ url: `${SITE_URL}/astrology/horoscope/${sign.id}`, lastModified }));
-  const compatibilityRoutes = allCompatibilitySlugs().map((pair) => ({ url: `${SITE_URL}/astrology/compatibility/${pair}`, lastModified }));
-
-  return [...staticRoutes, ...cardRoutes, ...spreadRoutes, ...lifePathRoutes, ...zodiacRoutes, ...horoscopeRoutes, ...compatibilityRoutes];
+  return sitemapPaths().flatMap((path) => {
+    if (!hasRussianVersion(path)) return [{ url: absolute(path), lastModified }];
+    const alternates = { languages: { en: absolute(path), ru: absolute(toRussianPath(path)) } };
+    return [
+      { url: absolute(path), lastModified, alternates },
+      { url: absolute(toRussianPath(path)), lastModified, alternates },
+    ];
+  });
 }

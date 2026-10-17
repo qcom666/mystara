@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { FavoriteButton } from "@/components/tarot/favorite-button";
 import { TarotCardFace } from "@/components/tarot/tarot-card-face";
 import { Button } from "@/components/ui/button";

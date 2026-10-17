@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatCardCount, useLocale, useTranslation } from "@/lib/i18n";
 import { getSpreadById, getSpreadDescription, getSpreadName } from "@/modules/tarot/domain/spreads.data";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { FavoriteToggle } from "@/components/reading/favorite-toggle";
 import { CardDetailContent } from "@/components/tarot/card-detail-content";
 import { SpreadLayout } from "@/components/tarot/spread-layout";

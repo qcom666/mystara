@@ -37,6 +37,8 @@ export const ru: Dictionary = {
       advanced: "Продвинутый",
     },
     languageLabel: "Язык",
+    openMenu: "Открыть меню",
+    closeMenu: "Закрыть меню",
     favoriteCta: "В избранное",
     favoritedCta: "В избранном",
     signInToFavorite: "Войдите, чтобы добавить в избранное",

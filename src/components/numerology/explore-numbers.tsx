@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getLifePathMeaning, LIFE_PATH_MEANINGS } from "@/modules/numerology/domain/life-path-meanings.data";
 

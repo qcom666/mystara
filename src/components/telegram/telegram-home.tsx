@@ -2,7 +2,7 @@
 
 import { Layers, Moon, Sparkles, Sun } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useTranslation } from "@/lib/i18n";

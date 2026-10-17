@@ -1,7 +1,7 @@
 "use client";
 
 import { BookOpen, Layers, Sparkles } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useTranslation } from "@/lib/i18n";
 

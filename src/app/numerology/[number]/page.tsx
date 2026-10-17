@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { LifePathNumberView } from "@/components/numerology/life-path-number-view";
 import { getLifePathMeaning, LIFE_PATH_MEANINGS } from "@/modules/numerology/domain/life-path-meanings.data";
 import type { LifePathNumber } from "@/modules/numerology/domain/types";
+import { languageAlternates } from "@/lib/i18n/localized-routes";
 
 interface PageProps {
   params: Promise<{ number: string }>;
@@ -27,6 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `Life Path Number ${meaning.number} — ${meaning.title}`,
     description: meaning.description,
+    alternates: languageAlternates(`/numerology/${meaning.number}`, "en"),
   };
 }
 

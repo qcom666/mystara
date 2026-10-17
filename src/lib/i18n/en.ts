@@ -37,6 +37,8 @@ export const en = {
       advanced: "Advanced",
     },
     languageLabel: "Language",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
     favoriteCta: "Favorite",
     favoritedCta: "Favorited",
     signInToFavorite: "Sign in to favorite",

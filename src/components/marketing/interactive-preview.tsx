@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { useState } from "react";
 import { FlippableCard } from "@/components/tarot/flippable-card";
 import { Button } from "@/components/ui/button";

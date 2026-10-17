@@ -6,6 +6,7 @@ import { getAllZodiacSigns, getZodiacSignById } from "@/modules/astrology/domain
 import { buildDailyHoroscope } from "@/modules/astrology/services/daily-horoscope";
 import { getSkyOfDay } from "@/modules/astrology/services/sky-of-day";
 import { moscowDay } from "@/modules/tarot/services/daily-card";
+import { languageAlternates } from "@/lib/i18n/localized-routes";
 
 // Гороскоп меняется в полночь по Москве: страница пересобирается не реже раза в 10 минут.
 export const revalidate = 600;
@@ -25,6 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${sign.name} Horoscope for Today`,
     description: `Today's horoscope for ${sign.name}: love, work and energy, based on the real position of the Moon.`,
+    alternates: languageAlternates(`/astrology/horoscope/${sign.id}`, "en"),
   };
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { useTelegram } from "@/components/telegram/telegram-provider";
 import { useTranslation } from "@/lib/i18n";
 import { OPERATOR } from "@/lib/legal/operator";

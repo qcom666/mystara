@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Suspense } from "react";
-import { AnotherPairHeading, CompatibilityFooterLinks, CompatibilityPicker, CompatibilityResult } from "@/components/astrology/compatibility-view";
-import { GlassPanel } from "@/components/ui/glass-panel";
+import { CompatibilityPairContent } from "@/components/astrology/compatibility-pair-content";
 import { requireZodiacSignById } from "@/modules/astrology/domain/zodiac-signs.data";
 import { allCompatibilitySlugs, compatibilitySlug, getCompatibility, parseCompatibilitySlug } from "@/modules/astrology/services/compatibility";
+import { languageAlternates } from "@/lib/i18n/localized-routes";
 
 interface PageProps {
   params: Promise<{ pair: string }>;
@@ -23,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${first} and ${second} Compatibility`,
     description: `${first} and ${second}: ${result.scores.overall}% overall. How these signs get along in love, friendship and work.`,
-    alternates: { canonical: `/astrology/compatibility/${compatibilitySlug(result.first, result.second)}` },
+    alternates: languageAlternates(`/astrology/compatibility/${compatibilitySlug(result.first, result.second)}`, "en"),
   };
 }
 
@@ -35,17 +34,5 @@ export default async function CompatibilityPairPage({ params }: PageProps) {
   const canonical = compatibilitySlug(...parsed);
   if (canonical !== pair) permanentRedirect(`/astrology/compatibility/${canonical}`);
 
-  const result = getCompatibility(...parsed);
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <CompatibilityResult result={result} />
-      <GlassPanel className="mt-10">
-        <AnotherPairHeading />
-        <Suspense>
-          <CompatibilityPicker initialFirst={result.first} initialSecond={result.second} />
-        </Suspense>
-      </GlassPanel>
-      <CompatibilityFooterLinks />
-    </div>
-  );
+  return <CompatibilityPairContent result={getCompatibility(...parsed)} />;
 }

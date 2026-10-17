@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLocalizedHref } from "@/components/shared/localized-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export function CompatibilityPicker({ initialFirst, initialSecond }: { initialFi
   const t = useTranslation();
   const { locale } = useLocale();
   const router = useRouter();
+  const localized = useLocalizedHref();
   const searchParams = useSearchParams();
   const fromQuery = searchParams.get("sign");
   const [first, setFirst] = useState<ZodiacSignId>(initialFirst ?? (isSignId(fromQuery) ? fromQuery : "aries"));
@@ -42,7 +43,7 @@ export function CompatibilityPicker({ initialFirst, initialSecond }: { initialFi
       className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
       onSubmit={(event) => {
         event.preventDefault();
-        router.push(`/astrology/compatibility/${compatibilitySlug(first, second)}`);
+        router.push(localized(`/astrology/compatibility/${compatibilitySlug(first, second)}`));
       }}
     >
       <div className="space-y-1.5">

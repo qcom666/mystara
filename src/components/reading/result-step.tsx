@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLocalizedHref } from "@/components/shared/localized-link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { CardDetailContent } from "@/components/tarot/card-detail-content";
@@ -35,6 +35,7 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
   const interpretationHeading = aiProvider && aiProvider !== "mock" ? t.reading.aiInterpretationTitle : t.reading.interpretationTitle;
   const { locale } = useLocale();
   const router = useRouter();
+  const localizeReading = useLocalizedHref();
   const drawnCards = useReadingFlowStore((s) => s.drawnCards);
   const question = useReadingFlowStore((s) => s.question);
   const seed = useReadingFlowStore((s) => s.seed);
@@ -80,7 +81,7 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
 
   function handleNewReading() {
     reset();
-    router.push("/reading");
+    router.push(localizeReading("/reading"));
   }
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/shared/localized-link";
 import { TarotCardFace } from "@/components/tarot/tarot-card-face";
 import { useLocale, useTranslation, type Locale } from "@/lib/i18n";
 import { getAllCards, getCardName } from "@/modules/tarot/domain/deck";
