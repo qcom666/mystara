@@ -12,6 +12,16 @@ export function DeleteAccountSection() {
   const a = t.accountPage;
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "deleting" | "error">("idle");
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOutEverywhere() {
+    setSigningOut(true);
+    try {
+      await fetch("/api/account/sign-out-everywhere", { method: "POST" });
+    } finally {
+      await signOut({ callbackUrl: "/login" });
+    }
+  }
 
   async function handleDelete() {
     setStatus("deleting");
@@ -32,9 +42,15 @@ export function DeleteAccountSection() {
     <section>
       <h2 className="font-display text-xl text-silver-100">{a.privacyHeading}</h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-silver-400">{a.privacyBody}</p>
-      <Button type="button" variant="outline" className="mt-4 border-red-400/40 text-red-300 hover:bg-red-500/10" onClick={() => setOpen(true)}>
-        {a.deleteCta}
-      </Button>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button type="button" variant="outline" disabled={signingOut} onClick={handleSignOutEverywhere}>
+          {signingOut ? t.common.loading : a.signOutEverywhereCta}
+        </Button>
+        <Button type="button" variant="outline" className="border-red-400/40 text-red-300 hover:bg-red-500/10" onClick={() => setOpen(true)}>
+          {a.deleteCta}
+        </Button>
+      </div>
+      <p className="mt-2 text-xs text-silver-500">{a.signOutEverywhereHint}</p>
 
       <Dialog open={open} onOpenChange={(next) => status !== "deleting" && setOpen(next)}>
         <DialogContent>

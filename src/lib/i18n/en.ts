@@ -570,6 +570,8 @@ export const en = {
     privacyHeading: "Data and privacy",
     privacyBody:
       "You can delete your account at any time. This erases your readings, favorites, saved calculations and Telegram profile data and withdraws your consent to processing. Records of payments are kept as the law requires, without your name.",
+    signOutEverywhereCta: "Sign out on all devices",
+    signOutEverywhereHint: "Ends every session of this account, including this one, for example if you signed in on someone else\u2019s device.",
     deleteCta: "Delete account and data",
     deleteDialogTitle: "Delete your account?",
     deleteDialogBody:

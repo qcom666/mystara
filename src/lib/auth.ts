@@ -5,7 +5,8 @@ import Credentials from "next-auth/providers/credentials";
 import { isDatabaseConfigured, prisma } from "./db";
 import { hasConfiguredAdmins, isAdminAccount } from "./admin";
 import { getAdminCandidate } from "./repositories/account.repository";
-import { isUserGone } from "./repositories/account-deletion.repository";
+import { getSessionUserState } from "./repositories/account-deletion.repository";
+import { isSessionStillValid } from "./session-check";
 import { getPlanTier } from "./repositories/subscription.repository";
 import { upsertTelegramUser } from "./repositories/telegram-user.repository";
 import { validateTelegramInitData } from "./telegram/validate-init-data";
@@ -115,18 +116,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   callbacks: {
     async jwt({ token, user }) {
-      // Удалённый пользователь (или пользователь, которого нет в этой базе, например после переезда на
-      // другую базу) больше не авторизован, даже если cookie с подписанным токеном ещё действует:
-      // null из этого колбэка сбрасывает сессию.
+      // Сессия перестаёт действовать, если пользователь удалён, его нет в этой базе (например, после
+      // переезда на другую базу) или поколение сессий сменилось (сброс пароля, «выйти на всех
+      // устройствах»), даже если cookie с подписанным токеном ещё действует: null сбрасывает сессию.
       if (!user && typeof token.userId === "string" && isDatabaseConfigured()) {
         try {
-          if (await isUserGone(token.userId)) return null;
+          if (!isSessionStillValid(token.sessionVersion, await getSessionUserState(token.userId))) return null;
         } catch {
           /* база недоступна: оставляем сессию, остальные проверки всё равно обратятся к базе */
         }
       }
       if (user?.id) {
         token.userId = user.id;
+        try {
+          token.sessionVersion = (await getSessionUserState(user.id))?.sessionVersion ?? 0;
+        } catch {
+          token.sessionVersion = 0;
+        }
         try {
           token.planTier = await getPlanTier(user.id);
         } catch {

@@ -51,3 +51,14 @@ export async function isUserGone(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { deletedAt: true } });
   return !user || user.deletedAt !== null;
 }
+
+/** Состояние пользователя для проверки сессии (см. lib/session-check.ts); null, если пользователя нет. */
+export async function getSessionUserState(userId: string) {
+  return prisma.user.findUnique({ where: { id: userId }, select: { deletedAt: true, sessionVersion: true } });
+}
+
+/** Завершает все выданные сессии пользователя: следующая проверка любой из них вернёт «не авторизован». */
+export async function revokeAllSessions(userId: string): Promise<boolean> {
+  const updated = await prisma.user.updateMany({ where: { id: userId, deletedAt: null }, data: { sessionVersion: { increment: 1 } } });
+  return updated.count > 0;
+}

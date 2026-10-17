@@ -14,8 +14,8 @@ const bodySchema = z.object({
 
 /**
  * Задаёт новый пароль по токену из письма. Токен одноразовый: он гасится при первой же проверке. Раз
- * человек получил письмо, адрес заодно считается подтверждённым. Уже выданные сессии (JWT) остаются в
- * силе до истечения срока: отозвать их по одной нельзя, но смена пароля закрывает вход заново.
+ * человек получил письмо, адрес заодно считается подтверждённым. Все ранее выданные сессии при этом
+ * завершаются (поколение сессий увеличивается), поэтому тот, кто знал старый пароль, теряет доступ.
  */
 export async function POST(request: Request) {
   const limited = enforceRateLimit(request, "reset-password", { limit: 10, windowSeconds: 3600 });
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   const passwordHash = await bcrypt.hash(parsed.data.password, BCRYPT_ROUNDS);
   const updated = await prisma.user.updateMany({
     where: { id: userId, deletedAt: null, passwordHash: { not: null } },
-    data: { passwordHash, emailVerified: new Date() },
+    data: { passwordHash, emailVerified: new Date(), sessionVersion: { increment: 1 } },
   });
   if (updated.count === 0) return NextResponse.json({ error: "invalid_token" }, { status: 400 });
   return NextResponse.json({ ok: true });

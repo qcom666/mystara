@@ -27,7 +27,7 @@ describe("POST /api/auth/reset-password", () => {
     expect(mocks.consumeToken).toHaveBeenCalledWith("reset", token);
     expect(mocks.updateMany).toHaveBeenCalledWith({
       where: { id: "u1", deletedAt: null, passwordHash: { not: null } },
-      data: { passwordHash: "new-hash", emailVerified: expect.any(Date) },
+      data: { passwordHash: "new-hash", emailVerified: expect.any(Date), sessionVersion: { increment: 1 } },
     });
   });
 

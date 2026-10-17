@@ -16,5 +16,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     userId?: string;
     planTier?: PlanTier;
+    /** Поколение сессий на момент входа (см. lib/session-check.ts). */
+    sessionVersion?: number;
   }
 }
