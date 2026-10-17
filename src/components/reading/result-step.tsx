@@ -19,6 +19,7 @@ import { getSpreadName } from "@/modules/tarot/domain/spreads.data";
 import type { DrawnCard, TarotSpread } from "@/modules/tarot/domain/types";
 import { useReadingFlowStore } from "@/store/reading-flow.store";
 import { AIInterpretationPanel } from "./ai-interpretation-panel";
+import { ShareReadingButton } from "./share-reading-button";
 
 interface ResultStepProps {
   spread: TarotSpread;
@@ -146,6 +147,10 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
           </GlassPanel>
         )}
         {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
+
+        <div>
+          <ShareReadingButton spreadId={spread.id} spreadName={getSpreadName(spread, locale)} cards={drawnCards} />
+        </div>
 
         <Button variant="ghost" className="mt-4" onClick={handleNewReading}>
           {t.reading.newReadingCta}

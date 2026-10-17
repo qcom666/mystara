@@ -12,7 +12,7 @@ export type AnalyticsEvent =
   | { name: "reading_completed"; spreadId: string; readingId?: string }
   | { name: "ai_interpretation_requested"; spreadId: string; provider?: string }
   | { name: "reading_saved"; readingId: string }
-  | { name: "reading_shared"; readingId: string }
+  | { name: "reading_shared"; spreadId: string; channel: "telegram_story" | "native_share" | "image" }
   | { name: "subscription_started"; tier: "premium" }
   | { name: "numerology_calculated"; lifePathNumber: number }
   | { name: "astrology_calculated"; sunSign: string }

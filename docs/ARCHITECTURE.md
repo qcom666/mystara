@@ -111,6 +111,7 @@
 | `/api/account/link-telegram` | POST | Привязать Telegram (виджет) к аккаунту по e-mail |
 | `/api/account/send-verification` | POST | Отправить письмо для подтверждения адреса |
 | `/api/account/sign-out-everywhere` | POST | Завершить все сессии пользователя |
+| `/api/share/reading` | GET | Картинка расклада для сторис и постов (PNG, только расклад и карты, без вопроса) |
 | `/api/health` | GET | Состояние сайта и базы для мониторинга доступности |
 | `/api/admin/purchases/[id]/refund` | POST | Возврат оплаченной покупки администратором (404 для остальных) |
 | `/api/account` | DELETE | Удаление аккаунта и личных данных самим пользователем (отзыв согласия) |

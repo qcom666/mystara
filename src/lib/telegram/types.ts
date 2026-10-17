@@ -81,6 +81,9 @@ export interface TelegramWebApp {
   disableClosingConfirmation: () => void;
   setHeaderColor: (color: string) => void;
   setBackgroundColor: (color: string) => void;
+  /** Bot API 7.8+: открывает редактор истории с картинкой по публичному https-адресу. */
+  shareToStory?: (mediaUrl: string, params?: { text?: string }) => void;
+  isVersionAtLeast?: (version: string) => boolean;
   onEvent: (eventType: string, callback: () => void) => void;
   offEvent: (eventType: string, callback: () => void) => void;
 }
