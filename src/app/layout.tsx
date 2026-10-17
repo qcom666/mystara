@@ -47,7 +47,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
+    // data-scroll-behavior: плавная прокрутка из globals.css не мешает переходам между страницами.
+    <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${cormorant.variable}`}>
       <body className="relative min-h-screen bg-midnight-950 font-sans text-silver-200 antialiased">
         <StarField className="fixed" />
         <Providers>
