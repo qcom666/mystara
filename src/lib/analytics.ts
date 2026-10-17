@@ -1,7 +1,8 @@
 /**
- * Единая абстракция аналитики. Места вызова используют `track(...)` и не меняются при смене приёмника;
- * сейчас приёмник только пишет в консоль при разработке. PostHog/Segment/GA подключаются заменой
- * `defaultSink` без правок в местах вызова.
+ * Единая абстракция аналитики. Места вызова используют `track(...)` и не меняются при смене приёмника.
+ * В браузере событие уходит в собственную обезличенную статистику (/api/analytics, без cookie и
+ * идентификаторов: сервер оставляет только поля из белого списка, см. lib/analytics-events.ts). На сервере
+ * `track` ничего не пишет: серверные события записываются явно через `recordEvent` (lib/analytics-store.ts).
  */
 export type AnalyticsEvent =
   | { name: "landing_viewed" }
@@ -16,14 +17,23 @@ export type AnalyticsEvent =
   | { name: "subscription_started"; tier: "premium" }
   | { name: "numerology_calculated"; lifePathNumber: number }
   | { name: "astrology_calculated"; sunSign: string }
-  | { name: "telegram_session_started"; telegramId: string };
+  | { name: "telegram_session_started"; telegramId: string }
+  | { name: "spread_selected"; spreadId: string };
 
 type AnalyticsSink = (event: AnalyticsEvent) => void;
+
+function browserShell(): "web" | "telegram" {
+  return typeof window !== "undefined" && window.Telegram?.WebApp?.initData ? "telegram" : "web";
+}
 
 const defaultSink: AnalyticsSink = (event) => {
   if (process.env.NODE_ENV !== "production") {
     console.debug("[analytics]", event.name, event);
   }
+  if (typeof window === "undefined" || typeof navigator === "undefined" || typeof navigator.sendBeacon !== "function") return;
+  const locale = document.documentElement.lang === "ru" ? "ru" : "en";
+  const payload = JSON.stringify({ event, shell: browserShell(), locale });
+  navigator.sendBeacon("/api/analytics", new Blob([payload], { type: "application/json" }));
 };
 
 let activeSink: AnalyticsSink = defaultSink;

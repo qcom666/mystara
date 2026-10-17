@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { recordEvent } from "@/lib/analytics-store";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { PAYMENT_PRODUCT_IDS, PRODUCT_PRICES, enabledProviders } from "@/lib/payments/catalog";
@@ -80,12 +81,14 @@ export async function POST(request: Request) {
         description: copy.description,
         amount: price.amount,
       });
+      await recordEvent({ name: "checkout_started", product, provider }, { shell: context === "telegram" ? "telegram" : "web", locale });
       return NextResponse.json({ provider, url });
     }
     const payment = await createYooKassaPayment(
       { shopId: process.env.YOOKASSA_SHOP_ID as string, secretKey: process.env.YOOKASSA_SECRET_KEY as string },
       { purchaseId: purchase.id, amountRub: price.amount, description: copy.title, returnUrl },
     );
+    await recordEvent({ name: "checkout_started", product, provider }, { shell: context === "telegram" ? "telegram" : "web", locale });
     return NextResponse.json({ provider, url: payment.confirmationUrl });
   } catch {
     await markPurchaseFailed(purchase.id);

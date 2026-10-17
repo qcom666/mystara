@@ -322,3 +322,17 @@ model BotSubscriber {
 
   @@index([dailyCard, lastDailySentOn])
 }
+
+// Обезличенная статистика использования: что произошло, в какой день и в какой оболочке. Без пользователя,
+// IP, cookie и других идентификаторов, поэтому это не персональные данные. Нужна для воронки в админ-панели.
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  name      String // имя события из белого списка (lib/analytics-events.ts)
+  day       String // «ГГГГ-ММ-ДД» по Москве
+  shell     String // "web" | "telegram"
+  locale    String? // "ru" | "en"
+  props     Json? // только разрешённые поля события (id расклада, товар, способ оплаты)
+  createdAt DateTime @default(now())
+
+  @@index([day, name])
+}

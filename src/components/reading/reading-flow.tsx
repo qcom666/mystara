@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { track } from "@/lib/analytics";
+
+import { useEffect, useRef } from "react";
 import type { TarotSpread } from "@/modules/tarot/domain/types";
 import { useReadingFlowStore } from "@/store/reading-flow.store";
 import { QuestionStep } from "./question-step";
@@ -22,6 +24,14 @@ export function ReadingFlow({ spread, isAuthenticated }: ReadingFlowProps) {
   const spreadId = useReadingFlowStore((s) => s.spreadId);
   const reset = useReadingFlowStore((s) => s.reset);
   const selectSpread = useReadingFlowStore((s) => s.selectSpread);
+
+  // Отдельный эффект с защитой: в режиме разработки React запускает эффекты дважды, а событие нужно одно.
+  const trackedSpread = useRef<string | null>(null);
+  useEffect(() => {
+    if (trackedSpread.current === spread.id) return;
+    trackedSpread.current = spread.id;
+    track({ name: "spread_selected", spreadId: spread.id });
+  }, [spread.id]);
 
   useEffect(() => {
     if (spreadId !== spread.id) {

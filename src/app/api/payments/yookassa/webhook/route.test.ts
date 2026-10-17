@@ -13,7 +13,9 @@ vi.mock("@/lib/payments/providers/yookassa", () => ({
   fetchYooKassaPayment: mocks.fetchPayment,
   fetchYooKassaRefund: mocks.fetchRefund,
 }));
+vi.mock("@/lib/analytics-store", () => ({ recordEvent: async () => true }));
 vi.mock("@/lib/repositories/purchase.repository", () => ({
+  getPurchaseProduct: async () => "natal_pack",
   fulfillPurchase: mocks.fulfillPurchase,
   findYooKassaPurchaseByPaymentId: mocks.findPurchase,
   markPurchaseRefunded: mocks.markRefunded,

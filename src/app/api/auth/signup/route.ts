@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { isDatabaseConfigured, prisma } from "@/lib/db";
+import { recordEvent } from "@/lib/analytics-store";
 import { EMAIL_VERIFICATION_TTL_MS } from "@/lib/auth-tokens";
 import { PRIVACY_POLICY_VERSION } from "@/lib/legal/operator";
 import { logError } from "@/lib/logger";
@@ -41,6 +42,8 @@ export async function POST(request: Request) {
       privacyPolicyVersion: PRIVACY_POLICY_VERSION,
     },
   });
+
+  await recordEvent({ name: "signup_completed" }, { shell: "web" });
 
   // Письмо для подтверждения адреса, если почта настроена. Подтверждение ничего не блокирует, поэтому
   // сбой отправки регистрацию не отменяет: пользователь сможет запросить письмо из личного кабинета.

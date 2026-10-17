@@ -220,7 +220,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "сессионные cookie (Auth.js: сессия входа, защита от подделки запросов CSRF, адрес возврата после входа) — без них вход в учётную запись невозможен; срок действия сессии по умолчанию — 30 дней;",
           "данные локального хранилища браузера: выбранный язык интерфейса и отметка о том, что вы приняли соответствующую версию Согласия и Политики.",
         ],
-        "Мы не используем рекламные cookie, сторонние счётчики и системы веб-аналитики. Для работы мини-приложения Telegram загружается скрипт с сервера telegram.org; при этом Telegram может получать технические сведения о вашем запросе (например, IP-адрес). Шрифты интерфейса размещены на серверах Сервиса. Вы можете удалить cookie и локальные данные в настройках браузера; в этом случае вам потребуется снова войти в учётную запись и выбрать язык.",
+        "Мы не используем рекламные cookie, сторонние счётчики и системы веб-аналитики. Сервис ведёт собственную обезличенную статистику (например, сколько раз открыта страница, начат или сохранён расклад): записывается только факт события, день и вид приложения (сайт или Telegram), без cookie, IP-адреса и других идентификаторов. Для работы мини-приложения Telegram загружается скрипт с сервера telegram.org; при этом Telegram может получать технические сведения о вашем запросе (например, IP-адрес). Шрифты интерфейса размещены на серверах Сервиса. Вы можете удалить cookie и локальные данные в настройках браузера; в этом случае вам потребуется снова войти в учётную запись и выбрать язык.",
       ],
       en: [
         "The Service uses only technically necessary data in your browser:",
@@ -228,7 +228,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
           "session cookies (Auth.js: the sign-in session, CSRF protection, the return address after sign-in) — sign-in is impossible without them; the session lasts 30 days by default;",
           "browser local-storage data: your chosen interface language and a marker that you accepted the relevant version of the Consent and this Policy.",
         ],
-        "We do not use advertising cookies, third-party counters or web-analytics systems. To run the Telegram Mini App, a script is loaded from telegram.org, and Telegram may receive technical details of that request (such as your IP address). Interface fonts are hosted on the Service’s own servers. You can delete cookies and local data in your browser settings; you will then need to sign in again and choose your language again.",
+        "We do not use advertising cookies, third-party counters or web-analytics systems. The Service keeps its own anonymous usage statistics (for example, how often a page is opened or a reading is started or saved): only the fact of the event, the day and the kind of app (website or Telegram) are recorded, without cookies, IP addresses or other identifiers. To run the Telegram Mini App, a script is loaded from telegram.org, and Telegram may receive technical details of that request (such as your IP address). Interface fonts are hosted on the Service’s own servers. You can delete cookies and local data in your browser settings; you will then need to sign in again and choose your language again.",
       ],
     },
   },

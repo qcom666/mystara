@@ -1,9 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { recordEvent } from "@/lib/analytics-store";
 import { isDatabaseConfigured } from "@/lib/db";
 import { logError } from "@/lib/logger";
 import { NATAL_CHART_PRICES } from "@/lib/payments/catalog";
-import { fulfillPurchase, isPurchasePayable } from "@/lib/repositories/purchase.repository";
+import { fulfillPurchase, getPurchaseProduct, isPurchasePayable } from "@/lib/repositories/purchase.repository";
 import { subscribeDailyCard, unsubscribeDailyCard } from "@/lib/repositories/bot-subscriber.repository";
 import { buildBotReply, buildDailyCommandReply, parseDailyCommand, type TelegramUpdate } from "@/lib/telegram/bot-reply";
 import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
@@ -62,6 +63,9 @@ export async function POST(request: Request) {
         amount: stars.amount,
         currency: "XTR",
       });
+      if (result === "fulfilled") {
+        await recordEvent({ name: "purchase_paid", product: (await getPurchaseProduct(stars.purchaseId)) ?? undefined, provider: "stars" }, { shell: "telegram" });
+      }
       if (result === "mismatch" || result === "not_found") {
         logError("stars", "paid purchase could not be matched", { purchaseId: stars.purchaseId, result: JSON.stringify(result) });
       }

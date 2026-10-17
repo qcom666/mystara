@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
+import { recordEvent } from "@/lib/analytics-store";
 import { isDatabaseConfigured } from "@/lib/db";
 import { logError, logWarning } from "@/lib/logger";
 import { fetchYooKassaPayment, fetchYooKassaRefund } from "@/lib/payments/providers/yookassa";
-import { findYooKassaPurchaseByPaymentId, fulfillPurchase, markPurchaseRefunded } from "@/lib/repositories/purchase.repository";
+import { findYooKassaPurchaseByPaymentId, fulfillPurchase, getPurchaseProduct, markPurchaseRefunded } from "@/lib/repositories/purchase.repository";
 
 /**
  * Уведомления ЮKassa. Телу уведомления сами по себе не доверяем: берём из него только id платежа и
@@ -45,6 +46,9 @@ export async function POST(request: Request) {
     amount: Math.round(Number(payment.amount.value)),
     currency: "RUB",
   });
+  if (result === "fulfilled") {
+    await recordEvent({ name: "purchase_paid", product: (await getPurchaseProduct(purchaseId)) ?? undefined, provider: "yookassa" }, { shell: "web" });
+  }
   if (result === "mismatch") {
     logError("yookassa", "paid amount does not match the purchase", { purchaseId, paid: String(payment.amount) });
   }

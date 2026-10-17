@@ -164,3 +164,9 @@ export async function markPurchaseRefunded(purchaseId: string, audit: RefundAudi
 export async function findYooKassaPurchaseByPaymentId(paymentId: string) {
   return prisma.purchase.findFirst({ where: { provider: "yookassa", externalId: paymentId } });
 }
+
+/** Какой товар оплачен: для статистики после уведомления провайдера. */
+export async function getPurchaseProduct(purchaseId: string): Promise<string | null> {
+  const purchase = await prisma.purchase.findUnique({ where: { id: purchaseId }, select: { product: true } });
+  return purchase?.product ?? null;
+}
