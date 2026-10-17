@@ -65,7 +65,7 @@ vi.mock("@/lib/db", () => {
       count: async ({ where }: { where: Row }) => [...db.starSubscriptions.values()].filter((row) => matches(row, where)).length,
       create: async ({ data }: { data: Row }) => {
         const row = { state: "active", canceledBy: null, createdAt: new Date(), updatedAt: new Date(), ...data };
-        db.starSubscriptions.set(row.purchaseId as string, row);
+        db.starSubscriptions.set(data.purchaseId as string, row);
         return row;
       },
       update: async ({ where, data, select }: { where: { purchaseId: string }; data: Row; select?: Row }) => {
