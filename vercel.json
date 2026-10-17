@@ -9,7 +9,7 @@
       "schedule": "0 6 * * *"
     },
     {
-      "path": "/api/cron/reconcile-payments",
+      "path": "/api/cron/billing",
       "schedule": "30 6 * * *"
     }
   ]

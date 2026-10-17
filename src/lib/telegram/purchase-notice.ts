@@ -1,5 +1,6 @@
 import { logWarning } from "@/lib/logger";
 import type { BotLang } from "./daily-card-message";
+import { telegramApiUrl } from "./bot-api";
 
 /** Что выдано за оплату: для сообщения покупателю в Telegram. */
 export interface PurchaseNoticeDetails {
@@ -48,7 +49,7 @@ export async function sendPurchaseNotice(
   fetchImpl: typeof fetch = fetch,
 ): Promise<boolean> {
   try {
-    const response = await fetchImpl(`https://api.telegram.org/bot${params.botToken}/sendMessage`, {
+    const response = await fetchImpl(telegramApiUrl(params.botToken, "sendMessage"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

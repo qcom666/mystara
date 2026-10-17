@@ -20,7 +20,7 @@ export interface TelegramUpdate {
   message?: {
     text?: string;
     chat?: { id: number; type?: string };
-    from?: { language_code?: string };
+    from?: { id?: number; language_code?: string };
   };
 }
 

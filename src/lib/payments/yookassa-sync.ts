@@ -1,15 +1,8 @@
 import { recordEvent } from "@/lib/analytics-store";
 import { logError } from "@/lib/logger";
 import { fetchYooKassaPayment, type YooKassaCredentials, type YooKassaPayment } from "@/lib/payments/providers/yookassa";
-import {
-  fulfillPurchase,
-  getFulfilledPurchaseSummary,
-  getPurchaseProduct,
-  listPendingYooKassaPurchases,
-  markPurchaseFailed,
-} from "@/lib/repositories/purchase.repository";
-import { getSiteUrl } from "@/lib/site-url";
-import { sendPurchaseNotice } from "@/lib/telegram/purchase-notice";
+import { notifyBuyer } from "@/lib/payments/notify-buyer";
+import { fulfillPurchase, getPurchaseProduct, listPendingPurchases, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
 
 /**
  * Применение платежей ЮKassa к покупкам. Один и тот же путь используют уведомление ЮKassa (вебхук),
@@ -21,21 +14,6 @@ export type PaymentSyncResult = "fulfilled" | "already_paid" | "pending" | "fail
 
 export function yooKassaCredentials(env: Record<string, string | undefined> = process.env): YooKassaCredentials | null {
   return env.YOOKASSA_SHOP_ID && env.YOOKASSA_SECRET_KEY ? { shopId: env.YOOKASSA_SHOP_ID, secretKey: env.YOOKASSA_SECRET_KEY } : null;
-}
-
-/** Сообщение покупателю в Telegram (если аккаунт связан с Telegram); не влияет на результат оплаты. */
-async function notifyBuyer(purchaseId: string): Promise<void> {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  if (!botToken) return;
-  const summary = await getFulfilledPurchaseSummary(purchaseId).catch(() => null);
-  if (!summary?.telegramId) return;
-  await sendPurchaseNotice({
-    botToken,
-    chatId: summary.telegramId,
-    lang: summary.language?.toLowerCase().startsWith("ru") ? "ru" : "en",
-    appUrl: getSiteUrl(),
-    details: summary,
-  });
 }
 
 /**
@@ -84,7 +62,14 @@ export async function syncPendingYooKassaPurchases(options: {
   const credentials = yooKassaCredentials();
   if (!credentials) return [];
   const since = new Date((options.now ?? new Date()).getTime() - options.maxAgeHours * 3_600_000);
-  const purchases = await listPendingYooKassaPurchases({ since, take: options.limit, userId: options.userId, purchaseId: options.purchaseId });
+  const purchases = await listPendingPurchases({
+    provider: "yookassa",
+    since,
+    take: options.limit,
+    userId: options.userId,
+    purchaseId: options.purchaseId,
+    withPaymentId: true,
+  });
 
   const results: PaymentSyncResult[] = [];
   for (const purchase of purchases) {
@@ -92,13 +77,4 @@ export async function syncPendingYooKassaPurchases(options: {
     results.push(payment ? await applyYooKassaPayment(payment, purchase.id) : "unavailable");
   }
   return results;
-}
-
-/** Сверка для страниц пользователя: никогда не ломает страницу, даже если ЮKassa или база недоступны. */
-export async function syncUserPaymentsQuietly(userId: string): Promise<void> {
-  try {
-    await syncPendingYooKassaPurchases({ userId, maxAgeHours: 2, limit: 3 });
-  } catch (error) {
-    logError("yookassa-sync", error);
-  }
 }

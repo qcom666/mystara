@@ -6,6 +6,7 @@ import { listDailyCardRecipients, markDailyCardSent, markSubscriberBlocked } fro
 import { dailyCardKeyboard, dailyCardText, type BotLang } from "@/lib/telegram/daily-card-message";
 import { getSiteUrl } from "@/lib/site-url";
 import { dailyCard, moscowDay } from "@/modules/tarot/services/daily-card";
+import { telegramApiUrl } from "@/lib/telegram/bot-api";
 
 // Рассылка идёт дольше обычного запроса: до минуты (предел тарифа Hobby).
 export const maxDuration = 60;
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
       const lang: BotLang = recipient.language === "en" ? "en" : "ru";
       const daily = dailyCard(recipient.chatId, day);
       try {
-        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        const response = await fetch(telegramApiUrl(botToken, "sendMessage"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ chat_id: recipient.chatId, text: dailyCardText(daily, lang), reply_markup: dailyCardKeyboard(lang, appUrl, daily.card.id) }),

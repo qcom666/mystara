@@ -7,7 +7,7 @@ import {
   saveNatalChartWithEntitlement,
 } from "@/lib/repositories/natal-chart.repository";
 import { getPremiumState } from "@/lib/repositories/subscription.repository";
-import { syncUserPaymentsQuietly } from "@/lib/payments/yookassa-sync";
+import { syncUserPaymentsQuietly } from "@/lib/payments/payment-sync";
 import { createNatalChartSchema } from "@/lib/validation/natal-chart.schema";
 import { calculateNatalChart } from "@/modules/astrology/services/calculate-natal-chart";
 import { resolveBirthInstantUtc } from "@/modules/astrology/services/resolve-birth-instant";

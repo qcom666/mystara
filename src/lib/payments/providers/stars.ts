@@ -1,3 +1,5 @@
+import { telegramApiUrl } from "@/lib/telegram/bot-api";
+
 /**
  * Telegram Stars (XTR). Ссылку на оплату создаём на сервере с токеном бота; мини-приложение открывает её
  * через WebApp.openInvoice. Затем Telegram вызывает вебхук бота с `pre_checkout_query` и
@@ -8,7 +10,7 @@ export async function createStarsInvoiceLink(
   params: { botToken: string; purchaseId: string; title: string; description: string; amount: number },
   fetchImpl: typeof fetch = fetch,
 ): Promise<string> {
-  const response = await fetchImpl(`https://api.telegram.org/bot${params.botToken}/createInvoiceLink`, {
+  const response = await fetchImpl(telegramApiUrl(params.botToken, "createInvoiceLink"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -33,7 +35,7 @@ export async function refundStarPayment(
   params: { botToken: string; telegramUserId: number; chargeId: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<boolean> {
-  const response = await fetchImpl(`https://api.telegram.org/bot${params.botToken}/refundStarPayment`, {
+  const response = await fetchImpl(telegramApiUrl(params.botToken, "refundStarPayment"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ user_id: params.telegramUserId, telegram_payment_charge_id: params.chargeId }),

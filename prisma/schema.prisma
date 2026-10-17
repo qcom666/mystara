@@ -206,10 +206,15 @@ model Subscription {
   provider           String? // например "yookassa"; пусто, пока платёжный провайдер не подключён
   externalId         String?
   currentPeriodEnd   DateTime?
+  // Конец периода, о котором уже напомнили (за 3 дня до окончания): при продлении срок меняется, и
+  // напоминание о новом сроке придёт снова.
+  renewalReminderFor DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, currentPeriodEnd])
 }
 
 // --- Нумерология и астрология ---

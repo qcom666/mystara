@@ -60,3 +60,30 @@ export async function getPlanTier(userId: string): Promise<"free" | "premium"> {
   const subscription = await prisma.subscription.findUnique({ where: { userId } });
   return isPremiumActive(subscription, new Date()) ? "premium" : "free";
 }
+
+/** Действующие Premium-подписки, которые закончатся до `until` и о текущем сроке которых ещё не напоминали. */
+export async function listSubscriptionsToRemind(now: Date, until: Date, take: number) {
+  const rows = await prisma.subscription.findMany({
+    where: {
+      tier: "PREMIUM",
+      status: "ACTIVE",
+      currentPeriodEnd: { gt: now, lte: until },
+      user: { deletedAt: null },
+    },
+    orderBy: { currentPeriodEnd: "asc" },
+    take,
+    select: {
+      userId: true,
+      currentPeriodEnd: true,
+      renewalReminderFor: true,
+      user: { select: { telegramId: true, email: true, language: true } },
+    },
+  });
+  // Повторно о том же сроке не напоминаем; после продления срок другой — напоминание придёт снова.
+  return rows.filter((row) => row.renewalReminderFor?.getTime() !== row.currentPeriodEnd?.getTime());
+}
+
+/** Отмечает, что о сроке `periodEnd` напомнили (условно: если срок за это время продлили, отметка не ставится). */
+export async function markRenewalReminded(userId: string, periodEnd: Date): Promise<void> {
+  await prisma.subscription.updateMany({ where: { userId, currentPeriodEnd: periodEnd }, data: { renewalReminderFor: periodEnd } });
+}

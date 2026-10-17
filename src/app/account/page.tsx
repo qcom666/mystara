@@ -4,7 +4,7 @@ import { AccountView, type AccountTab } from "@/components/account/account-view"
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { isMailConfigured } from "@/lib/mail/mailer";
-import { syncUserPaymentsQuietly } from "@/lib/payments/yookassa-sync";
+import { syncUserPaymentsQuietly } from "@/lib/payments/payment-sync";
 import { getAccountData } from "@/lib/repositories/account.repository";
 import { getOrCreateReferralCode, getReferralStats } from "@/lib/repositories/referral.repository";
 

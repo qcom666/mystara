@@ -5,6 +5,7 @@ import { isDatabaseConfigured } from "@/lib/db";
 import { logError } from "@/lib/logger";
 import { fulfillPurchase, getFulfilledPurchaseSummary, getPurchaseProduct, isPurchasePayable } from "@/lib/repositories/purchase.repository";
 import { subscribeDailyCard, unsubscribeDailyCard } from "@/lib/repositories/bot-subscriber.repository";
+import { rememberTelegramLanguage } from "@/lib/repositories/telegram-user.repository";
 import { buildBotReply, buildDailyCommandReply, parseDailyCommand, pickLang, type TelegramUpdate } from "@/lib/telegram/bot-reply";
 import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
 import { purchaseNoticeKeyboard, purchaseNoticeText } from "@/lib/telegram/purchase-notice";
@@ -39,6 +40,12 @@ export async function POST(request: Request) {
   }
 
   const update = (await request.json().catch(() => null)) as (TelegramUpdate & TelegramPaymentUpdate) | null;
+
+  // Язык клиента Telegram: на нём бот пишет пользователю об оплате и о продлении Premium.
+  const from = update?.message?.from;
+  if (from?.id && from.language_code && isDatabaseConfigured()) {
+    await rememberTelegramLanguage(String(from.id), from.language_code).catch(() => undefined);
+  }
 
   const stars = parseStarsEvent(update);
   if (stars?.kind === "pre_checkout") {

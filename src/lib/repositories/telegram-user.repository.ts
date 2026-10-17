@@ -30,3 +30,12 @@ export async function upsertTelegramUser(user: ValidatedTelegramUser) {
     throw error;
   }
 }
+
+/**
+ * Язык клиента Telegram из сообщений боту: по нему бот пишет пользователю (уведомления об оплате,
+ * напоминания). При входе через виджет на сайте язык не передаётся, поэтому он уточняется здесь.
+ */
+export async function rememberTelegramLanguage(telegramId: string, languageCode: string): Promise<void> {
+  const language = languageCode.toLowerCase().startsWith("ru") ? "ru" : "en";
+  await prisma.user.updateMany({ where: { telegramId, deletedAt: null, NOT: { language } }, data: { language } });
+}

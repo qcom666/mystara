@@ -43,3 +43,21 @@ export function emailVerificationMessage(to: string, link: string): MailMessage 
     ].join("\n"),
   };
 }
+
+export function renewalReminderMessage(to: string, params: { dateRu: string; dateEn: string; linkRu: string; linkEn: string }): MailMessage {
+  return {
+    to,
+    subject: "Premium в Mystara скоро закончится / Your Mystara Premium ends soon",
+    text: [
+      `Ваш Premium в Mystara действует до ${params.dateRu}.`,
+      "Автоматических списаний нет: чтобы не потерять безлимитные расклады и натальную карту раз в неделю, продлите подписку заранее. Оставшиеся дни сохранятся и сложатся с новыми.",
+      params.linkRu,
+      "",
+      "——",
+      "",
+      `Your Mystara Premium is active until ${params.dateEn}.`,
+      "There are no automatic charges: renew in advance to keep unlimited readings and a weekly Natal Chart. The days you have left carry over.",
+      params.linkEn,
+    ].join("\n"),
+  };
+}

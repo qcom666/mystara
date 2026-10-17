@@ -35,9 +35,10 @@ vi.mock("./referral.repository", () => ({ rewardReferrerOnFirstPayment: async ()
 vi.mock("@/lib/db", () => {
   const purchase = {
     findUnique: async ({ where }: { where: { id: string } }) => state.purchases.get(where.id) ?? null,
-    updateMany: async ({ where, data }: { where: { id: string; status: string }; data: { status: string; externalId: string } }) => {
+    updateMany: async ({ where, data }: { where: { id: string; status: string | { in: string[] } }; data: { status: string; externalId: string } }) => {
       const row = state.purchases.get(where.id);
-      if (!row || row.status !== where.status) return { count: 0 };
+      const allowed = typeof where.status === "string" ? [where.status] : where.status.in;
+      if (!row || !allowed.includes(row.status)) return { count: 0 };
       Object.assign(row, data);
       return { count: 1 };
     },
@@ -104,6 +105,19 @@ describe("fulfillPurchase — пакет натальных карт", () => {
   it("reports an unknown purchase without granting anything", async () => {
     expect(await fulfillPurchase({ ...paid, purchaseId: "nope" })).toBe("not_found");
     expect(state.credits.size).toBe(0);
+  });
+
+  it("grants a purchase we had closed as failed once the provider confirms real payment", async () => {
+    state.purchases.get("p1")!.status = "failed";
+    expect(await fulfillPurchase(paid)).toBe("fulfilled");
+    expect(state.credits.get("u1")).toBe(3);
+    expect(state.purchases.get("p1")?.status).toBe("paid");
+  });
+
+  it("never re-grants a refunded purchase", async () => {
+    state.purchases.get("p1")!.status = "refunded";
+    expect(await fulfillPurchase(paid)).toBe("already_paid");
+    expect(state.credits.get("u1")).toBeUndefined();
   });
 });
 

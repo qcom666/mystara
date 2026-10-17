@@ -40,26 +40,45 @@ export async function attachProviderPaymentId(purchaseId: string, externalId: st
   await prisma.purchase.updateMany({ where: { id: purchaseId, status: "pending" }, data: { externalId } });
 }
 
-/** Неоплаченные покупки ЮKassa с известным платежом, созданные после `since`: их статус проверяется у ЮKassa. */
-export async function listPendingYooKassaPurchases(options: { since: Date; take: number; userId?: string; purchaseId?: string }) {
+/**
+ * Неоплаченные покупки провайдера, созданные после `since`: их статус сверяется с провайдером. Для ЮKassa
+ * нужен сохранённый id платежа (`withPaymentId`), у Звёзд платёж ищется по id покупки в истории бота.
+ */
+export async function listPendingPurchases(options: {
+  provider: PaymentProviderId;
+  since: Date;
+  take: number;
+  userId?: string;
+  purchaseId?: string;
+  withPaymentId?: boolean;
+}) {
   return prisma.purchase.findMany({
     where: {
-      provider: "yookassa",
+      provider: options.provider,
       status: "pending",
-      externalId: { not: null },
       createdAt: { gte: options.since },
+      ...(options.withPaymentId ? { externalId: { not: null } } : {}),
       ...(options.userId ? { userId: options.userId } : {}),
       ...(options.purchaseId ? { id: options.purchaseId } : {}),
     },
     orderBy: { createdAt: "desc" },
     take: options.take,
-    select: { id: true, externalId: true },
+    select: { id: true, externalId: true, amount: true },
   });
+}
+
+/**
+ * Закрывает как неудавшиеся покупки, которые так и не оплатили за `olderThan`: брошенные счета. Если
+ * провайдер всё же подтвердит оплату такой покупки, она будет выдана (см. fulfillPurchase).
+ */
+export async function expireStalePendingPurchases(olderThan: Date): Promise<number> {
+  const result = await prisma.purchase.updateMany({ where: { status: "pending", createdAt: { lt: olderThan } }, data: { status: "failed" } });
+  return result.count;
 }
 
 /** Статус своей покупки (для экрана «подтверждаем оплату»); null, если покупки нет или она чужая. */
 export async function getPurchaseStatusForUser(purchaseId: string, userId: string) {
-  return prisma.purchase.findFirst({ where: { id: purchaseId, userId }, select: { status: true, product: true } });
+  return prisma.purchase.findFirst({ where: { id: purchaseId, userId }, select: { status: true, product: true, provider: true } });
 }
 
 /** Что нужно для сообщения покупателю после оплаты: товар, его Telegram и выданное. */
@@ -100,6 +119,10 @@ export type FulfillResult = "fulfilled" | "already_paid" | "not_found" | "mismat
  * или продление Premium. Смена статуса (pending → paid) и выдача выполняются в одной транзакции, а
  * сама смена — условное обновление, поэтому провайдер, доставивший то же уведомление дважды (или два
  * уведомления одновременно), не выдаст оплаченное дважды.
+ *
+ * Покупка, которую мы успели закрыть как неудавшуюся (брошенный счёт, отмена), тоже выдаётся, если
+ * провайдер подтвердил реальную оплату: деньги получены — значит, оплаченное положено. Возвращённая
+ * покупка повторно не выдаётся.
  */
 export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResult> {
   return prisma.$transaction(async (tx) => {
@@ -108,10 +131,10 @@ export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResu
     if (purchase.provider !== payment.provider || purchase.amount !== payment.amount || purchase.currency !== payment.currency) {
       return "mismatch";
     }
-    if (purchase.status === "paid") return "already_paid";
+    if (purchase.status === "paid" || purchase.status === "refunded") return "already_paid";
 
     const flipped = await tx.purchase.updateMany({
-      where: { id: purchase.id, status: "pending" },
+      where: { id: purchase.id, status: { in: ["pending", "failed"] } },
       data: { status: "paid", externalId: payment.externalId },
     });
     if (flipped.count === 0) return "already_paid";

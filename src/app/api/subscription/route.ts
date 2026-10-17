@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
-import { syncUserPaymentsQuietly } from "@/lib/payments/yookassa-sync";
+import { syncUserPaymentsQuietly } from "@/lib/payments/payment-sync";
 import { getPremiumState } from "@/lib/repositories/subscription.repository";
 
 /** Состояние подписки Premium вошедшего пользователя: действует ли она, до какого числа и свободна ли недельная натальная карта. */
