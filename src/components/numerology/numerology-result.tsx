@@ -24,7 +24,10 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 interface NumerologyResultProps {
   fullName: string;
   birthDate: Date;
-  onReset: () => void;
+  /** Нет у сохранённого результата, открытого из личного кабинета: там вместо него ссылка «назад». */
+  onReset?: () => void;
+  /** Результат открыт из истории: кнопки сохранения и входа не показываются. */
+  saved?: boolean;
 }
 
 function NumberCard({ number, type }: { number: LifePathNumber; type: NumerologyNumberType }) {
@@ -55,7 +58,7 @@ function SystemProfile({ profile }: { profile: NumerologyProfile }) {
   );
 }
 
-export function NumerologyResult({ fullName, birthDate, onReset }: NumerologyResultProps) {
+export function NumerologyResult({ fullName, birthDate, onReset, saved = false }: NumerologyResultProps) {
   const t = useTranslation();
   const { locale } = useLocale();
   const { status } = useSession();
@@ -191,35 +194,39 @@ export function NumerologyResult({ fullName, birthDate, onReset }: NumerologyRes
 
       <p className="mt-6 text-center text-xs text-silver-500">{t.numerologyPage.disclaimer}</p>
 
-      <div className="mx-auto mt-6 max-w-sm text-center">
-        {isAuthenticated ? (
-          saveStatus === "saved" ? (
-            <p className="text-sm text-gold-300">{t.numerologyPage.savedNotice}</p>
+      {!saved && (
+        <div className="mx-auto mt-6 max-w-sm text-center">
+          {isAuthenticated ? (
+            saveStatus === "saved" ? (
+              <p className="text-sm text-gold-300">{t.numerologyPage.savedNotice}</p>
+            ) : (
+              <PrimaryActionBar>
+                <Button onClick={handleSave} disabled={saveStatus === "saving"}>
+                  {saveStatus === "saving" ? t.common.loading : t.numerologyPage.saveResultCta}
+                </Button>
+              </PrimaryActionBar>
+            )
           ) : (
-            <PrimaryActionBar>
-              <Button onClick={handleSave} disabled={saveStatus === "saving"}>
-                {saveStatus === "saving" ? t.common.loading : t.numerologyPage.saveResultCta}
-              </Button>
-            </PrimaryActionBar>
-          )
-        ) : (
-          <GlassPanel>
-            <p className="text-sm text-silver-400">{t.numerologyPage.signInToSaveBody}</p>
-            <PrimaryActionBar className="mt-3">
-              <Button asChild variant="secondary">
-                <Link href="/login">{t.numerologyPage.signInToSaveCta}</Link>
-              </Button>
-            </PrimaryActionBar>
-          </GlassPanel>
-        )}
-        {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
-      </div>
+            <GlassPanel>
+              <p className="text-sm text-silver-400">{t.numerologyPage.signInToSaveBody}</p>
+              <PrimaryActionBar className="mt-3">
+                <Button asChild variant="secondary">
+                  <Link href="/login">{t.numerologyPage.signInToSaveCta}</Link>
+                </Button>
+              </PrimaryActionBar>
+            </GlassPanel>
+          )}
+          {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
+        </div>
+      )}
 
-      <div className="mt-6 text-center">
-        <Button variant="ghost" onClick={onReset}>
-          {t.numerologyPage.tryAnotherDate}
-        </Button>
-      </div>
+      {onReset && (
+        <div className="mt-6 text-center">
+          <Button variant="ghost" onClick={onReset}>
+            {t.numerologyPage.tryAnotherDate}
+          </Button>
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -281,7 +281,7 @@ export function AccountView({ data }: { data: AccountViewData }) {
               <ul className="mt-3 space-y-2">
                 {account.numerology.map((entry) => (
                   <li key={entry.id}>
-                    <Link href={`/numerology/${entry.number}`}>
+                    <Link href={`/account/numerology/${entry.id}`}>
                       <GlassPanel padding="sm" className="flex items-center justify-between gap-3 transition-colors hover:border-gold-400/40">
                         <p className="text-sm text-silver-100">
                           {a.lifePathLabel}: {entry.number}
@@ -302,7 +302,7 @@ export function AccountView({ data }: { data: AccountViewData }) {
               <ul className="mt-3 space-y-2">
                 {account.astrology.map((entry) => (
                   <li key={entry.id}>
-                    <Link href={`/astrology/${entry.signId}`}>
+                    <Link href={`/account/astrology/${entry.id}`}>
                       <GlassPanel padding="sm" className="flex items-center justify-between gap-3 transition-colors hover:border-gold-400/40">
                         <p className="text-sm text-silver-100">
                           {zodiacLabel(entry.signId, locale)}

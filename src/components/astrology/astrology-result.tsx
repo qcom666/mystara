@@ -21,10 +21,13 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 interface AstrologyResultProps {
   birthDate: Date;
   sect: Sect | null;
-  onReset: () => void;
+  /** Нет у сохранённого результата, открытого из личного кабинета: там вместо него ссылка «назад». */
+  onReset?: () => void;
+  /** Результат открыт из истории: кнопки сохранения и входа не показываются. */
+  saved?: boolean;
 }
 
-export function AstrologyResult({ birthDate, sect, onReset }: AstrologyResultProps) {
+export function AstrologyResult({ birthDate, sect, onReset, saved = false }: AstrologyResultProps) {
   const t = useTranslation();
   const { locale } = useLocale();
   const { status } = useSession();
@@ -116,35 +119,39 @@ export function AstrologyResult({ birthDate, sect, onReset }: AstrologyResultPro
 
       <p className="mt-6 text-center text-xs text-silver-500">{t.astrologyPage.disclaimer}</p>
 
-      <div className="mx-auto mt-6 max-w-sm text-center">
-        {isAuthenticated ? (
-          saveStatus === "saved" ? (
-            <p className="text-sm text-gold-300">{t.astrologyPage.savedNotice}</p>
+      {!saved && (
+        <div className="mx-auto mt-6 max-w-sm text-center">
+          {isAuthenticated ? (
+            saveStatus === "saved" ? (
+              <p className="text-sm text-gold-300">{t.astrologyPage.savedNotice}</p>
+            ) : (
+              <PrimaryActionBar>
+                <Button onClick={handleSave} disabled={saveStatus === "saving"}>
+                  {saveStatus === "saving" ? t.common.loading : t.astrologyPage.saveResultCta}
+                </Button>
+              </PrimaryActionBar>
+            )
           ) : (
-            <PrimaryActionBar>
-              <Button onClick={handleSave} disabled={saveStatus === "saving"}>
-                {saveStatus === "saving" ? t.common.loading : t.astrologyPage.saveResultCta}
-              </Button>
-            </PrimaryActionBar>
-          )
-        ) : (
-          <GlassPanel>
-            <p className="text-sm text-silver-400">{t.astrologyPage.signInToSaveBody}</p>
-            <PrimaryActionBar className="mt-3">
-              <Button asChild variant="secondary">
-                <Link href="/login">{t.astrologyPage.signInToSaveCta}</Link>
-              </Button>
-            </PrimaryActionBar>
-          </GlassPanel>
-        )}
-        {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
-      </div>
+            <GlassPanel>
+              <p className="text-sm text-silver-400">{t.astrologyPage.signInToSaveBody}</p>
+              <PrimaryActionBar className="mt-3">
+                <Button asChild variant="secondary">
+                  <Link href="/login">{t.astrologyPage.signInToSaveCta}</Link>
+                </Button>
+              </PrimaryActionBar>
+            </GlassPanel>
+          )}
+          {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
+        </div>
+      )}
 
-      <div className="mt-6 text-center">
-        <Button variant="ghost" onClick={onReset}>
-          {t.astrologyPage.tryAnotherDate}
-        </Button>
-      </div>
+      {onReset && (
+        <div className="mt-6 text-center">
+          <Button variant="ghost" onClick={onReset}>
+            {t.astrologyPage.tryAnotherDate}
+          </Button>
+        </div>
+      )}
     </motion.div>
   );
 }

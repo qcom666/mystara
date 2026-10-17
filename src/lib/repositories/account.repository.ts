@@ -188,3 +188,13 @@ export async function getAccountData(userId: string): Promise<AccountData | null
 export async function getNatalChartForUser(chartId: string, userId: string) {
   return prisma.natalChartReading.findFirst({ where: { id: chartId, userId } });
 }
+
+/** Сохранённый нумерологический расчёт пользователя; чужой получить нельзя. */
+export async function getNumerologyReadingForUser(readingId: string, userId: string) {
+  return prisma.numerologyReading.findFirst({ where: { id: readingId, userId } });
+}
+
+/** Сохранённый результат по знаку Солнца пользователя; чужой получить нельзя. */
+export async function getAstrologyReadingForUser(readingId: string, userId: string) {
+  return prisma.astrologyReading.findFirst({ where: { id: readingId, userId } });
+}
