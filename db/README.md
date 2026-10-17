@@ -1,5 +1,28 @@
 # Локальная база данных (разработка)
 
+## macOS
+
+PostgreSQL ставится через Postgres.app (в `~/Applications` или `/Applications`), данные лежат в
+`~/.local/pgdata18`, сервер слушает только `localhost:5433`.
+
+```bash
+db/local-postgres.sh start            # запустить (при первом запуске создаст кластер)
+db/local-postgres.sh create mystara_dev
+db/local-postgres.sh status | stop | psql mystara_dev
+```
+
+Резервная копия и восстановление работают и с локальной, и с боевой базой в РФ (с проверкой
+сертификата хостера, если задан `DATABASE_SSL_CA`). Копии складываются в `db/backups/` и в git не попадают.
+
+```bash
+DATABASE_URL="postgresql://..." db/backup.sh
+DATABASE_URL="postgresql://..." db/restore.sh db/backups/ИМЯ.dump --yes   # заменяет содержимое базы
+```
+
+Проверить подключение: `npm run db:check`.
+
+## Windows
+
 Это **локальная** база PostgreSQL на ноутбуке — только для разработки и тестов.
 Сайт на Vercel и Telegram Mini App к ней подключиться не могут. Боевая база
 будет отдельной: персональные данные граждан РФ нужно хранить в базе на территории РФ
