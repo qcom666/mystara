@@ -3,28 +3,12 @@
 import { useSession } from "next-auth/react";
 import Link from "@/components/shared/localized-link";
 import { useCallback } from "react";
-import { formatMethodPrice, sleep, useCheckout, type CheckoutControls } from "@/components/payments/use-checkout";
+import { formatMethodPrice, useCheckout, useRefreshAfterPayment, waitForPurchase, type CheckoutControls } from "@/components/payments/use-checkout";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import type { PaymentProviderId } from "@/lib/payments/catalog";
 import { getNatalChartPrice } from "@/lib/pricing/natal-chart-pricing";
-
-/**
- * Кредиты приходят через вебхук провайдера чуть позже оплаты, поэтому после платежа мы недолго
- * опрашиваем баланс, а не доверяем клиенту.
- */
-async function waitForCredits(): Promise<boolean> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const response = await fetch("/api/natal-chart").catch(() => null);
-    if (response?.ok) {
-      const data = (await response.json()) as { credits: number };
-      if (data.credits > 0) return true;
-    }
-    await sleep(1500);
-  }
-  return false;
-}
 
 /** Состояние подписки Premium, нужное панели: подсказка про недельную карту или про оформление. */
 export interface PanelPremiumState {
@@ -54,15 +38,22 @@ export function NatalChartPricingPanel({
   const { status } = useSession();
   const price = getNatalChartPrice();
 
+  const refreshAfterPayment = useRefreshAfterPayment();
+
+  // Оплата Звёздами в открытом счёте: ждём подтверждения именно этой покупки, затем открываем построение.
   const confirmPayment = useCallback(
-    async ({ setBusy, setMessage }: CheckoutControls) => {
+    async ({ setBusy, setMessage, purchaseId }: CheckoutControls) => {
       setBusy("confirming");
-      const paid = await waitForCredits();
+      const outcome = await waitForPurchase(purchaseId);
       setBusy(null);
-      if (paid) onPurchased?.();
-      else setMessage(t.natalChartPage.paymentPending);
+      if (outcome === "paid") {
+        await refreshAfterPayment();
+        onPurchased?.();
+      } else {
+        setMessage(outcome === "failed" ? t.natalChartPage.paymentFailed : t.natalChartPage.paymentPending);
+      }
     },
-    [onPurchased, t.natalChartPage.paymentPending],
+    [onPurchased, refreshAfterPayment, t.natalChartPage.paymentFailed, t.natalChartPage.paymentPending],
   );
 
   const { methods, busy, message, buy } = useCheckout("natal_pack", confirmPayment);

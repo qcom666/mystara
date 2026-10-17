@@ -1,5 +1,5 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { cronAuthorized as authorized } from "@/lib/cron-auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { logError } from "@/lib/logger";
 import { listDailyCardRecipients, markDailyCardSent, markSubscriberBlocked } from "@/lib/repositories/bot-subscriber.repository";
@@ -16,13 +16,6 @@ const SEND_INTERVAL_MS = 40;
 /** Сколько времени тратим на рассылку за один запуск, оставляя запас до предела функции. */
 const TIME_BUDGET_MS = 50_000;
 const BATCH = 200;
-
-function authorized(header: string | null, secret: string): boolean {
-  if (!header) return false;
-  const expected = Buffer.from(`Bearer ${secret}`);
-  const received = Buffer.from(header);
-  return expected.length === received.length && timingSafeEqual(expected, received);
-}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

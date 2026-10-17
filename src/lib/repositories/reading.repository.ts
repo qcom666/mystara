@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { AIInterpretationResult } from "@/modules/ai/types";
 import type { Orientation, ReadingCardRecord } from "@/modules/tarot/domain/types";
+import { moscowDay } from "@/modules/tarot/services/daily-card";
 
 function toDbOrientation(orientation: Orientation): "UPRIGHT" | "REVERSED" {
   return orientation === "upright" ? "UPRIGHT" : "REVERSED";
@@ -39,9 +40,9 @@ export async function createReading(input: CreateReadingInput) {
   });
 }
 
-export async function countReadingsToday(userId: string): Promise<number> {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
+/** Сколько раскладов пользователь сохранил за текущие сутки по Москве (как и остальные «дневные» функции). */
+export async function countReadingsToday(userId: string, now: Date = new Date()): Promise<number> {
+  const startOfDay = new Date(`${moscowDay(now)}T00:00:00+03:00`);
   return prisma.reading.count({ where: { userId, createdAt: { gte: startOfDay } } });
 }
 

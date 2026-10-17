@@ -57,6 +57,8 @@ model User {
   referralCode       String?   @unique
   referredById       String?
   referralRewardedAt DateTime?
+  // Покупка, за которую выдан бонус пригласившему: при её возврате бонус забирается.
+  referralRewardPurchaseId String?
 
   // Натальная карта платная (см. lib/pricing/natal-chart-pricing.ts): здесь хранится остаток
   // кредитов. Одна построенная карта списывает 1, оплаченная покупка начисляет

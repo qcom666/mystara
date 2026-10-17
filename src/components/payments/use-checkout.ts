@@ -1,5 +1,7 @@
 "use client";
 
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import type { PaymentProductId, PaymentProviderId, ProviderPrice } from "@/lib/payments/catalog";
@@ -20,17 +22,76 @@ export const inTelegram = () => Boolean(getTelegramWebApp()?.initData);
 
 export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Сеттеры состояния, которые хук отдаёт обработчику успешной оплаты в Telegram. */
+export type PurchaseOutcome = "paid" | "failed" | "pending";
+
+/**
+ * Ждёт подтверждения оплаты конкретной покупки: сервер сам проверяет платёж у ЮKassa, а оплату Звёздами
+ * подтверждает вебхук бота (/api/payments/confirm). Первые полминуты опрос частый, затем реже, всего около
+ * полутора минут; если подтверждения так и нет, возвращается "pending" (оплата будет засчитана позже,
+ * при следующем открытии страницы или ежедневной сверкой).
+ */
+export async function waitForPurchase(purchaseId: string, signal?: { cancelled: boolean }): Promise<PurchaseOutcome> {
+  const started = Date.now();
+  while (Date.now() - started < 90_000) {
+    if (signal?.cancelled) return "pending";
+    const response = await fetch("/api/payments/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ purchaseId }),
+    }).catch(() => null);
+    if (response?.ok) {
+      const { status } = (await response.json()) as { status: string };
+      if (status === "paid") return "paid";
+      if (status === "failed" || status === "refunded") return "failed";
+    } else if (response && response.status !== 429 && response.status < 500) {
+      return "failed";
+    }
+    await sleep(Date.now() - started < 30_000 ? 1500 : 4000);
+  }
+  return "pending";
+}
+
+/**
+ * id покупки из адреса возврата с оплаты картой (`?payment=return&purchase=...`), иначе null. Параметры
+ * сразу убираются из адреса: подтверждение запускается один раз, а обновление страницы не повторяет его.
+ */
+export function takePurchaseFromReturnUrl(): string | null {
+  const url = new URL(window.location.href);
+  const purchaseId = url.searchParams.get("payment") === "return" ? url.searchParams.get("purchase") : null;
+  if (url.searchParams.has("payment") || url.searchParams.has("purchase")) {
+    url.searchParams.delete("payment");
+    url.searchParams.delete("purchase");
+    // null, как в документации Next.js: тогда роутер принимает новый адрес и не вернёт параметры при обновлении.
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+  return purchaseId;
+}
+
+/**
+ * После подтверждённой оплаты: перечитать сессию (тариф в ней берётся из базы) и серверные компоненты
+ * страницы, чтобы Premium-расклады и баланс открылись сразу, без перезагрузки.
+ */
+export function useRefreshAfterPayment() {
+  const router = useRouter();
+  const { update } = useSession();
+  return useCallback(async () => {
+    await update().catch(() => null);
+    router.refresh();
+  }, [router, update]);
+}
+
+/** Сеттеры состояния и id покупки, которые хук отдаёт обработчику успешной оплаты в Telegram. */
 export interface CheckoutControls {
   setBusy: (value: PaymentProviderId | "confirming" | null) => void;
   setMessage: (value: string | null) => void;
+  purchaseId: string;
 }
 
 /**
  * Оформление покупки одного товара: способы оплаты для места, где находится покупатель (Звёзды Telegram
  * внутри бота и мини-приложения — правило Telegram для цифровых товаров, карта и СБП через ЮKassa на
- * сайте), создание платежа и переход к оплате. Сам перевод денег подтверждает вебхук провайдера, а не
- * клиент: после оплаты вызывающий код опрашивает сервер (см. `onTelegramPaid`).
+ * сайте), создание платежа и переход к оплате. Сам перевод денег подтверждает сервер, а не клиент: после
+ * оплаты вызывающий код ждёт подтверждения покупки (`waitForPurchase`).
  *
  * `onTelegramPaid` вызывается, когда Telegram сообщил об успешной оплате Звёздами в открытом счёте; ему
  * передаются сеттеры состояния, чтобы показать «подтверждаем оплату» и сообщение об ошибке.
@@ -68,12 +129,12 @@ export function useCheckout(product: PaymentProductId, onTelegramPaid: (controls
           body: JSON.stringify({ provider, product, locale, context: inTelegram() ? "telegram" : "web" }),
         });
         if (!response.ok) throw new Error("checkout_failed");
-        const { url } = (await response.json()) as { url: string };
+        const { url, purchaseId } = (await response.json()) as { url: string; purchaseId: string };
 
         const telegram = getTelegramWebApp();
         if (provider === "stars" && typeof telegram?.openInvoice === "function") {
           telegram.openInvoice(url, (outcome) => {
-            if (outcome === "paid") onTelegramPaid({ setBusy, setMessage });
+            if (outcome === "paid") onTelegramPaid({ setBusy, setMessage, purchaseId });
             else setBusy(null);
           });
           return;

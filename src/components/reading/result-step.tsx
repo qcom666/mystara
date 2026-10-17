@@ -26,7 +26,7 @@ interface ResultStepProps {
   isAuthenticated: boolean;
 }
 
-type SaveStatus = "idle" | "saving" | "saved" | "error";
+type SaveStatus = "idle" | "saving" | "saved" | "error" | "limit";
 
 export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
   // Встроенный генератор по шаблонам («mock») не ИИ, поэтому подпись заслуживает только настоящая модель.
@@ -69,6 +69,10 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
           aiInterpretation: aiResult ?? undefined,
         }),
       });
+      if (response.status === 403 && ((await response.json().catch(() => null)) as { error?: string } | null)?.error === "limit_reached") {
+        setSaveStatus("limit");
+        return;
+      }
       if (!response.ok) throw new Error("save_failed");
       const data = await response.json();
       setSavedReadingId(data.reading.id);
@@ -148,6 +152,14 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
           </GlassPanel>
         )}
         {saveStatus === "error" && <p className="mt-2 text-xs text-red-400">{t.errors.generic}</p>}
+        {saveStatus === "limit" && (
+          <p className="mt-2 text-xs text-gold-300">
+            {t.reading.saveLimitReached}{" "}
+            <Link href="/pricing" className="underline underline-offset-2">
+              {t.reading.saveLimitCta}
+            </Link>
+          </p>
+        )}
 
         <div>
           <ShareReadingButton spreadId={spread.id} spreadName={getSpreadName(spread, locale)} cards={drawnCards} />

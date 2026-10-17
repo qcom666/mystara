@@ -5,6 +5,7 @@ interface UserRow {
   referralCode: string | null;
   referredById: string | null;
   referralRewardedAt: Date | null;
+  referralRewardPurchaseId?: string | null;
   deletedAt: Date | null;
   natalChartCredits: number;
 }
@@ -30,6 +31,11 @@ function makeClient() {
         }
         return { count };
       },
+      update: async ({ where, data }: { where: { id: string }; data: { natalChartCredits: { decrement: number } } }) => {
+        const row = state.users.get(where.id);
+        if (row) row.natalChartCredits -= data.natalChartCredits.decrement;
+        return row;
+      },
       count: async ({ where }: { where: { referredById: string; referralRewardedAt?: unknown } }) =>
         [...state.users.values()].filter((row) => row.referredById === where.referredById && (where.referralRewardedAt === undefined || row.referralRewardedAt !== null)).length,
     },
@@ -38,7 +44,7 @@ function makeClient() {
 
 vi.mock("@/lib/db", () => ({ prisma: makeClient() }));
 
-import { attachReferrer, getOrCreateReferralCode, getReferralStats, rewardReferrerOnFirstPayment } from "./referral.repository";
+import { attachReferrer, getOrCreateReferralCode, getReferralStats, revokeReferralRewardForRefund, rewardReferrerOnFirstPayment } from "./referral.repository";
 
 function user(id: string, overrides: Partial<UserRow> = {}) {
   state.users.set(id, { id, referralCode: null, referredById: null, referralRewardedAt: null, deletedAt: null, natalChartCredits: 0, ...overrides });
@@ -76,8 +82,8 @@ describe("приглашения", () => {
     user("inviter", { referralCode: "ABCDEFGH" });
     user("friend", { referredById: "inviter" });
     const tx = makeClient() as never;
-    await expect(rewardReferrerOnFirstPayment(tx, "friend")).resolves.toBe(true);
-    await expect(rewardReferrerOnFirstPayment(tx, "friend")).resolves.toBe(false);
+    await expect(rewardReferrerOnFirstPayment(tx, "friend", "p1")).resolves.toBe(true);
+    await expect(rewardReferrerOnFirstPayment(tx, "friend", "p1")).resolves.toBe(false);
     expect(state.users.get("inviter")?.natalChartCredits).toBe(1);
     await expect(getReferralStats("inviter")).resolves.toEqual({ invited: 1, rewarded: 1 });
   });
@@ -87,8 +93,21 @@ describe("приглашения", () => {
     user("ghost", { deletedAt: new Date() });
     user("friend", { referredById: "ghost" });
     const tx = makeClient() as never;
-    await expect(rewardReferrerOnFirstPayment(tx, "solo")).resolves.toBe(false);
-    await expect(rewardReferrerOnFirstPayment(tx, "friend")).resolves.toBe(false);
+    await expect(rewardReferrerOnFirstPayment(tx, "solo", "p1")).resolves.toBe(false);
+    await expect(rewardReferrerOnFirstPayment(tx, "friend", "p1")).resolves.toBe(false);
     expect(state.users.get("ghost")?.natalChartCredits).toBe(0);
+  });
+
+  it("возврат покупки, за которую выдан бонус, забирает его один раз", async () => {
+    user("inviter", { referralCode: "ABCDEFGH" });
+    user("friend", { referredById: "inviter" });
+    const tx = makeClient() as never;
+    await rewardReferrerOnFirstPayment(tx, "friend", "p1");
+    expect(state.users.get("friend")?.referralRewardPurchaseId).toBe("p1");
+    await expect(revokeReferralRewardForRefund(tx, "friend", "other-purchase")).resolves.toBe(0);
+    await expect(revokeReferralRewardForRefund(tx, "friend", "p1")).resolves.toBe(1);
+    await expect(revokeReferralRewardForRefund(tx, "friend", "p1")).resolves.toBe(0);
+    expect(state.users.get("inviter")?.natalChartCredits).toBe(0);
+    await expect(rewardReferrerOnFirstPayment(tx, "friend", "p2")).resolves.toBe(false);
   });
 });

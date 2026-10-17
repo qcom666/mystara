@@ -4,7 +4,16 @@
  * (рекомендуемая ими проверка).
  * https://yookassa.ru/developers/api
  */
-const API = "https://api.yookassa.ru/v3";
+const PRODUCTION_API = "https://api.yookassa.ru/v3";
+
+/**
+ * Адрес API. YOOKASSA_API_BASE подменяет его только вне рабочего режима (локальная проверка всего пути
+ * оплаты на заглушке ЮKassa); в сборке для Vercel (NODE_ENV=production) всегда используется настоящий адрес.
+ */
+function apiBase(): string {
+  const override = process.env.NODE_ENV !== "production" ? process.env.YOOKASSA_API_BASE?.trim() : undefined;
+  return override || PRODUCTION_API;
+}
 
 export interface YooKassaCredentials {
   shopId: string;
@@ -37,7 +46,7 @@ export async function createYooKassaPayment(
   params: { purchaseId: string; amountRub: number; description: string; returnUrl: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<{ id: string; confirmationUrl: string }> {
-  const response = await fetchImpl(`${API}/payments`, {
+  const response = await fetchImpl(`${apiBase()}/payments`, {
     method: "POST",
     headers: {
       Authorization: authHeader(credentials),
@@ -64,7 +73,7 @@ export async function fetchYooKassaPayment(
   paymentId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<YooKassaPayment | null> {
-  const response = await fetchImpl(`${API}/payments/${encodeURIComponent(paymentId)}`, {
+  const response = await fetchImpl(`${apiBase()}/payments/${encodeURIComponent(paymentId)}`, {
     headers: { Authorization: authHeader(credentials) },
   });
   if (!response.ok) return null;
@@ -81,7 +90,7 @@ export async function createYooKassaRefund(
   params: { paymentId: string; amountRub: number; purchaseId: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<YooKassaRefund> {
-  const response = await fetchImpl(`${API}/refunds`, {
+  const response = await fetchImpl(`${apiBase()}/refunds`, {
     method: "POST",
     headers: {
       Authorization: authHeader(credentials),
@@ -100,7 +109,7 @@ export async function fetchYooKassaRefund(
   refundId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<YooKassaRefund | null> {
-  const response = await fetchImpl(`${API}/refunds/${encodeURIComponent(refundId)}`, {
+  const response = await fetchImpl(`${apiBase()}/refunds/${encodeURIComponent(refundId)}`, {
     headers: { Authorization: authHeader(credentials) },
   });
   if (!response.ok) return null;

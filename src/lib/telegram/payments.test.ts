@@ -20,7 +20,18 @@ describe("parseStarsEvent", () => {
           },
         },
       }),
-    ).toEqual({ kind: "paid", purchaseId: "purchase-1", amount: 500, currency: "XTR", chargeId: "charge-9" });
+    ).toEqual({ kind: "paid", purchaseId: "purchase-1", amount: 500, currency: "XTR", chargeId: "charge-9", chatId: null, languageCode: null });
+  });
+
+  it("keeps the chat and language for the confirmation message", () => {
+    const event = parseStarsEvent({
+      message: {
+        chat: { id: 77, type: "private" },
+        from: { language_code: "ru" },
+        successful_payment: { currency: "XTR", total_amount: 500, invoice_payload: "purchase-1", telegram_payment_charge_id: "charge-9" },
+      },
+    });
+    expect(event).toMatchObject({ kind: "paid", chatId: 77, languageCode: "ru" });
   });
 
   it("ignores everything else", () => {

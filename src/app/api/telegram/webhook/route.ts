@@ -3,11 +3,11 @@ import { NextResponse } from "next/server";
 import { recordEvent } from "@/lib/analytics-store";
 import { isDatabaseConfigured } from "@/lib/db";
 import { logError } from "@/lib/logger";
-import { NATAL_CHART_PRICES } from "@/lib/payments/catalog";
-import { fulfillPurchase, getPurchaseProduct, isPurchasePayable } from "@/lib/repositories/purchase.repository";
+import { fulfillPurchase, getFulfilledPurchaseSummary, getPurchaseProduct, isPurchasePayable } from "@/lib/repositories/purchase.repository";
 import { subscribeDailyCard, unsubscribeDailyCard } from "@/lib/repositories/bot-subscriber.repository";
-import { buildBotReply, buildDailyCommandReply, parseDailyCommand, type TelegramUpdate } from "@/lib/telegram/bot-reply";
+import { buildBotReply, buildDailyCommandReply, parseDailyCommand, pickLang, type TelegramUpdate } from "@/lib/telegram/bot-reply";
 import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
+import { purchaseNoticeKeyboard, purchaseNoticeText } from "@/lib/telegram/purchase-notice";
 
 /**
  * Вебхук Telegram-бота. После регистрации через `setWebhook` Telegram присылает сюда каждое обновление
@@ -18,7 +18,8 @@ import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } f
  * запросы не нужны. Обрабатываются:
  *  - сообщения в чате (/start, /help, /card, /horoscope, /docs, /support) → ответ с кнопками мини-приложения и документов;
  *  - /daily и /daily off → подписка на «Карту дня» и отписка (нужна база);
- *  - платежи Звёздами: `pre_checkout_query` (подтвердить) и `successful_payment` (начислить кредиты).
+ *  - платежи Звёздами: `pre_checkout_query` (подтвердить) и `successful_payment` (выдать оплаченное и
+ *    сразу сообщить покупателю в чате, что Premium активен или кредиты начислены).
  */
 
 function secretMatches(received: string | null, expected: string): boolean {
@@ -41,10 +42,10 @@ export async function POST(request: Request) {
 
   const stars = parseStarsEvent(update);
   if (stars?.kind === "pre_checkout") {
-    const expected = NATAL_CHART_PRICES.stars;
+    // Сумма сверяется с самой покупкой (у каждого товара своя цена), валюта — только Звёзды.
     const payable =
       isDatabaseConfigured() &&
-      stars.currency === expected.currency &&
+      stars.currency === "XTR" &&
       (await isPurchasePayable({
         purchaseId: stars.purchaseId,
         provider: "stars",
@@ -65,6 +66,18 @@ export async function POST(request: Request) {
       });
       if (result === "fulfilled") {
         await recordEvent({ name: "purchase_paid", product: (await getPurchaseProduct(stars.purchaseId)) ?? undefined, provider: "stars" }, { shell: "telegram" });
+        // Ответ вебхука сразу уходит покупателю сообщением: что именно выдано и до какого числа.
+        const summary = stars.chatId !== null ? await getFulfilledPurchaseSummary(stars.purchaseId) : null;
+        if (summary && stars.chatId !== null) {
+          const lang = pickLang(stars.languageCode ?? summary.language);
+          const appUrl = new URL(request.url).origin;
+          return NextResponse.json({
+            method: "sendMessage",
+            chat_id: stars.chatId,
+            text: purchaseNoticeText(summary, lang),
+            ...(appUrl.startsWith("https://") ? { reply_markup: purchaseNoticeKeyboard(lang, appUrl, summary.product) } : {}),
+          });
+        }
       }
       if (result === "mismatch" || result === "not_found") {
         logError("stars", "paid purchase could not be matched", { purchaseId: stars.purchaseId, result: JSON.stringify(result) });

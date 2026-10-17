@@ -3,10 +3,11 @@ import { z } from "zod";
 import { recordEvent } from "@/lib/analytics-store";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
+import { toRussianPath } from "@/lib/i18n/localized-routes";
 import { PAYMENT_PRODUCT_IDS, PRODUCT_PRICES, enabledProviders } from "@/lib/payments/catalog";
 import { createStarsInvoiceLink } from "@/lib/payments/providers/stars";
 import { createYooKassaPayment } from "@/lib/payments/providers/yookassa";
-import { createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
+import { attachProviderPaymentId, createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 const checkoutSchema = z.object({
@@ -29,7 +30,7 @@ const COPY = {
   },
 } as const;
 
-/** Куда вернуть покупателя после оплаты на стороне провайдера. */
+/** Куда вернуть покупателя после оплаты на стороне провайдера (к адресу добавляется id покупки). */
 const RETURN_PATH = {
   natal_pack: "/astrology/natal-chart?payment=return",
   premium_month: "/pricing?payment=return",
@@ -37,8 +38,9 @@ const RETURN_PATH = {
 
 /**
  * Начинает покупку (пакет натальных карт или период Premium): записывает покупку со статусом pending, запрашивает у выбранного
- * провайдера ссылку на оплату и возвращает её. Кредиты здесь НЕ начисляются: это делает только вебхук
- * провайдера после реального перевода денег (см. fulfillPurchase в purchase.repository.ts).
+ * провайдера ссылку на оплату и возвращает её вместе с id покупки. Кредиты здесь НЕ начисляются: это
+ * делается только после подтверждения провайдером реального перевода денег (вебхук или сверка через
+ * /api/payments/confirm, см. fulfillPurchase в purchase.repository.ts).
  */
 export async function POST(request: Request) {
   const limited = enforceRateLimit(request, "checkout", { limit: 10, windowSeconds: 60 });
@@ -63,7 +65,6 @@ export async function POST(request: Request) {
 
   const price = PRODUCT_PRICES[product][provider];
   const copy = COPY[product][locale];
-  const returnUrl = `${new URL(request.url).origin}${RETURN_PATH[product]}`;
   const purchase = await createPendingPurchase({
     userId: session.user.id,
     product,
@@ -71,6 +72,10 @@ export async function POST(request: Request) {
     amount: price.amount,
     currency: price.currency,
   });
+  // По id покупки страница возврата спрашивает сервер, прошла ли оплата (/api/payments/confirm).
+  // Русскоязычный покупатель возвращается на русскую версию страницы (/ru/...).
+  const returnPath = locale === "ru" ? toRussianPath(RETURN_PATH[product]) : RETURN_PATH[product];
+  const returnUrl = `${new URL(request.url).origin}${returnPath}&purchase=${encodeURIComponent(purchase.id)}`;
 
   try {
     if (provider === "stars") {
@@ -82,14 +87,15 @@ export async function POST(request: Request) {
         amount: price.amount,
       });
       await recordEvent({ name: "checkout_started", product, provider }, { shell: context === "telegram" ? "telegram" : "web", locale });
-      return NextResponse.json({ provider, url });
+      return NextResponse.json({ provider, url, purchaseId: purchase.id });
     }
     const payment = await createYooKassaPayment(
       { shopId: process.env.YOOKASSA_SHOP_ID as string, secretKey: process.env.YOOKASSA_SECRET_KEY as string },
       { purchaseId: purchase.id, amountRub: price.amount, description: copy.title, returnUrl },
     );
+    await attachProviderPaymentId(purchase.id, payment.id);
     await recordEvent({ name: "checkout_started", product, provider }, { shell: context === "telegram" ? "telegram" : "web", locale });
-    return NextResponse.json({ provider, url: payment.confirmationUrl });
+    return NextResponse.json({ provider, url: payment.confirmationUrl, purchaseId: purchase.id });
   } catch {
     await markPurchaseFailed(purchase.id);
     return NextResponse.json({ error: "provider_error" }, { status: 502 });

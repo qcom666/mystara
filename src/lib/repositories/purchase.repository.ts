@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import type { PaymentCurrency, PaymentProductId, PaymentProviderId } from "@/lib/payments/catalog";
 import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
 import { extendPremiumPeriodEnd, PREMIUM_PERIOD_DAYS } from "@/modules/subscriptions/premium";
-import { rewardReferrerOnFirstPayment } from "./referral.repository";
+import { revokeReferralRewardForRefund, rewardReferrerOnFirstPayment } from "./referral.repository";
 
 /**
  * Создаёт покупку в статусе pending. У каждого провайдера своя цена (lib/payments/catalog.ts); пакет
@@ -30,6 +30,57 @@ export async function createPendingPurchase(input: {
 
 export async function markPurchaseFailed(purchaseId: string): Promise<void> {
   await prisma.purchase.updateMany({ where: { id: purchaseId, status: "pending" }, data: { status: "failed" } });
+}
+
+/**
+ * Запоминает идентификатор платежа у провайдера, пока покупка ждёт оплаты: по нему сайт сам спрашивает
+ * у ЮKassa статус и выдаёт оплаченное, даже если уведомление задержалось или не пришло.
+ */
+export async function attachProviderPaymentId(purchaseId: string, externalId: string): Promise<void> {
+  await prisma.purchase.updateMany({ where: { id: purchaseId, status: "pending" }, data: { externalId } });
+}
+
+/** Неоплаченные покупки ЮKassa с известным платежом, созданные после `since`: их статус проверяется у ЮKassa. */
+export async function listPendingYooKassaPurchases(options: { since: Date; take: number; userId?: string; purchaseId?: string }) {
+  return prisma.purchase.findMany({
+    where: {
+      provider: "yookassa",
+      status: "pending",
+      externalId: { not: null },
+      createdAt: { gte: options.since },
+      ...(options.userId ? { userId: options.userId } : {}),
+      ...(options.purchaseId ? { id: options.purchaseId } : {}),
+    },
+    orderBy: { createdAt: "desc" },
+    take: options.take,
+    select: { id: true, externalId: true },
+  });
+}
+
+/** Статус своей покупки (для экрана «подтверждаем оплату»); null, если покупки нет или она чужая. */
+export async function getPurchaseStatusForUser(purchaseId: string, userId: string) {
+  return prisma.purchase.findFirst({ where: { id: purchaseId, userId }, select: { status: true, product: true } });
+}
+
+/** Что нужно для сообщения покупателю после оплаты: товар, его Telegram и выданное. */
+export async function getFulfilledPurchaseSummary(purchaseId: string) {
+  const purchase = await prisma.purchase.findUnique({
+    where: { id: purchaseId },
+    select: {
+      product: true,
+      creditsGranted: true,
+      user: { select: { telegramId: true, language: true, natalChartCredits: true, subscription: { select: { currentPeriodEnd: true } } } },
+    },
+  });
+  if (!purchase) return null;
+  return {
+    product: purchase.product,
+    creditsGranted: purchase.creditsGranted,
+    telegramId: purchase.user.telegramId,
+    language: purchase.user.language,
+    credits: purchase.user.natalChartCredits,
+    premiumUntil: purchase.user.subscription?.currentPeriodEnd ?? null,
+  };
 }
 
 export interface PaidPayment {
@@ -76,7 +127,7 @@ export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResu
       await tx.user.update({ where: { id: purchase.userId }, data: { natalChartCredits: { increment: purchase.creditsGranted } } });
     }
     // Первая оплата приглашённого приносит бонус пригласившему (один раз, в той же транзакции).
-    await rewardReferrerOnFirstPayment(tx, purchase.userId);
+    await rewardReferrerOnFirstPayment(tx, purchase.userId, purchase.id);
     return "fulfilled";
   });
 }
@@ -155,6 +206,10 @@ export async function markPurchaseRefunded(purchaseId: string, audit: RefundAudi
       details.creditsGranted = purchase.creditsGranted;
       details.creditsRevoked = revoked;
     }
+
+    // Бонус пригласившему за эту покупку тоже забирается: иначе его можно получать, приглашая самого себя.
+    const referralRevoked = await revokeReferralRewardForRefund(tx, purchase.userId, purchase.id);
+    if (referralRevoked > 0) details.referralBonusRevoked = referralRevoked;
 
     await tx.adminAction.create({
       data: { adminId: audit.actor, targetUserId: purchase.userId, action: "purchase.refund", details },

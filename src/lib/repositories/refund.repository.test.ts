@@ -20,6 +20,9 @@ const state = vi.hoisted(() => ({
   actions: [] as { adminId: string; action: string; details: Record<string, unknown> }[],
 }));
 
+// Бонус за приглашение проверяется отдельно (referral.repository.test.ts).
+vi.mock("./referral.repository", () => ({ revokeReferralRewardForRefund: async () => 0, rewardReferrerOnFirstPayment: async () => false }));
+
 vi.mock("@/lib/db", () => {
   const tx = {
     $queryRaw: async () => [],

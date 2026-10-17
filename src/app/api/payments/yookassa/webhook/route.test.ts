@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   fulfillPurchase: vi.fn(),
   findPurchase: vi.fn(),
   markRefunded: vi.fn(),
+  markFailed: vi.fn(),
 }));
 
 vi.mock("@/lib/db", () => ({ isDatabaseConfigured: () => true }));
@@ -19,6 +20,9 @@ vi.mock("@/lib/repositories/purchase.repository", () => ({
   fulfillPurchase: mocks.fulfillPurchase,
   findYooKassaPurchaseByPaymentId: mocks.findPurchase,
   markPurchaseRefunded: mocks.markRefunded,
+  markPurchaseFailed: mocks.markFailed,
+  getFulfilledPurchaseSummary: async () => null,
+  listPendingYooKassaPurchases: async () => [],
 }));
 
 import { POST } from "./route";
@@ -63,8 +67,23 @@ describe("уведомление ЮKassa о возврате (refund.succeeded)"
     mocks.fetchRefund.mockResolvedValue(refund);
     mocks.findPurchase.mockResolvedValue(null);
     expect((await notify({ event: "refund.succeeded", object: { id: "ref-1" } })).status).toBe(200);
-    expect((await notify({ event: "payment.canceled", object: { id: "x" } })).status).toBe(200);
+    expect((await notify({ event: "payment.waiting_for_capture", object: { id: "x" } })).status).toBe(200);
     expect(mocks.markRefunded).not.toHaveBeenCalled();
+  });
+
+  it("ЮKassa не ответила на перезапрос возврата: 502, уведомление придёт повторно", async () => {
+    mocks.fetchRefund.mockResolvedValue(null);
+    expect((await notify({ event: "refund.succeeded", object: { id: "ref-1" } })).status).toBe(502);
+    expect(mocks.markRefunded).not.toHaveBeenCalled();
+  });
+});
+
+describe("отмена платежа (payment.canceled)", () => {
+  it("по данным ЮKassa закрывает покупку как неудавшуюся", async () => {
+    mocks.fetchPayment.mockResolvedValue({ id: "pay-2", status: "canceled", paid: false, metadata: { purchaseId: "p2" } });
+    expect((await notify({ event: "payment.canceled", object: { id: "pay-2" } })).status).toBe(200);
+    expect(mocks.markFailed).toHaveBeenCalledWith("p2");
+    expect(mocks.fulfillPurchase).not.toHaveBeenCalled();
   });
 });
 
@@ -74,5 +93,17 @@ describe("уведомление об оплате (payment.succeeded) прод�
     mocks.fulfillPurchase.mockResolvedValue("fulfilled");
     expect((await notify({ event: "payment.succeeded", object: { id: "pay-1" } })).status).toBe(200);
     expect(mocks.fulfillPurchase).toHaveBeenCalledWith({ purchaseId: "p1", provider: "yookassa", externalId: "pay-1", amount: 1000, currency: "RUB" });
+  });
+
+  it("ЮKassa не ответила на перезапрос платежа: 502, чтобы уведомление пришло повторно, а оплата не потерялась", async () => {
+    mocks.fetchPayment.mockResolvedValue(null);
+    expect((await notify({ event: "payment.succeeded", object: { id: "pay-1" } })).status).toBe(502);
+    expect(mocks.fulfillPurchase).not.toHaveBeenCalled();
+  });
+
+  it("ещё не оплаченный платёж ничего не выдаёт", async () => {
+    mocks.fetchPayment.mockResolvedValue({ id: "pay-1", status: "pending", paid: false, metadata: { purchaseId: "p1" } });
+    expect((await notify({ event: "payment.succeeded", object: { id: "pay-1" } })).status).toBe(200);
+    expect(mocks.fulfillPurchase).not.toHaveBeenCalled();
   });
 });

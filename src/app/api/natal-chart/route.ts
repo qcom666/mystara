@@ -7,6 +7,7 @@ import {
   saveNatalChartWithEntitlement,
 } from "@/lib/repositories/natal-chart.repository";
 import { getPremiumState } from "@/lib/repositories/subscription.repository";
+import { syncUserPaymentsQuietly } from "@/lib/payments/yookassa-sync";
 import { createNatalChartSchema } from "@/lib/validation/natal-chart.schema";
 import { calculateNatalChart } from "@/modules/astrology/services/calculate-natal-chart";
 import { resolveBirthInstantUtc } from "@/modules/astrology/services/resolve-birth-instant";
@@ -25,6 +26,8 @@ export async function GET() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
+  // Недавняя оплата картой засчитывается сразу, даже если уведомление ЮKassa ещё не пришло.
+  await syncUserPaymentsQuietly(session.user.id);
   const [credits, readings, premium] = await Promise.all([
     getNatalChartCredits(session.user.id),
     listNatalChartReadingsForUser(session.user.id),

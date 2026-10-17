@@ -120,8 +120,9 @@ export type AdminActionResult<T> = { ok: true; value: T } | { ok: false; error: 
 export async function adjustCredits(input: { adminId: string; userId: string; delta: number; reason: string }): Promise<AdminActionResult<{ before: number; after: number }>> {
   return prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${input.userId} FOR UPDATE`;
-    const user = await tx.user.findUnique({ where: { id: input.userId }, select: { natalChartCredits: true } });
-    if (!user) return { ok: false, error: "not_found" } as const;
+    const user = await tx.user.findUnique({ where: { id: input.userId }, select: { natalChartCredits: true, deletedAt: true } });
+    // Удалённый аккаунт остаётся пустой оболочкой для платёжных документов: ему ничего не начисляется.
+    if (!user || user.deletedAt) return { ok: false, error: "not_found" } as const;
 
     const before = user.natalChartCredits;
     const after = before + input.delta;
@@ -144,8 +145,8 @@ export async function adjustCredits(input: { adminId: string; userId: string; de
 export async function extendPremiumByAdmin(input: { adminId: string; userId: string; days: number; reason: string }): Promise<AdminActionResult<{ before: Date | null; after: Date }>> {
   return prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${input.userId} FOR UPDATE`;
-    const user = await tx.user.findUnique({ where: { id: input.userId }, select: { id: true } });
-    if (!user) return { ok: false, error: "not_found" } as const;
+    const user = await tx.user.findUnique({ where: { id: input.userId }, select: { id: true, deletedAt: true } });
+    if (!user || user.deletedAt) return { ok: false, error: "not_found" } as const;
 
     const existing = await tx.subscription.findUnique({ where: { userId: input.userId } });
     const before = existing?.currentPeriodEnd ?? null;

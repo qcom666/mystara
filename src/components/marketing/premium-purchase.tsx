@@ -2,8 +2,15 @@
 
 import { useSession } from "next-auth/react";
 import Link from "@/components/shared/localized-link";
-import { useCallback, useEffect, useState } from "react";
-import { formatMethodPrice, sleep, useCheckout, type CheckoutControls } from "@/components/payments/use-checkout";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  formatMethodPrice,
+  takePurchaseFromReturnUrl,
+  useCheckout,
+  useRefreshAfterPayment,
+  waitForPurchase,
+  type CheckoutControls,
+} from "@/components/payments/use-checkout";
 import { Button } from "@/components/ui/button";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import type { PaymentProviderId } from "@/lib/payments/catalog";
@@ -21,19 +28,6 @@ async function loadSubscription(): Promise<SubscriptionState | null> {
   return response?.ok ? ((await response.json()) as SubscriptionState) : null;
 }
 
-/**
- * Оплата приходит через вебхук провайдера чуть позже платежа, поэтому после возврата с оплаты мы
- * недолго опрашиваем сервер, пока срок Premium не станет больше прежнего.
- */
-async function waitForExtension(previousEnd: string | null): Promise<SubscriptionState | null> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    const state = await loadSubscription();
-    if (state?.active && state.currentPeriodEnd && (!previousEnd || new Date(state.currentPeriodEnd) > new Date(previousEnd))) return state;
-    await sleep(1500);
-  }
-  return null;
-}
-
 /** Блок покупки и состояния Premium на странице тарифов: оформить, продлить, до какого числа действует. */
 export function PremiumPurchase() {
   const t = useTranslation();
@@ -41,46 +35,59 @@ export function PremiumPurchase() {
   const { locale } = useLocale();
   const { status } = useSession();
   const [state, setState] = useState<SubscriptionState | null>(null);
+  const refreshAfterPayment = useRefreshAfterPayment();
 
   const formatDate = useCallback(
     (iso: string) => new Date(iso).toLocaleDateString(locale === "ru" ? "ru-RU" : "en-GB", { day: "numeric", month: "long", year: "numeric" }),
     [locale],
   );
 
-  const onTelegramPaid = useCallback(
-    async ({ setBusy, setMessage }: CheckoutControls) => {
+  /** Ждёт подтверждения покупки, затем показывает новый срок и открывает Premium-функции без перезагрузки. */
+  const confirmPurchase = useCallback(
+    async (purchaseId: string, { setBusy, setMessage }: Omit<CheckoutControls, "purchaseId">, signal?: { cancelled: boolean }) => {
       setBusy("confirming");
-      const updated = await waitForExtension(state?.currentPeriodEnd ?? null);
+      const outcome = await waitForPurchase(purchaseId, signal);
+      if (signal?.cancelled) return;
       setBusy(null);
-      if (updated) setState(updated);
-      else setMessage(p.premiumPending);
+      if (outcome === "paid") {
+        setState(await loadSubscription());
+        setMessage(p.premiumActivated);
+        await refreshAfterPayment();
+      } else {
+        setMessage(outcome === "failed" ? p.premiumFailed : p.premiumPending);
+      }
     },
-    [state?.currentPeriodEnd, p.premiumPending],
+    [p.premiumActivated, p.premiumFailed, p.premiumPending, refreshAfterPayment],
   );
+
+  const onTelegramPaid = useCallback((controls: CheckoutControls) => void confirmPurchase(controls.purchaseId, controls), [confirmPurchase]);
 
   const { methods, busy, setBusy, message, setMessage, buy } = useCheckout("premium_month", onTelegramPaid);
 
+  // Последняя версия обработчика для эффекта ниже: его перезапуск не должен прерывать идущее подтверждение.
+  const confirmRef = useRef(confirmPurchase);
+  useEffect(() => {
+    confirmRef.current = confirmPurchase;
+  }, [confirmPurchase]);
+
+  // Возврат со страницы оплаты картой: id покупки читается из адреса один раз, сервер сам проверит платёж у ЮKassa.
+  const returnPurchase = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     if (status !== "authenticated") return;
-    let cancelled = false;
-    // Возврат со страницы оплаты картой: вебхук мог ещё не отработать.
-    const returning = new URLSearchParams(window.location.search).get("payment") === "return";
+    if (returnPurchase.current === undefined) returnPurchase.current = takePurchaseFromReturnUrl();
+    const purchaseId = returnPurchase.current;
+    returnPurchase.current = null;
+    const signal = { cancelled: false };
     (async () => {
       const current = await loadSubscription();
-      if (cancelled) return;
+      if (signal.cancelled) return;
       setState(current);
-      if (!returning) return;
-      setBusy("confirming");
-      const updated = await waitForExtension(current?.active ? current.currentPeriodEnd : null);
-      if (cancelled) return;
-      setBusy(null);
-      if (updated) setState(updated);
-      else setMessage(p.premiumPending);
+      if (purchaseId) await confirmRef.current(purchaseId, { setBusy, setMessage }, signal);
     })();
     return () => {
-      cancelled = true;
+      signal.cancelled = true;
     };
-  }, [status, setBusy, setMessage, p.premiumPending]);
+  }, [status, setBusy, setMessage]);
 
   const labels: Record<PaymentProviderId, string> = {
     stars: t.natalChartPage.methodStars,

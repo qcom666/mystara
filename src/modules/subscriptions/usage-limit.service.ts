@@ -50,7 +50,7 @@ export function canStartReading({ planTier, spread, readingsToday }: CanStartRea
   if (policy.maxReadingsPerDay !== null && readingsToday >= policy.maxReadingsPerDay) {
     return {
       allowed: false,
-      reason: `You've reached today's limit of ${policy.maxReadingsPerDay} readings on the Free plan. Upgrade for unlimited readings.`,
+      reason: `You've reached today's limit of ${policy.maxReadingsPerDay} saved readings on the Free plan. Upgrade for unlimited readings.`,
     };
   }
 

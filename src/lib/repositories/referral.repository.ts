@@ -39,18 +39,37 @@ export async function attachReferrer(newUserId: string, rawCode: string | null |
 
 /**
  * Бонус пригласившему за первую оплату приглашённого. Выполняется внутри транзакции оплаты: отметка
- * `referralRewardedAt` ставится условно, поэтому два одновременных платежа не дадут двойной бонус.
+ * `referralRewardedAt` ставится условно, поэтому два одновременных платежа не дадут двойной бонус. Покупка
+ * запоминается: если её вернут, бонус заберётся (revokeReferralRewardForRefund).
  */
-export async function rewardReferrerOnFirstPayment(tx: Tx, buyerId: string): Promise<boolean> {
+export async function rewardReferrerOnFirstPayment(tx: Tx, buyerId: string, purchaseId: string): Promise<boolean> {
   const buyer = await tx.user.findUnique({ where: { id: buyerId }, select: { referredById: true, referralRewardedAt: true } });
   if (!buyer?.referredById || buyer.referralRewardedAt) return false;
-  const marked = await tx.user.updateMany({ where: { id: buyerId, referralRewardedAt: null }, data: { referralRewardedAt: new Date() } });
+  const marked = await tx.user.updateMany({
+    where: { id: buyerId, referralRewardedAt: null },
+    data: { referralRewardedAt: new Date(), referralRewardPurchaseId: purchaseId },
+  });
   if (marked.count !== 1) return false;
   const credited = await tx.user.updateMany({
     where: { id: buyer.referredById, deletedAt: null },
     data: { natalChartCredits: { increment: REFERRAL_REWARD_CREDITS } },
   });
   return credited.count === 1;
+}
+
+/**
+ * Возврат покупки, за которую пригласивший получил бонус: бонус забирается (не больше текущего остатка,
+ * баланс не уходит в минус). Повторно бонус за этого приглашённого не выдаётся. Возвращает, сколько забрано.
+ */
+export async function revokeReferralRewardForRefund(tx: Tx, buyerId: string, purchaseId: string): Promise<number> {
+  const buyer = await tx.user.findUnique({ where: { id: buyerId }, select: { referredById: true, referralRewardPurchaseId: true } });
+  if (!buyer?.referredById || buyer.referralRewardPurchaseId !== purchaseId) return 0;
+  const cleared = await tx.user.updateMany({ where: { id: buyerId, referralRewardPurchaseId: purchaseId }, data: { referralRewardPurchaseId: null } });
+  if (cleared.count !== 1) return 0;
+  const referrer = await tx.user.findUnique({ where: { id: buyer.referredById }, select: { natalChartCredits: true } });
+  const revoked = Math.min(referrer?.natalChartCredits ?? 0, REFERRAL_REWARD_CREDITS);
+  if (revoked > 0) await tx.user.update({ where: { id: buyer.referredById }, data: { natalChartCredits: { decrement: revoked } } });
+  return revoked;
 }
 
 export async function getReferralStats(userId: string): Promise<{ invited: number; rewarded: number }> {

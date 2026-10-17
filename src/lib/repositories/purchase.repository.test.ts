@@ -30,7 +30,7 @@ const state = vi.hoisted(() => ({
 }));
 
 // Бонус за приглашение проверяется отдельно (referral.repository.test.ts).
-vi.mock("./referral.repository", () => ({ rewardReferrerOnFirstPayment: async () => false }));
+vi.mock("./referral.repository", () => ({ rewardReferrerOnFirstPayment: async () => false, revokeReferralRewardForRefund: async () => 0 }));
 
 vi.mock("@/lib/db", () => {
   const purchase = {

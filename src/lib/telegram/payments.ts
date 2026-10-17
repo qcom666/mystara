@@ -15,6 +15,8 @@ export interface TelegramPaymentUpdate {
     invoice_payload: string;
   };
   message?: {
+    chat?: { id: number; type?: string };
+    from?: { language_code?: string };
     successful_payment?: {
       currency: string;
       total_amount: number;
@@ -26,7 +28,7 @@ export interface TelegramPaymentUpdate {
 
 export type StarsEvent =
   | { kind: "pre_checkout"; queryId: string; purchaseId: string; amount: number; currency: string }
-  | { kind: "paid"; purchaseId: string; amount: number; currency: string; chargeId: string };
+  | { kind: "paid"; purchaseId: string; amount: number; currency: string; chargeId: string; chatId: number | null; languageCode: string | null };
 
 export function parseStarsEvent(update: TelegramPaymentUpdate | null | undefined): StarsEvent | null {
   const query = update?.pre_checkout_query;
@@ -47,6 +49,8 @@ export function parseStarsEvent(update: TelegramPaymentUpdate | null | undefined
       amount: paid.total_amount,
       currency: paid.currency,
       chargeId: paid.telegram_payment_charge_id,
+      chatId: typeof update?.message?.chat?.id === "number" ? update.message.chat.id : null,
+      languageCode: update?.message?.from?.language_code ?? null,
     };
   }
   return null;

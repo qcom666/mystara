@@ -2,7 +2,8 @@
 
 import { useSession } from "next-auth/react";
 import Link from "@/components/shared/localized-link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { takePurchaseFromReturnUrl, waitForPurchase, type PurchaseOutcome } from "@/components/payments/use-checkout";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,37 +30,35 @@ export function NatalChartFlow() {
   const [entitlement, setEntitlement] = useState<EntitlementResponse | null>(null);
   const [stage, setStage] = useState<Stage>("loading-credits");
   const [chart, setChart] = useState<NatalChart | null>(null);
+  const [paymentOutcome, setPaymentOutcome] = useState<PurchaseOutcome | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
+  // Возврат со страницы оплаты картой: id покупки читается из адреса один раз.
+  const returnPurchase = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     if (status !== "authenticated") return;
-    let cancelled = false;
-    // При возврате со страницы оплаты картой вебхук может ещё не отработать, поэтому даём несколько попыток.
-    const returningFromPayment = new URLSearchParams(window.location.search).get("payment") === "return";
-    const attempts = returningFromPayment ? 8 : 1;
+    if (returnPurchase.current === undefined) returnPurchase.current = takePurchaseFromReturnUrl();
+    const purchaseId = returnPurchase.current;
+    returnPurchase.current = null;
+    const signal = { cancelled: false };
 
-    async function loadEntitlement(): Promise<EntitlementResponse> {
-      let data: EntitlementResponse | null = null;
-      for (let attempt = 0; attempt < attempts; attempt++) {
-        const response = await fetch("/api/natal-chart");
-        if (!response.ok) throw new Error("failed");
-        data = (await response.json()) as EntitlementResponse;
-        if (hasAccess(data)) return data;
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-      }
-      return data as EntitlementResponse;
-    }
-
-    loadEntitlement()
-      .then((data) => {
-        if (cancelled) return;
-        setEntitlement(data);
-        setStage(hasAccess(data) ? "form" : "no-credits");
-      })
-      .catch(() => {
-        if (!cancelled) setStage("error");
-      });
+    (async () => {
+      // Сервер сам проверит платёж у ЮKassa и начислит кредиты, не дожидаясь уведомления.
+      if (purchaseId) setConfirming(true);
+      const outcome = purchaseId ? await waitForPurchase(purchaseId, signal) : null;
+      if (purchaseId) setConfirming(false);
+      const response = await fetch("/api/natal-chart");
+      if (!response.ok) throw new Error("failed");
+      const data = (await response.json()) as EntitlementResponse;
+      if (signal.cancelled) return;
+      setEntitlement(data);
+      setPaymentOutcome(outcome);
+      setStage(hasAccess(data) ? "form" : "no-credits");
+    })().catch(() => {
+      if (!signal.cancelled) setStage("error");
+    });
     return () => {
-      cancelled = true;
+      signal.cancelled = true;
     };
   }, [status]);
 
@@ -140,6 +139,7 @@ export function NatalChartFlow() {
     return (
       <div className="mx-auto max-w-md px-4 py-16 sm:py-24">
         {stage === "generating" && <p className="mb-4 text-center text-sm text-gold-300">{t.natalChartPage.generating}</p>}
+        {confirming && <p className="mb-4 text-center text-sm text-gold-300">{t.natalChartPage.confirmingPayment}</p>}
         <Skeleton className="h-40 w-full rounded-2xl" />
       </div>
     );
@@ -148,6 +148,11 @@ export function NatalChartFlow() {
   if (stage === "no-credits") {
     return (
       <div className="px-4 py-16 sm:py-24">
+        {paymentOutcome && paymentOutcome !== "paid" && (
+          <p className="mx-auto mb-6 max-w-md rounded-xl border border-gold-500/25 bg-gold-500/5 p-3 text-center text-xs text-gold-300">
+            {paymentOutcome === "failed" ? t.natalChartPage.paymentFailed : t.natalChartPage.paymentPending}
+          </p>
+        )}
         <NatalChartPricingPanel
           title={t.natalChartPage.noCreditsTitle}
           body={t.natalChartPage.noCreditsBody}
