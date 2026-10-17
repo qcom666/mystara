@@ -122,7 +122,8 @@ npm run db:check
   `TELEGRAM_BOT_TOKEN=… NEXT_PUBLIC_SITE_URL=https://ВАШ_ДОМЕН npm run bot:setup` (сначала можно
   `npm run bot:setup -- --dry-run`). Скрипт задаёт команды `/start /help /docs /support`, описания на русском
   и английском и кнопку меню Mini App; с флагом `--webhook` заново регистрирует вебхук по
-  `TELEGRAM_WEBHOOK_SECRET`. Токен не печатается.
+  `TELEGRAM_WEBHOOK_SECRET`. Токен не печатается. После выкатки автопродления Premium Звёздами выполните
+  его один раз с `--webhook`: вебхук должен получать обновление `subscription` (отмена подписки в Telegram).
 - **«Карта дня» и гороскоп в боте.** Подписка командой `/daily`, отписка `/daily off`, разовая карта `/card`,
   гороскоп на сегодня `/horoscope Лев` (новые команды появятся в меню бота после `npm run bot:setup`). Утренняя
   рассылка (около 9:00 МСК) включится, когда в Vercel появится `CRON_SECRET` (любая длинная случайная строка):
