@@ -4,7 +4,8 @@ import { isDatabaseConfigured } from "@/lib/db";
 import { logError } from "@/lib/logger";
 import { NATAL_CHART_PRICES } from "@/lib/payments/catalog";
 import { fulfillPurchase, isPurchasePayable } from "@/lib/repositories/purchase.repository";
-import { buildBotReply, type TelegramUpdate } from "@/lib/telegram/bot-reply";
+import { subscribeDailyCard, unsubscribeDailyCard } from "@/lib/repositories/bot-subscriber.repository";
+import { buildBotReply, buildDailyCommandReply, parseDailyCommand, type TelegramUpdate } from "@/lib/telegram/bot-reply";
 import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
 
 /**
@@ -14,7 +15,8 @@ import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } f
  *
  * Ответ уходит телом ответа (Telegram выполняет возвращённый `method`), поэтому токен бота и исходящие
  * запросы не нужны. Обрабатываются:
- *  - сообщения в чате (/start, /help, /docs, /support) → приветствие с кнопками мини-приложения и документов;
+ *  - сообщения в чате (/start, /help, /card, /docs, /support) → ответ с кнопками мини-приложения и документов;
+ *  - /daily и /daily off → подписка на «Карту дня» и отписка (нужна база);
  *  - платежи Звёздами: `pre_checkout_query` (подтвердить) и `successful_payment` (начислить кредиты).
  */
 
@@ -69,7 +71,16 @@ export async function POST(request: Request) {
 
   // Мини-приложение открывается с того же адреса, с которого только что пришёл запрос Telegram,
   // поэтому кнопка всегда ведёт на этот деплой.
-  const reply = update ? buildBotReply(update, new URL(request.url).origin) : null;
+  const appUrl = new URL(request.url).origin;
+
+  const daily = update ? parseDailyCommand(update) : null;
+  if (daily && isDatabaseConfigured()) {
+    if (daily.action === "subscribe") await subscribeDailyCard(String(daily.chatId), daily.lang);
+    else await unsubscribeDailyCard(String(daily.chatId));
+    return NextResponse.json(buildDailyCommandReply(daily, appUrl));
+  }
+
+  const reply = update ? buildBotReply(update, appUrl) : null;
 
   // Всегда 200: на любой другой код Telegram повторяет то же обновление.
   return NextResponse.json(reply ?? { ok: true });

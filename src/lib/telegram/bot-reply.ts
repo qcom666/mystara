@@ -1,4 +1,6 @@
 import { OPERATOR } from "@/lib/legal/operator";
+import { dailyCard, moscowDay } from "@/modules/tarot/services/daily-card";
+import { type BotLang, dailyCardKeyboard, dailyCardText, subscriptionText } from "./daily-card-message";
 
 /**
  * Ответы Telegram-бота в чате (само мини-приложение живёт в веб-приложении).
@@ -28,7 +30,6 @@ export interface BotReply {
   reply_markup: { inline_keyboard: InlineButton[][] };
 }
 
-type BotLang = "ru" | "en";
 
 interface Copy {
   open: string;
@@ -51,7 +52,7 @@ const COPY: Record<BotLang, Copy> = {
     start:
       "Добро пожаловать в Mystara ✨\n\nТаро, нумерология и астрология — расклады и толкования в одном приложении. Нажмите кнопку ниже, чтобы начать.",
     help:
-      "Mystara — это развлекательный сервис: расклады и толкования не являются предсказанием и не заменяют консультацию специалиста.\n\nНажмите кнопку ниже, чтобы открыть приложение. Команда /start покажет приветствие снова, /docs — документы, /support — как связаться с нами.",
+      "Mystara — это развлекательный сервис: расклады и толкования не являются предсказанием и не заменяют консультацию специалиста.\n\nНажмите кнопку ниже, чтобы открыть приложение. Команды: /card — карта дня, /daily — присылать карту дня каждое утро (/daily off — отписаться), /docs — документы, /support — как связаться с нами.",
     fallback: "Все расклады — в приложении. Нажмите кнопку ниже, чтобы открыть Mystara.",
     docs: "Документы сервиса Mystara: политика конфиденциальности, публичная оферта (она же пользовательское соглашение), контакты и реквизиты продавца.",
     support: (email, telegram, phone) =>
@@ -65,7 +66,7 @@ const COPY: Record<BotLang, Copy> = {
     start:
       "Welcome to Mystara ✨\n\nTarot, numerology and astrology — readings and interpretations in one app. Tap the button below to begin.",
     help:
-      "Mystara is an entertainment service: readings and interpretations are not predictions and are no substitute for professional advice.\n\nTap the button below to open the app. /start shows the greeting again, /docs the documents, /support how to reach us.",
+      "Mystara is an entertainment service: readings and interpretations are not predictions and are no substitute for professional advice.\n\nTap the button below to open the app. Commands: /card for the card of the day, /daily to get it every morning (/daily off to stop), /docs for the documents, /support to reach us.",
     fallback: "All readings live in the app. Tap the button below to open Mystara.",
     docs: "Mystara documents: the privacy policy, the public offer (also the terms of use), and the seller’s contacts and details.",
     support: (email, telegram, phone) =>
@@ -76,12 +77,12 @@ const COPY: Record<BotLang, Copy> = {
 /** Команды, которые просто показывают документы или сведения о поддержке. */
 const DOCS_COMMANDS = new Set(["docs", "documents", "privacy", "policy", "terms", "offer", "contacts"]);
 
-function pickLang(languageCode: string | undefined): BotLang {
+export function pickLang(languageCode: string | undefined): BotLang {
   return languageCode?.toLowerCase().startsWith("ru") ? "ru" : "en";
 }
 
 /** «/start@my_bot payload» → «start»; всё, что не команда → null. */
-function parseCommand(text: string): string | null {
+export function parseCommand(text: string): string | null {
   const match = /^\/([a-z_]+)(?:@\w+)?(?:\s|$)/i.exec(text.trim());
   return match ? match[1].toLowerCase() : null;
 }
@@ -107,9 +108,15 @@ export function buildBotReply(update: TelegramUpdate, appUrl: string): BotReply 
   if (!message || typeof chatId !== "number" || message.chat?.type !== "private") return null;
   if (typeof message.text !== "string") return null;
 
-  const copy = COPY[pickLang(message.from?.language_code)];
+  const lang = pickLang(message.from?.language_code);
+  const copy = COPY[lang];
   const command = parseCommand(message.text);
   const openApp: InlineButton[] = [{ text: copy.open, web_app: { url: appUrl } }];
+
+  if (command === "card") {
+    const daily = dailyCard(String(chatId), moscowDay());
+    return { method: "sendMessage", chat_id: chatId, text: dailyCardText(daily, lang), reply_markup: dailyCardKeyboard(lang, appUrl, daily.card.id) };
+  }
 
   let text: string;
   if (command === "start") text = copy.start;
@@ -123,5 +130,41 @@ export function buildBotReply(update: TelegramUpdate, appUrl: string): BotReply 
     chat_id: chatId,
     text,
     reply_markup: { inline_keyboard: [openApp, ...documentRows(copy, appUrl)] },
+  };
+}
+
+export interface DailyCommand {
+  chatId: number;
+  lang: BotLang;
+  action: "subscribe" | "unsubscribe";
+}
+
+/** «/daily» и «/daily on» подписывают на карту дня, «/daily off» отписывает. Только личный чат. */
+export function parseDailyCommand(update: TelegramUpdate): DailyCommand | null {
+  const message = update?.message;
+  const chatId = message?.chat?.id;
+  if (!message || typeof chatId !== "number" || message.chat?.type !== "private" || typeof message.text !== "string") return null;
+  if (parseCommand(message.text) !== "daily") return null;
+  const argument = message.text.trim().split(/\s+/)[1]?.toLowerCase();
+  const action = argument === "off" || argument === "stop" ? "unsubscribe" : "subscribe";
+  return { chatId, lang: pickLang(message.from?.language_code), action };
+}
+
+/** Ответ на /daily: подтверждение и, при подписке, сразу сегодняшняя карта. */
+export function buildDailyCommandReply(command: DailyCommand, appUrl: string): BotReply {
+  if (command.action === "unsubscribe") {
+    return {
+      method: "sendMessage",
+      chat_id: command.chatId,
+      text: subscriptionText(command.lang, false),
+      reply_markup: { inline_keyboard: [[{ text: COPY[command.lang].open, web_app: { url: appUrl } }]] },
+    };
+  }
+  const daily = dailyCard(String(command.chatId), moscowDay());
+  return {
+    method: "sendMessage",
+    chat_id: command.chatId,
+    text: `${subscriptionText(command.lang, true)}\n\n${dailyCardText(daily, command.lang)}`,
+    reply_markup: dailyCardKeyboard(command.lang, appUrl, daily.card.id),
   };
 }

@@ -79,7 +79,7 @@ export function hasUnfilledOperatorDetails(): boolean {
  * времени согласия каждого пользователя, поэтому всегда можно сказать, на какую версию текста человек
  * согласился.
  */
-export const PRIVACY_POLICY_VERSION = "2026-10-16";
+export const PRIVACY_POLICY_VERSION = "2026-10-17";
 
 /**
  * « или по адресу: …» — только если задан почтовый адрес: документы никогда не выводят пустой адрес
@@ -98,4 +98,4 @@ export const OFFER_VERSION = "2026-10-13";
 export const OFFER_EFFECTIVE_DATE = { ru: "13.10.2026", en: "13 October 2026" } as const;
 
 /** Дата вступления в силу текущей версии в читаемом виде (дд.мм.гггг для русского текста). */
-export const PRIVACY_POLICY_EFFECTIVE_DATE = { ru: "16.10.2026", en: "16 October 2026" } as const;
+export const PRIVACY_POLICY_EFFECTIVE_DATE = { ru: "17.10.2026", en: "17 October 2026" } as const;

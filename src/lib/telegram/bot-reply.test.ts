@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildBotReply, type TelegramUpdate } from "./bot-reply";
+import { buildBotReply, type TelegramUpdate, buildDailyCommandReply, parseDailyCommand } from "./bot-reply";
 
 const APP_URL = "https://example.vercel.app";
 
@@ -64,5 +64,37 @@ describe("buildBotReply", () => {
   it("answers /support with the operator's contact details", () => {
     expect(buildBotReply(privateMessage("/support", "ru"), APP_URL)?.text).toContain("Служба поддержки");
     expect(buildBotReply(privateMessage("/support", "en"), APP_URL)?.text).toContain("Mystara support");
+  });
+});
+
+describe("карта дня в боте", () => {
+  const message = (text: string, language_code = "ru") => ({ message: { text, chat: { id: 4242, type: "private" }, from: { language_code } } });
+
+  it("/card присылает карту дня с кнопкой на страницу карты", () => {
+    const reply = buildBotReply(message("/card"), "https://mystara.example");
+    expect(reply?.text).toMatch(/^🃏 Карта дня: /);
+    expect(reply?.text).toContain("не предсказание");
+    const button = reply?.reply_markup.inline_keyboard[0][0] as { web_app: { url: string } };
+    expect(button.web_app.url).toMatch(/^https:\/\/mystara\.example\/tarot\/cards\/[a-z0-9-]+$/);
+  });
+
+  it("в тот же день /card показывает ту же карту", () => {
+    expect(buildBotReply(message("/card"), "https://a.example")?.text).toBe(buildBotReply(message("/card"), "https://a.example")?.text);
+  });
+
+  it("распознаёт подписку и отписку", () => {
+    expect(parseDailyCommand(message("/daily"))).toEqual({ chatId: 4242, lang: "ru", action: "subscribe" });
+    expect(parseDailyCommand(message("/daily on", "en"))).toEqual({ chatId: 4242, lang: "en", action: "subscribe" });
+    expect(parseDailyCommand(message("/daily off"))?.action).toBe("unsubscribe");
+    expect(parseDailyCommand(message("/start"))).toBeNull();
+    expect(parseDailyCommand({ message: { text: "/daily", chat: { id: 1, type: "group" } } })).toBeNull();
+  });
+
+  it("ответ на подписку сразу содержит сегодняшнюю карту, на отписку - подтверждение", () => {
+    const subscribe = buildDailyCommandReply({ chatId: 4242, lang: "ru", action: "subscribe" }, "https://a.example");
+    expect(subscribe.text).toContain("каждое утро");
+    expect(subscribe.text).toContain("Карта дня:");
+    const unsubscribe = buildDailyCommandReply({ chatId: 4242, lang: "ru", action: "unsubscribe" }, "https://a.example");
+    expect(unsubscribe.text).toContain("отписались");
   });
 });

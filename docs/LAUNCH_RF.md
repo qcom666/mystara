@@ -120,6 +120,9 @@ npm run db:check
   `npm run bot:setup -- --dry-run`). Скрипт задаёт команды `/start /help /docs /support`, описания на русском
   и английском и кнопку меню Mini App; с флагом `--webhook` заново регистрирует вебхук по
   `TELEGRAM_WEBHOOK_SECRET`. Токен не печатается.
+- **«Карта дня» в боте.** Подписка командой `/daily`, отписка `/daily off`, разовая карта `/card`. Утренняя
+  рассылка (около 9:00 МСК) включится, когда в Vercel появится `CRON_SECRET` (любая длинная случайная строка):
+  расписание уже описано в `vercel.json`. На тарифе Hobby планировщик запускается раз в сутки, этого достаточно.
 - **ЮKassa.** В настройках HTTP-уведомлений должны быть включены события `payment.succeeded` и
   `refund.succeeded` с адресом `https://ВАШ_ДОМЕН/api/payments/yookassa/webhook`.
 

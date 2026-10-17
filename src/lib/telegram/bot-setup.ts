@@ -20,12 +20,16 @@ export interface BotSetupOptions {
 const COMMANDS = {
   ru: [
     { command: "start", description: "Открыть Mystara" },
+    { command: "card", description: "Карта дня" },
+    { command: "daily", description: "Карта дня каждое утро (/daily off - отписаться)" },
     { command: "help", description: "Как это работает" },
     { command: "docs", description: "Политика, оферта, контакты" },
     { command: "support", description: "Связаться с поддержкой" },
   ],
   en: [
     { command: "start", description: "Open Mystara" },
+    { command: "card", description: "Card of the day" },
+    { command: "daily", description: "Card of the day every morning (/daily off to stop)" },
     { command: "help", description: "How it works" },
     { command: "docs", description: "Privacy, offer, contacts" },
     { command: "support", description: "Contact support" },

@@ -309,3 +309,16 @@ model AdminAction {
 }
 
 // Позже: CompatibilityReading, DailyHoroscope, Notification. Пока намеренно не заведены.
+
+// Подписчики «Карты дня» в боте. Не привязаны к аккаунту: бот пишет и тем, кто не входил на сайт.
+// Хранится только идентификатор личного чата Telegram, язык и служебные отметки рассылки.
+model BotSubscriber {
+  chatId          String    @id // идентификатор личного чата Telegram (совпадает с Telegram ID пользователя)
+  language        String    @default("ru") // "ru" | "en"
+  dailyCard       Boolean   @default(true)
+  subscribedAt    DateTime  @default(now())
+  lastDailySentOn String? // «ГГГГ-ММ-ДД» по Москве: в какой день карта уже отправлена
+  blockedAt       DateTime? // пользователь заблокировал бота: больше не пишем
+
+  @@index([dailyCard, lastDailySentOn])
+}
