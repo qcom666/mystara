@@ -21,7 +21,12 @@ describe("GET /api/payments/methods", () => {
 
   it("prices Premium when asked for it, in each provider's currency", async () => {
     expect(await call("context=web&product=premium_month")).toEqual({ methods: [{ id: "yookassa", price: { amount: 300, currency: "RUB" } }] });
-    expect(await call("context=telegram&product=premium_month")).toEqual({ methods: [{ id: "stars", price: { amount: 150, currency: "XTR" } }] });
+    expect(await call("context=telegram&product=premium_month")).toEqual({ methods: [{ id: "stars", price: { amount: 150, currency: "XTR" }, autoRenew: true }] });
+  });
+
+  it("offers auto-renewal only for Premium in Telegram", async () => {
+    expect(await call("context=web&product=premium_month")).not.toHaveProperty("methods.0.autoRenew");
+    expect(await call("context=telegram&product=natal_pack")).not.toHaveProperty("methods.0.autoRenew");
   });
 
   it("falls back to the pack for an unknown product", async () => {

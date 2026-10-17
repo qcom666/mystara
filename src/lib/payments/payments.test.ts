@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { NATAL_CHART_PRICES, PREMIUM_PRICES, PRODUCT_PRICES, enabledProviders, isPaymentProductId, isPaymentProviderId } from "./catalog";
+import { NATAL_CHART_PRICES, PREMIUM_PRICES, PRODUCT_PRICES, enabledProviders, isPaymentProductId, isPaymentProviderId, supportsAutoRenew } from "./catalog";
 import { createStarsInvoiceLink } from "./providers/stars";
 import { createYooKassaPayment, fetchYooKassaPayment } from "./providers/yookassa";
 
@@ -67,6 +67,21 @@ describe("provider clients", () => {
     const [url, init] = fetchImpl.mock.calls[0];
     expect(url).toBe("https://api.telegram.org/botTOKEN/createInvoiceLink");
     expect(JSON.parse(init.body)).toMatchObject({ currency: "XTR", payload: "p1", prices: [{ amount: 500 }] });
+  });
+
+  it("a subscription invoice carries the 30-day subscription_period, a one-time one does not", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ ok: true, result: "https://t.me/$sub" }));
+    await createStarsInvoiceLink({ botToken: "T", purchaseId: "s1", title: "Premium", description: "d", amount: 150, subscriptionPeriod: 2_592_000 }, fetchImpl);
+    await createStarsInvoiceLink({ botToken: "T", purchaseId: "p1", title: "Premium", description: "d", amount: 150 }, fetchImpl);
+    expect(JSON.parse(fetchImpl.mock.calls[0][1].body)).toMatchObject({ payload: "s1", currency: "XTR", subscription_period: 2_592_000 });
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).not.toHaveProperty("subscription_period");
+  });
+
+  it("auto-renewal exists only for Premium paid with Stars inside Telegram", () => {
+    expect(supportsAutoRenew("premium_month", "stars", "telegram")).toBe(true);
+    expect(supportsAutoRenew("premium_month", "yookassa", "web")).toBe(false);
+    expect(supportsAutoRenew("premium_month", "stars", "web")).toBe(false);
+    expect(supportsAutoRenew("natal_pack", "stars", "telegram")).toBe(false);
   });
 
   it("fails loudly when Telegram refuses the invoice", async () => {

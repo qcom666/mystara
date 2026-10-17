@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getAutoRenewView } from "./star-subscription.repository";
 import { getPremiumState } from "./subscription.repository";
 
 /** Нужное, чтобы решить, администратор ли аккаунт (см. lib/admin.ts). */
@@ -31,6 +32,9 @@ export interface AccountPurchaseSummary {
   currency: string;
   status: string;
   createdAt: string;
+  /** Подписка с автопродлением: первая оплата или повторное списание по ней. */
+  autoRenew: boolean;
+  renewal: boolean;
 }
 
 export interface AccountData {
@@ -55,6 +59,8 @@ export interface AccountData {
     daysLeft: number;
     freeChartAvailable: boolean;
     nextFreeChartAt: string | null;
+    /** Автопродление подпиской Звёздами: состояние, дата следующего списания и сумма; null, если подписки нет. */
+    autoRenew: { state: "active" | "canceled" | "failed"; expiresAt: string; amount: number; cancelable: boolean } | null;
   };
   purchases: AccountPurchaseSummary[];
   readings: AccountReadingSummary[];
@@ -104,8 +110,9 @@ export async function getAccountData(userId: string): Promise<AccountData | null
   });
   if (!user) return null;
 
-  const [premium, purchases, readings, favoriteReadings, natalCharts, numerology, astrology, favorites] = await Promise.all([
+  const [premium, autoRenew, purchases, readings, favoriteReadings, natalCharts, numerology, astrology, favorites] = await Promise.all([
     getPremiumState(userId),
+    getAutoRenewView(userId),
     prisma.purchase.findMany({ where: { userId, status: { not: "failed" } }, orderBy: { createdAt: "desc" }, take: 10 }),
     prisma.reading.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20, select: READING_SELECT }),
     prisma.reading.findMany({ where: { userId, isFavorite: true }, orderBy: { createdAt: "desc" }, take: 50, select: READING_SELECT }),
@@ -149,6 +156,7 @@ export async function getAccountData(userId: string): Promise<AccountData | null
       daysLeft: premium.currentPeriodEnd ? Math.max(0, Math.ceil((premium.currentPeriodEnd.getTime() - Date.now()) / 86_400_000)) : 0,
       freeChartAvailable: premium.natalChartWeekly.available,
       nextFreeChartAt: premium.natalChartWeekly.nextAvailableAt?.toISOString() ?? null,
+      autoRenew: autoRenew ? { ...autoRenew, expiresAt: autoRenew.expiresAt.toISOString() } : null,
     },
     purchases: purchases.map((purchase) => ({
       id: purchase.id,
@@ -157,6 +165,8 @@ export async function getAccountData(userId: string): Promise<AccountData | null
       currency: purchase.currency,
       status: purchase.status,
       createdAt: purchase.createdAt.toISOString(),
+      autoRenew: purchase.autoRenew,
+      renewal: purchase.renewalOfId !== null,
     })),
     readings: readings.map(toReadingSummary),
     favoriteReadings: favoriteReadings.map(toReadingSummary),

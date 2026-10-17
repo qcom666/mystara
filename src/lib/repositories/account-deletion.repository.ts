@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db";
  * Удаляет личные данные пользователя по его требованию (отзыв согласия по 152-ФЗ, ст. 9 и 14).
  *
  * Стираются: расклады (вместе с картами и толкованиями), избранное, сохранённые расчёты нумерологии,
- * астрологии и натальных карт, привязки входа, подписка, профиль Telegram, имя, фото, дата рождения.
+ * астрологии и натальных карт, привязки входа, подписка (и состояние подписок Звёздами — их автопродление
+ * отключает маршрут удаления до этого), профиль Telegram, имя, фото, дата рождения.
  * Сохраняются записи о платежах (`Purchase`) и журнал действий администратора: платёжные документы
  * закон требует хранить, поэтому строка пользователя остаётся пустой оболочкой с меткой `deletedAt`.
  * Из неё убран Telegram ID, поэтому повторный вход создаст новый, пустой аккаунт.
@@ -20,6 +21,7 @@ export async function deleteAccountData(userId: string): Promise<boolean> {
     await tx.astrologyReading.deleteMany({ where: { userId } });
     await tx.natalChartReading.deleteMany({ where: { userId } });
     await tx.subscription.deleteMany({ where: { userId } });
+    await tx.starSubscription.deleteMany({ where: { userId } });
     await tx.account.deleteMany({ where: { userId } });
     await tx.session.deleteMany({ where: { userId } });
 

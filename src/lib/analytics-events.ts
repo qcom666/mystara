@@ -14,8 +14,10 @@ export const STORED_EVENTS = {
   astrology_calculated: ["sunSign"],
   telegram_session_started: [],
   signup_completed: [],
-  checkout_started: ["product", "provider"],
-  purchase_paid: ["product", "provider"],
+  checkout_started: ["product", "provider", "autoRenew"],
+  purchase_paid: ["product", "provider", "autoRenew"],
+  // Повторное списание по подписке с автопродлением: в воронку не входит, это не новая покупка.
+  subscription_renewed: ["provider"],
 } as const satisfies Record<string, readonly string[]>;
 
 export type StoredEventName = keyof typeof STORED_EVENTS;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatDateTime, formatMoney, PRODUCT_LABELS, STATUS_LABELS, userLabel } from "@/components/admin/format";
+import { formatDateTime, formatMoney, purchaseProductLabel, STATUS_LABELS, userLabel } from "@/components/admin/format";
 import { UserActions } from "@/components/admin/user-actions";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { requireAdmin } from "@/lib/admin-guard";
@@ -64,6 +64,19 @@ export default async function AdminUserPage({ params }: PageProps) {
             {premiumActive ? `активен до ${formatDateTime(user.subscription?.currentPeriodEnd ?? null)}` : "не действует"}
             {user.subscription?.provider && <span className="ml-2 text-xs text-silver-500">({user.subscription.provider})</span>}
           </Row>
+          <Row label="Автопродление">
+            {user.starSubscriptions.length === 0
+              ? "нет"
+              : user.starSubscriptions.map((subscription) => (
+                  <span key={subscription.purchaseId} className="block">
+                    {subscription.state === "active"
+                      ? `включено, следующее списание ${formatDateTime(subscription.expiresAt)}`
+                      : subscription.state === "failed"
+                        ? `списание не прошло (срок до ${formatDateTime(subscription.expiresAt)})`
+                        : `отключено ${subscription.canceledBy === "bot" ? "ботом" : "в Telegram"}, оплачено до ${formatDateTime(subscription.expiresAt)}`}
+                  </span>
+                ))}
+          </Row>
           <Row label="Объём данных">
             расклады: {user._count.readings}, натальные карты: {user._count.natalChartReadings}, избранное: {user._count.favorites}
           </Row>
@@ -84,7 +97,7 @@ export default async function AdminUserPage({ params }: PageProps) {
           {purchases.map((purchase) => (
             <li key={purchase.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
               <div>
-                <p className="text-silver-100">{PRODUCT_LABELS[purchase.product] ?? purchase.product}</p>
+                <p className="text-silver-100">{purchaseProductLabel(purchase)}</p>
                 <p className="text-xs text-silver-500">
                   {formatDateTime(purchase.createdAt)} · {purchase.provider ?? "—"}
                   {purchase.externalId ? ` · ${purchase.externalId}` : ""}

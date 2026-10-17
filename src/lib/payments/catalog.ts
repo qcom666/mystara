@@ -60,3 +60,12 @@ export function enabledProviders(env: Env, context: PaymentContext): PaymentProv
 export function isPaymentProviderId(value: unknown): value is PaymentProviderId {
   return typeof value === "string" && (PAYMENT_PROVIDER_IDS as readonly string[]).includes(value);
 }
+
+/**
+ * Можно ли оформить товар подпиской с автопродлением: только Premium и только Звёздами внутри Telegram
+ * (createInvoiceLink с subscription_period; такие счета открываются лишь в боте и мини-приложении). На сайте
+ * Premium оплачивается разово.
+ */
+export function supportsAutoRenew(product: PaymentProductId, provider: PaymentProviderId, context: PaymentContext): boolean {
+  return product === "premium_month" && provider === "stars" && context === "telegram";
+}

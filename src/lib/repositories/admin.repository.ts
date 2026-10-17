@@ -83,6 +83,7 @@ export async function getUserDetail(userId: string) {
       privacyConsentAt: true,
       privacyPolicyVersion: true,
       subscription: true,
+      starSubscriptions: { orderBy: { expiresAt: "desc" }, take: 3, select: { purchaseId: true, state: true, canceledBy: true, expiresAt: true } },
       _count: { select: { readings: true, natalChartReadings: true, favorites: true } },
     },
   });

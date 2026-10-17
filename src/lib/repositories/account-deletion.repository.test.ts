@@ -24,6 +24,7 @@ vi.mock("@/lib/db", () => {
     astrologyReading: deleter("astrologyReading"),
     natalChartReading: deleter("natalChartReading"),
     subscription: deleter("subscription"),
+    starSubscription: deleter("starSubscription"),
     account: deleter("account"),
     session: deleter("session"),
     purchase: deleter("purchase"),
@@ -54,6 +55,7 @@ describe("deleteAccountData", () => {
       "astrologyReading:u1",
       "natalChartReading:u1",
       "subscription:u1",
+      "starSubscription:u1",
       "account:u1",
       "session:u1",
     ]);

@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   PREMIUM_NATAL_CHART_INTERVAL_DAYS,
   PREMIUM_PERIOD_DAYS,
+  STARS_SUBSCRIPTION_PERIOD_SECONDS,
+  estimateSubscriptionExpiration,
   extendPremiumPeriodEnd,
   isPremiumActive,
+  premiumEndAfterSubscriptionCharge,
   weeklyNatalChartAllowance,
   type SubscriptionSnapshot,
 } from "./premium";
@@ -71,5 +74,35 @@ describe("weeklyNatalChartAllowance", () => {
       nextAvailableAt: null,
     });
     expect(weeklyNatalChartAllowance(true, new Date(inDays(-PREMIUM_NATAL_CHART_INTERVAL_DAYS).getTime() + 1), now).available).toBe(false);
+  });
+});
+
+describe("срок Premium по подписке Звёздами", () => {
+  it("период подписки — те же 30 дней, что и у Premium (Telegram требует 2592000 секунд)", () => {
+    expect(STARS_SUBSCRIPTION_PERIOD_SECONDS).toBe(2_592_000);
+    expect(STARS_SUBSCRIPTION_PERIOD_SECONDS * 1000).toBe(PREMIUM_PERIOD_DAYS * DAY);
+  });
+
+  it("без других оплаченных дней Premium действует ровно до срока подписки у Telegram", () => {
+    expect(premiumEndAfterSubscriptionCharge({ currentPeriodEnd: null, previousExpiration: null, expiresAt: inDays(30), now })).toEqual(inDays(30));
+    // Продление пришло, когда прежний срок уже истёк (вебхук задержался): срок всё равно по Telegram.
+    expect(premiumEndAfterSubscriptionCharge({ currentPeriodEnd: inDays(-0.01), previousExpiration: inDays(-0.01), expiresAt: inDays(29.99), now })).toEqual(inDays(29.99));
+  });
+
+  it("дни разовой оплаты, промокода или администратора сохраняются и прибавляются", () => {
+    // Первая оплата при 10 оставшихся днях: +30.
+    expect(premiumEndAfterSubscriptionCharge({ currentPeriodEnd: inDays(10), previousExpiration: null, expiresAt: inDays(30), now })).toEqual(inDays(40));
+    // Продление: Telegram сдвинул срок на 30 дней, запас в 10 дней остаётся.
+    expect(premiumEndAfterSubscriptionCharge({ currentPeriodEnd: inDays(10), previousExpiration: inDays(0), expiresAt: inDays(30), now })).toEqual(inDays(40));
+  });
+
+  it("старое списание, найденное после нового, срок не сдвигает", () => {
+    expect(premiumEndAfterSubscriptionCharge({ currentPeriodEnd: inDays(60), previousExpiration: inDays(60), expiresAt: inDays(30), now })).toEqual(inDays(60));
+  });
+
+  it("без срока от Telegram он выводится из прежнего срока или момента списания", () => {
+    expect(estimateSubscriptionExpiration(null, now)).toEqual(inDays(30));
+    expect(estimateSubscriptionExpiration(inDays(0.5), now)).toEqual(inDays(30.5));
+    expect(estimateSubscriptionExpiration(inDays(-1), now)).toEqual(inDays(30));
   });
 });

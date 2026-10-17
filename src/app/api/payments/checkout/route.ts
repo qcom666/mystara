@@ -4,11 +4,13 @@ import { recordEvent } from "@/lib/analytics-store";
 import { auth } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/db";
 import { toRussianPath } from "@/lib/i18n/localized-routes";
-import { PAYMENT_PRODUCT_IDS, PRODUCT_PRICES, enabledProviders } from "@/lib/payments/catalog";
+import { PAYMENT_PRODUCT_IDS, PRODUCT_PRICES, enabledProviders, supportsAutoRenew } from "@/lib/payments/catalog";
 import { createStarsInvoiceLink } from "@/lib/payments/providers/stars";
 import { createYooKassaPayment } from "@/lib/payments/providers/yookassa";
 import { attachProviderPaymentId, createPendingPurchase, markPurchaseFailed } from "@/lib/repositories/purchase.repository";
+import { hasActiveStarSubscription } from "@/lib/repositories/star-subscription.repository";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { STARS_SUBSCRIPTION_PERIOD_SECONDS } from "@/modules/subscriptions/premium";
 
 const checkoutSchema = z.object({
   provider: z.enum(["stars", "yookassa"]),
@@ -17,6 +19,8 @@ const checkoutSchema = z.object({
   locale: z.enum(["en", "ru"]).default("en"),
   // Где находится покупатель: Звёзды для Telegram, ЮKassa для сайта (см. lib/payments/catalog.ts).
   context: z.enum(["telegram", "web"]).default("web"),
+  // Подписка с автопродлением: только Premium, только Звёздами внутри Telegram (supportsAutoRenew).
+  autoRenew: z.boolean().default(false),
 });
 
 const COPY = {
@@ -27,6 +31,18 @@ const COPY = {
   premium_month: {
     en: { title: "Mystara Premium: 30 days", description: "Mystara Premium for 30 days: unlimited readings, all spreads, a Natal Chart every week." },
     ru: { title: "Mystara Premium: 30 дней", description: "Mystara Premium на 30 дней: безлимитные расклады, все расклады, натальная карта раз в неделю." },
+  },
+} as const;
+
+/** Счёт подписки: Telegram показывает, что оплата повторяется каждые 30 дней. Название не длиннее 32 символов. */
+const AUTO_RENEW_COPY = {
+  en: {
+    title: "Mystara Premium, auto-renewing",
+    description: "Mystara Premium, renewed every 30 days until you cancel: unlimited readings, all spreads, a Natal Chart every week. Cancel any time.",
+  },
+  ru: {
+    title: "Mystara Premium, автопродление",
+    description: "Mystara Premium с продлением каждые 30 дней, пока вы его не отключите: безлимитные расклады, все расклады, натальная карта раз в неделю.",
   },
 } as const;
 
@@ -57,20 +73,28 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
-  const { provider, product, locale, context } = parsed.data;
+  const { provider, product, locale, context, autoRenew } = parsed.data;
 
   if (!enabledProviders(process.env, context).includes(provider)) {
     return NextResponse.json({ error: "provider_unavailable" }, { status: 400 });
   }
+  if (autoRenew && !supportsAutoRenew(product, provider, context)) {
+    return NextResponse.json({ error: "invalid_input" }, { status: 400 });
+  }
+  // Вторая продлевающаяся подписка списывала бы оплату дважды в месяц: её не даём оформить.
+  if (autoRenew && (await hasActiveStarSubscription(session.user.id))) {
+    return NextResponse.json({ error: "already_subscribed" }, { status: 409 });
+  }
 
   const price = PRODUCT_PRICES[product][provider];
-  const copy = COPY[product][locale];
+  const copy = autoRenew ? AUTO_RENEW_COPY[locale] : COPY[product][locale];
   const purchase = await createPendingPurchase({
     userId: session.user.id,
     product,
     provider,
     amount: price.amount,
     currency: price.currency,
+    autoRenew,
   });
   // По id покупки страница возврата спрашивает сервер, прошла ли оплата (/api/payments/confirm).
   // Русскоязычный покупатель возвращается на русскую версию страницы (/ru/...).
@@ -85,8 +109,9 @@ export async function POST(request: Request) {
         title: copy.title,
         description: copy.description,
         amount: price.amount,
+        ...(autoRenew ? { subscriptionPeriod: STARS_SUBSCRIPTION_PERIOD_SECONDS } : {}),
       });
-      await recordEvent({ name: "checkout_started", product, provider }, { shell: context === "telegram" ? "telegram" : "web", locale });
+      await recordEvent({ name: "checkout_started", product, provider, autoRenew }, { shell: context === "telegram" ? "telegram" : "web", locale });
       return NextResponse.json({ provider, url, purchaseId: purchase.id });
     }
     const payment = await createYooKassaPayment(

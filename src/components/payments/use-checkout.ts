@@ -10,6 +10,8 @@ import { getTelegramWebApp } from "@/lib/telegram/webapp";
 export interface PaymentMethod {
   id: PaymentProviderId;
   price: ProviderPrice;
+  /** Этим способом товар можно оформить подпиской с автопродлением (Premium Звёздами в Telegram). */
+  autoRenew?: boolean;
 }
 
 export function formatMethodPrice(price: ProviderPrice): string {
@@ -119,15 +121,20 @@ export function useCheckout(product: PaymentProductId, onTelegramPaid: (controls
   }, [product]);
 
   const buy = useCallback(
-    async (provider: PaymentProviderId) => {
+    async (provider: PaymentProviderId, options: { autoRenew?: boolean } = {}) => {
       setBusy(provider);
       setMessage(null);
       try {
         const response = await fetch("/api/payments/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ provider, product, locale, context: inTelegram() ? "telegram" : "web" }),
+          body: JSON.stringify({ provider, product, locale, context: inTelegram() ? "telegram" : "web", autoRenew: options.autoRenew === true }),
         });
+        if (response.status === 409) {
+          setBusy(null);
+          setMessage(t.pricingPage.alreadySubscribed);
+          return;
+        }
         if (!response.ok) throw new Error("checkout_failed");
         const { url, purchaseId } = (await response.json()) as { url: string; purchaseId: string };
 
@@ -145,7 +152,7 @@ export function useCheckout(product: PaymentProductId, onTelegramPaid: (controls
         setMessage(t.natalChartPage.checkoutFailed);
       }
     },
-    [product, locale, onTelegramPaid, t.natalChartPage.checkoutFailed],
+    [product, locale, onTelegramPaid, t.natalChartPage.checkoutFailed, t.pricingPage.alreadySubscribed],
   );
 
   return { methods, busy, setBusy, message, setMessage, buy };

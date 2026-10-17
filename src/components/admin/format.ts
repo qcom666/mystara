@@ -26,6 +26,13 @@ export const PRODUCT_LABELS: Record<string, string> = {
   premium_month: "Premium 30 дней",
 };
 
+/** Подпись товара с пометкой подписки: первая оплата с автопродлением или повторное списание по ней. */
+export function purchaseProductLabel(purchase: { product: string; autoRenew: boolean; renewalOfId: string | null }): string {
+  const label = PRODUCT_LABELS[purchase.product] ?? purchase.product;
+  if (purchase.renewalOfId) return `${label} · продление подписки`;
+  return purchase.autoRenew ? `${label} · автопродление` : label;
+}
+
 export const STATUS_LABELS: Record<string, string> = {
   paid: "оплачено",
   pending: "ожидает",

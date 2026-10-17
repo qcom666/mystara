@@ -70,7 +70,8 @@ export function buildBotSetupRequests({ siteUrl, webhookSecret }: BotSetupOption
       body: {
         url: `${siteUrl}/api/telegram/webhook`,
         secret_token: webhookSecret,
-        allowed_updates: ["message", "pre_checkout_query"],
+        // subscription — отмена, возобновление и неудачное списание подписки Звёздами с автопродлением.
+        allowed_updates: ["message", "pre_checkout_query", "subscription"],
         drop_pending_updates: false,
       },
     });

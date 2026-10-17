@@ -61,14 +61,18 @@ export async function getPlanTier(userId: string): Promise<"free" | "premium"> {
   return isPremiumActive(subscription, new Date()) ? "premium" : "free";
 }
 
-/** Действующие Premium-подписки, которые закончатся до `until` и о текущем сроке которых ещё не напоминали. */
+/**
+ * Действующие Premium-подписки, которые закончатся до `until` и о текущем сроке которых ещё не напоминали. Тем, у
+ * кого включено автопродление (подписка Звёздами продлевается, и её срок ещё не прошёл), напоминать не нужно:
+ * Telegram продлит сам. Если продление отключено или очередное списание не прошло, напоминание придёт.
+ */
 export async function listSubscriptionsToRemind(now: Date, until: Date, take: number) {
   const rows = await prisma.subscription.findMany({
     where: {
       tier: "PREMIUM",
       status: "ACTIVE",
       currentPeriodEnd: { gt: now, lte: until },
-      user: { deletedAt: null },
+      user: { deletedAt: null, starSubscriptions: { none: { state: "active", expiresAt: { gt: now } } } },
     },
     orderBy: { currentPeriodEnd: "asc" },
     take,

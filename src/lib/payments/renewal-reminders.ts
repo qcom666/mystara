@@ -5,10 +5,11 @@ import { listSubscriptionsToRemind, markRenewalReminded } from "@/lib/repositori
 import { sendBotMessage } from "@/lib/telegram/bot-api";
 
 /**
- * Напоминание о продлении Premium за 3 дня до конца срока. Автоматических списаний нет, поэтому без
- * напоминания подписка молча заканчивается. Пишем в Telegram (если аккаунт связан и бот может писать) и
- * на почту (если она есть и настроен SMTP). О каждом сроке напоминаем один раз; при временной ошибке
- * доставки попробуем на следующий день.
+ * Напоминание о продлении Premium за 3 дня до конца срока. Без автопродления (разовая оплата, на сайте, или
+ * подписка Звёздами с отключённым продлением) Premium молча заканчивается; тем, у кого автопродление включено,
+ * напоминание не шлётся (см. listSubscriptionsToRemind). Пишем в Telegram (если аккаунт связан и бот может писать)
+ * и на почту (если она есть и настроен SMTP). О каждом сроке напоминаем один раз; при временной ошибке доставки
+ * попробуем на следующий день.
  */
 
 export const REMIND_DAYS_BEFORE = 3;
@@ -17,13 +18,13 @@ const SEND_INTERVAL_MS = 40;
 const COPY = {
   ru: {
     text: (date: string) =>
-      `⏳ Premium в Mystara действует до ${date}. Автоматических списаний нет: чтобы не потерять безлимитные расклады и натальную карту раз в неделю, продлите заранее — оставшиеся дни сохранятся и сложатся с новыми.`,
+      `⏳ Premium в Mystara действует до ${date}, автопродление не включено. Чтобы не потерять безлимитные расклады и натальную карту раз в неделю, продлите заранее — оставшиеся дни сохранятся и сложатся с новыми. В Telegram можно оформить Premium с автопродлением.`,
     button: "Продлить Premium",
     locale: "ru-RU",
   },
   en: {
     text: (date: string) =>
-      `⏳ Your Mystara Premium is active until ${date}. There are no automatic charges: renew in advance to keep unlimited readings and a weekly Natal Chart — the days you have left carry over.`,
+      `⏳ Your Mystara Premium is active until ${date} and auto-renewal is off. Renew in advance to keep unlimited readings and a weekly Natal Chart — the days you have left carry over. In Telegram you can get Premium with auto-renewal.`,
     button: "Renew Premium",
     locale: "en-GB",
   },

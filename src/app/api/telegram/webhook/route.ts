@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 import { recordEvent } from "@/lib/analytics-store";
 import { isDatabaseConfigured } from "@/lib/db";
 import { logError } from "@/lib/logger";
-import { fulfillPurchase, getFulfilledPurchaseSummary, getPurchaseProduct, isPurchasePayable } from "@/lib/repositories/purchase.repository";
+import { fulfillPayment, getFulfilledPurchaseSummary, getPurchaseProduct, isPurchasePayable } from "@/lib/repositories/purchase.repository";
+import { setStarSubscriptionState } from "@/lib/repositories/star-subscription.repository";
 import { subscribeDailyCard, unsubscribeDailyCard } from "@/lib/repositories/bot-subscriber.repository";
 import { rememberTelegramLanguage } from "@/lib/repositories/telegram-user.repository";
 import { buildBotReply, buildDailyCommandReply, parseDailyCommand, pickLang, type TelegramUpdate } from "@/lib/telegram/bot-reply";
 import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } from "@/lib/telegram/payments";
-import { purchaseNoticeKeyboard, purchaseNoticeText } from "@/lib/telegram/purchase-notice";
+import { purchaseNoticeKeyboard, purchaseNoticeText, subscriptionStateKeyboard, subscriptionStateText } from "@/lib/telegram/purchase-notice";
 
 /**
  * Вебхук Telegram-бота. После регистрации через `setWebhook` Telegram присылает сюда каждое обновление
@@ -20,7 +21,10 @@ import { purchaseNoticeKeyboard, purchaseNoticeText } from "@/lib/telegram/purch
  *  - сообщения в чате (/start, /help, /card, /horoscope, /docs, /support) → ответ с кнопками мини-приложения и документов;
  *  - /daily и /daily off → подписка на «Карту дня» и отписка (нужна база);
  *  - платежи Звёздами: `pre_checkout_query` (подтвердить) и `successful_payment` (выдать оплаченное и
- *    сразу сообщить покупателю в чате, что Premium активен или кредиты начислены).
+ *    сразу сообщить покупателю в чате, что Premium активен или кредиты начислены). Списания по подписке с
+ *    автопродлением приходят так же, каждое со своим `telegram_payment_charge_id`;
+ *  - `subscription`: пользователь отключил или снова включил продление подписки, либо списание не прошло —
+ *    состояние запоминается, пользователю приходит подтверждение.
  */
 
 function secretMatches(received: string | null, expected: string): boolean {
@@ -64,17 +68,27 @@ export async function POST(request: Request) {
   if (stars?.kind === "paid") {
     if (stars.currency === "XTR" && isDatabaseConfigured()) {
       // Исключение превращается в ответ 500, поэтому Telegram повторит доставку обновления, а платёж не потеряется.
-      const result = await fulfillPurchase({
+      const { result, purchaseId } = await fulfillPayment({
         purchaseId: stars.purchaseId,
         provider: "stars",
         externalId: stars.chargeId,
         amount: stars.amount,
         currency: "XTR",
+        subscription: {
+          chargedAt: stars.paidAt ?? new Date(),
+          expiresAt: stars.recurring?.expiresAt ?? null,
+          telegramUserId: stars.telegramUserId !== null ? String(stars.telegramUserId) : null,
+        },
       });
       if (result === "fulfilled") {
-        await recordEvent({ name: "purchase_paid", product: (await getPurchaseProduct(stars.purchaseId)) ?? undefined, provider: "stars" }, { shell: "telegram" });
+        if (purchaseId !== stars.purchaseId) {
+          await recordEvent({ name: "subscription_renewed", provider: "stars" }, { shell: "telegram" });
+        } else {
+          const product = (await getPurchaseProduct(stars.purchaseId)) ?? undefined;
+          await recordEvent({ name: "purchase_paid", product, provider: "stars", autoRenew: stars.recurring !== null }, { shell: "telegram" });
+        }
         // Ответ вебхука сразу уходит покупателю сообщением: что именно выдано и до какого числа.
-        const summary = stars.chatId !== null ? await getFulfilledPurchaseSummary(stars.purchaseId) : null;
+        const summary = stars.chatId !== null ? await getFulfilledPurchaseSummary(purchaseId) : null;
         if (summary && stars.chatId !== null) {
           const lang = pickLang(stars.languageCode ?? summary.language);
           const appUrl = new URL(request.url).origin;
@@ -89,6 +103,27 @@ export async function POST(request: Request) {
       if (result === "mismatch" || result === "not_found") {
         logError("stars", "paid purchase could not be matched", { purchaseId: stars.purchaseId, result: JSON.stringify(result) });
       }
+    }
+    return NextResponse.json({ ok: true });
+  }
+  if (stars?.kind === "subscription") {
+    if (isDatabaseConfigured()) {
+      const updated = await setStarSubscriptionState(stars.purchaseId, stars.state, {
+        canceledBy: "user",
+        telegramUserId: stars.telegramUserId !== null ? String(stars.telegramUserId) : null,
+      });
+      if (updated && stars.telegramUserId !== null) {
+        const lang = pickLang(stars.languageCode ?? updated.user.language);
+        const appUrl = new URL(request.url).origin;
+        const details = { premiumUntil: updated.user.subscription?.currentPeriodEnd ?? null, nextChargeAt: updated.expiresAt };
+        return NextResponse.json({
+          method: "sendMessage",
+          chat_id: stars.telegramUserId,
+          text: subscriptionStateText(stars.state, details, lang),
+          ...(appUrl.startsWith("https://") ? { reply_markup: subscriptionStateKeyboard(lang, appUrl) } : {}),
+        });
+      }
+      if (!updated) logError("stars", "subscription update for an unknown subscription", { purchaseId: stars.purchaseId, state: stars.state });
     }
     return NextResponse.json({ ok: true });
   }

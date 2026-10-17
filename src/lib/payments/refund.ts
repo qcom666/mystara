@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/db";
 import { markPurchaseRefunded, type RefundResult } from "@/lib/repositories/purchase.repository";
+import { findStarSubscriptionForPurchase } from "@/lib/repositories/star-subscription.repository";
 import { createYooKassaRefund } from "./providers/yookassa";
 import { refundStarPayment } from "./providers/stars";
+import { cancelSubscriptionOfPurchase } from "./star-subscriptions";
 
 export type RefundOutcome =
   | { ok: true; status: "refunded" | "pending" }
@@ -15,6 +17,9 @@ type RefundEnv = Record<string, string | undefined>;
  * только после его согласия у пользователя забирается выданное (кредиты или срок Premium). Если провайдер
  * отказал, ничего в базе не меняется. У ЮKassa возврат может оказаться в обработке: тогда покупка остаётся
  * оплаченной до уведомления `refund.succeeded` (/api/payments/yookassa/webhook), которое довершит дело.
+ *
+ * Возврат любого списания по подписке Звёздами снимает оплаченный им месяц, как и у разовой покупки, и отключает
+ * дальнейшее автопродление подписки.
  */
 export async function refundPurchaseByAdmin(
   input: { purchaseId: string; adminId: string; reason: string },
@@ -39,10 +44,16 @@ export async function refundPurchaseByAdmin(
   if (purchase.provider === "stars") {
     const botToken = env.TELEGRAM_BOT_TOKEN;
     if (!botToken) return { ok: false, error: "not_configured" };
-    const telegramUserId = Number(purchase.user.telegramId);
-    if (!purchase.user.telegramId || !Number.isSafeInteger(telegramUserId)) return { ok: false, error: "no_telegram_user" };
+    // Списание по подписке возвращается тому, кто платил в Telegram, даже если аккаунт с тех пор отвязали.
+    const subscription = purchase.autoRenew || purchase.renewalOfId ? await findStarSubscriptionForPurchase(purchase.id) : null;
+    const payer = subscription?.telegramUserId || purchase.user.telegramId;
+    const telegramUserId = Number(payer);
+    if (!payer || !Number.isSafeInteger(telegramUserId)) return { ok: false, error: "no_telegram_user" };
     const refunded = await refundStarPayment({ botToken, telegramUserId, chargeId: purchase.externalId }, fetchImpl).catch(() => false);
-    return refunded ? finish() : { ok: false, error: "provider_failed" };
+    if (!refunded) return { ok: false, error: "provider_failed" };
+    const outcome = await finish();
+    if (purchase.autoRenew || purchase.renewalOfId) await cancelSubscriptionOfPurchase(purchase.id, env, fetchImpl);
+    return outcome;
   }
 
   if (purchase.provider === "yookassa") {

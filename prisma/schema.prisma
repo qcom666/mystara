@@ -80,6 +80,7 @@ model User {
   natalChartReadings NatalChartReading[]
   purchases           Purchase[]
   promoRedemptions    PromoRedemption[]
+  starSubscriptions   StarSubscription[]
 }
 
 model Account {
@@ -296,15 +297,51 @@ model Purchase {
   currency       String // "XTR" (Звёзды Telegram) | "RUB"; см. lib/payments/catalog.ts
   provider       String? // "stars" | "yookassa" (lib/payments/catalog.ts)
   externalId     String? // идентификатор транзакции у провайдера, проставляется при оплате
-  status         String // "pending" | "paid" | "failed"
+  status         String // "pending" | "paid" | "failed" | "refunded"
+  // Подписка Звёздами с автопродлением (только в Telegram). У покупки, открывающей подписку, autoRenew = true;
+  // каждое повторное списание записывается отдельной покупкой со ссылкой на исходную (renewalOfId) и своим
+  // telegram_payment_charge_id в externalId.
+  autoRenew      Boolean  @default(false)
+  renewalOfId    String?
   createdAt      DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  renewalOf        Purchase?         @relation("PurchaseRenewals", fields: [renewalOfId], references: [id], onDelete: SetNull)
+  renewals         Purchase[]        @relation("PurchaseRenewals")
+  starSubscription StarSubscription?
 
   // Транзакцию провайдера можно записать только один раз (Postgres допускает много NULL, так что неоплаченные строки не мешают).
   @@unique([provider, externalId])
   @@index([userId, createdAt])
+  @@index([renewalOfId])
   @@map("NatalChartPurchase")
+}
+
+// Подписка Premium Звёздами с автопродлением. Telegram сам списывает оплату каждые 30 дней и сообщает боту о каждом
+// списании (successful_payment с is_recurring), об отмене, возобновлении и неудачном списании (обновление
+// subscription). Одна строка на подписку; ключ — исходная покупка, id которой Telegram присылает в invoice_payload.
+model StarSubscription {
+  purchaseId     String   @id
+  userId         String
+  // telegram_payment_charge_id первой оплаты: по нему бот отключает продление (editUserStarSubscription).
+  chargeId       String   @unique
+  // Кто платит в Telegram: подписка принадлежит этому пользователю Telegram, даже если аккаунт потом отвяжут.
+  telegramUserId String
+  // "active" — продлевается; "canceled" — продление отключено, оплаченный срок дослуживает; "failed" — очередное
+  // списание не прошло.
+  state          String   @default("active")
+  // Кто отключил продление: "user" (в Telegram) | "bot" (кнопка в кабинете, возврат, удаление аккаунта).
+  canceledBy     String?
+  // Конец оплаченного периода по данным Telegram (subscription_expiration_date последнего списания).
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, state])
+  @@index([expiresAt])
 }
 
 // --- Админ-панель ---

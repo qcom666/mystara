@@ -21,6 +21,8 @@ interface SubscriptionState {
   currentPeriodEnd: string | null;
   freeChartAvailable: boolean;
   nextFreeChartAt: string | null;
+  /** Подписка Звёздами с автопродлением: продлевается ли и когда следующее списание. */
+  autoRenew: { state: "active" | "canceled" | "failed"; expiresAt: string; amount: number; cancelable: boolean } | null;
 }
 
 async function loadSubscription(): Promise<SubscriptionState | null> {
@@ -28,13 +30,18 @@ async function loadSubscription(): Promise<SubscriptionState | null> {
   return response?.ok ? ((await response.json()) as SubscriptionState) : null;
 }
 
-/** Блок покупки и состояния Premium на странице тарифов: оформить, продлить, до какого числа действует. */
+/**
+ * Блок покупки и состояния Premium на странице тарифов: оформить, продлить, до какого числа действует. В Telegram
+ * Premium можно оформить подпиской с автопродлением (отметка «Продлевать автоматически», по умолчанию выключена);
+ * разовая оплата остаётся.
+ */
 export function PremiumPurchase() {
   const t = useTranslation();
   const p = t.pricingPage;
   const { locale } = useLocale();
   const { status } = useSession();
   const [state, setState] = useState<SubscriptionState | null>(null);
+  const [autoRenew, setAutoRenew] = useState(false);
   const refreshAfterPayment = useRefreshAfterPayment();
 
   const formatDate = useCallback(
@@ -107,6 +114,16 @@ export function PremiumPurchase() {
   }
 
   const cta = state?.active ? p.premiumRenewCta : p.premiumBuyCta;
+  const subscribed = state?.autoRenew?.state === "active";
+  const autoRenewMethod = subscribed ? undefined : methods?.find((method) => method.autoRenew);
+  const autoRenewNote =
+    state?.autoRenew && state.active
+      ? state.autoRenew.state === "active"
+        ? p.autoRenewActive.replace("{date}", formatDate(state.autoRenew.expiresAt)).replace("{price}", formatMethodPrice({ amount: state.autoRenew.amount, currency: "XTR" }))
+        : state.autoRenew.state === "failed"
+          ? p.autoRenewFailed
+          : p.autoRenewCanceled
+      : null;
 
   return (
     <div className="mt-8">
@@ -118,6 +135,16 @@ export function PremiumPurchase() {
               ? p.premiumFreeChartReady
               : p.premiumNextFreeChart.replace("{date}", formatDate(state.nextFreeChartAt))}
           </p>
+          {autoRenewNote && (
+            <p className="mt-1 text-xs text-silver-400">
+              {autoRenewNote}{" "}
+              {subscribed && (
+                <Link href="/account" className="text-gold-300 underline-offset-2 hover:underline">
+                  {p.autoRenewManage}
+                </Link>
+              )}
+            </p>
+          )}
         </div>
       )}
 
@@ -134,14 +161,32 @@ export function PremiumPurchase() {
         </>
       ) : (
         <div className="flex flex-col gap-2">
-          {methods.map((method) => (
-            <div key={method.id}>
-              <Button className="w-full" disabled={busy !== null} onClick={() => void buy(method.id)}>
-                {busy === "confirming" ? p.premiumConfirming : `${cta} — ${formatMethodPrice(method.price)}`}
-              </Button>
-              <p className="mt-1.5 text-center text-xs text-silver-500">{labels[method.id]}</p>
-            </div>
-          ))}
+          {autoRenewMethod && (
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 p-3 text-left text-sm text-silver-200">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 accent-gold-400"
+                checked={autoRenew}
+                disabled={busy !== null}
+                onChange={(event) => setAutoRenew(event.target.checked)}
+              />
+              <span>
+                {p.autoRenewLabel}
+                <span className="mt-1 block text-xs text-silver-500">{p.autoRenewHint.replace("{price}", formatMethodPrice(autoRenewMethod.price))}</span>
+              </span>
+            </label>
+          )}
+          {methods.map((method) => {
+            const recurring = autoRenew && method.autoRenew === true && !subscribed;
+            return (
+              <div key={method.id}>
+                <Button className="w-full" disabled={busy !== null} onClick={() => void buy(method.id, { autoRenew: recurring })}>
+                  {busy === "confirming" ? p.premiumConfirming : `${recurring ? p.premiumSubscribeCta : cta} — ${formatMethodPrice(method.price)}`}
+                </Button>
+                <p className="mt-1.5 text-center text-xs text-silver-500">{labels[method.id]}</p>
+              </div>
+            );
+          })}
           <p className="text-center text-xs text-silver-500">
             {t.natalChartPage.offerNoticePrefix}{" "}
             <Link href="/offer" className="text-gold-300 underline-offset-2 hover:underline">

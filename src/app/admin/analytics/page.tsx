@@ -18,9 +18,10 @@ const LABELS: Record<StoredEventName, string> = {
   signup_completed: "Регистрация",
   checkout_started: "Переход к оплате",
   purchase_paid: "Оплата",
+  subscription_renewed: "Автопродление Premium",
 };
 
-const EXTRA: StoredEventName[] = ["reading_shared", "numerology_calculated", "astrology_calculated", "telegram_session_started"];
+const EXTRA: StoredEventName[] = ["reading_shared", "numerology_calculated", "astrology_calculated", "telegram_session_started", "subscription_renewed"];
 
 function percent(part: number, whole: number): string {
   return whole > 0 ? `${Math.round((part / whole) * 100)}%` : "—";

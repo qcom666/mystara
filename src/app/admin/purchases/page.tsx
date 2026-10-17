@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { RefundButton } from "@/components/admin/refund-button";
-import { formatDateTime, formatMoney, PRODUCT_LABELS, STATUS_LABELS, userLabel } from "@/components/admin/format";
+import { formatDateTime, formatMoney, purchaseProductLabel, STATUS_LABELS, userLabel } from "@/components/admin/format";
 import { requireAdmin } from "@/lib/admin-guard";
 import { listPurchases } from "@/lib/repositories/admin.repository";
 
@@ -73,7 +73,7 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
                     {userLabel(purchase.user)}
                   </Link>
                 </td>
-                <td className="text-silver-200">{PRODUCT_LABELS[purchase.product] ?? purchase.product}</td>
+                <td className="text-silver-200">{purchaseProductLabel(purchase)}</td>
                 <td className="text-silver-400">{purchase.provider ?? "—"}</td>
                 <td className="text-silver-200">{formatMoney(purchase.amount, purchase.currency)}</td>
                 <td className="text-silver-400">{STATUS_LABELS[purchase.status] ?? purchase.status}</td>

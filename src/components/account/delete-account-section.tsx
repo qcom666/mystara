@@ -11,7 +11,7 @@ export function DeleteAccountSection() {
   const t = useTranslation();
   const a = t.accountPage;
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState<"idle" | "deleting" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "deleting" | "error" | "auto-renew">("idle");
   const [signingOut, setSigningOut] = useState(false);
 
   async function handleSignOutEverywhere() {
@@ -31,7 +31,11 @@ export function DeleteAccountSection() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ confirm: true }),
       });
-      if (!response.ok) throw new Error(String(response.status));
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        setStatus(body?.error === "auto_renew_cancel_failed" ? "auto-renew" : "error");
+        return;
+      }
       await signOut({ callbackUrl: "/" });
     } catch {
       setStatus("error");
@@ -57,6 +61,7 @@ export function DeleteAccountSection() {
           <DialogTitle className="font-display text-xl text-silver-50">{a.deleteDialogTitle}</DialogTitle>
           <DialogDescription className="mt-3 text-sm leading-relaxed text-silver-300">{a.deleteDialogBody}</DialogDescription>
           {status === "error" && <p className="mt-3 text-sm text-red-400">{a.deleteFailed}</p>}
+          {status === "auto-renew" && <p className="mt-3 text-sm text-red-400">{a.deleteAutoRenewFailed}</p>}
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button type="button" variant="ghost" disabled={status === "deleting"} onClick={() => setOpen(false)}>
               {t.common.cancel}

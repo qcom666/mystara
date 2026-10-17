@@ -1,12 +1,20 @@
 import { prisma } from "@/lib/db";
 import type { PaymentCurrency, PaymentProductId, PaymentProviderId } from "@/lib/payments/catalog";
 import { NATAL_CHART_PACK_CREDITS } from "@/lib/pricing/natal-chart-pricing";
-import { extendPremiumPeriodEnd, PREMIUM_PERIOD_DAYS } from "@/modules/subscriptions/premium";
+import type { Prisma, Purchase } from "@prisma/client";
+import {
+  estimateSubscriptionExpiration,
+  extendPremiumPeriodEnd,
+  isPremiumActive,
+  PREMIUM_PERIOD_DAYS,
+  premiumEndAfterSubscriptionCharge,
+} from "@/modules/subscriptions/premium";
 import { revokeReferralRewardForRefund, rewardReferrerOnFirstPayment } from "./referral.repository";
 
 /**
  * Создаёт покупку в статусе pending. У каждого провайдера своя цена (lib/payments/catalog.ts); пакет
- * натальных карт при оплате начисляет кредиты, период Premium — продлевает подписку.
+ * натальных карт при оплате начисляет кредиты, период Premium — продлевает подписку. `autoRenew` — счёт
+ * подписки Звёздами с автопродлением: эта покупка становится первой оплатой подписки.
  */
 export async function createPendingPurchase(input: {
   userId: string;
@@ -14,6 +22,7 @@ export async function createPendingPurchase(input: {
   provider: PaymentProviderId;
   amount: number;
   currency: PaymentCurrency;
+  autoRenew?: boolean;
 }) {
   return prisma.purchase.create({
     data: {
@@ -24,6 +33,7 @@ export async function createPendingPurchase(input: {
       currency: input.currency,
       provider: input.provider,
       status: "pending",
+      autoRenew: input.autoRenew === true,
     },
   });
 }
@@ -76,6 +86,13 @@ export async function expireStalePendingPurchases(olderThan: Date): Promise<numb
   return result.count;
 }
 
+/** Какие из списаний провайдера уже записаны покупками: сверка выдаёт только остальные. */
+export async function findRecordedExternalIds(provider: PaymentProviderId, externalIds: string[]): Promise<Set<string>> {
+  if (externalIds.length === 0) return new Set();
+  const rows = await prisma.purchase.findMany({ where: { provider, externalId: { in: externalIds } }, select: { externalId: true } });
+  return new Set(rows.flatMap((row) => (row.externalId ? [row.externalId] : [])));
+}
+
 /** Статус своей покупки (для экрана «подтверждаем оплату»); null, если покупки нет или она чужая. */
 export async function getPurchaseStatusForUser(purchaseId: string, userId: string) {
   return prisma.purchase.findFirst({ where: { id: purchaseId, userId }, select: { status: true, product: true, provider: true } });
@@ -88,10 +105,15 @@ export async function getFulfilledPurchaseSummary(purchaseId: string) {
     select: {
       product: true,
       creditsGranted: true,
+      autoRenew: true,
+      renewalOfId: true,
+      starSubscription: { select: { state: true, expiresAt: true } },
+      renewalOf: { select: { starSubscription: { select: { state: true, expiresAt: true } } } },
       user: { select: { telegramId: true, language: true, natalChartCredits: true, subscription: { select: { currentPeriodEnd: true } } } },
     },
   });
   if (!purchase) return null;
+  const starSubscription = purchase.starSubscription ?? purchase.renewalOf?.starSubscription ?? null;
   return {
     product: purchase.product,
     creditsGranted: purchase.creditsGranted,
@@ -99,6 +121,9 @@ export async function getFulfilledPurchaseSummary(purchaseId: string) {
     language: purchase.user.language,
     credits: purchase.user.natalChartCredits,
     premiumUntil: purchase.user.subscription?.currentPeriodEnd ?? null,
+    // Следующее списание по подписке (если продление включено): о нём сообщение покупателю говорит отдельно.
+    renewal: purchase.renewalOfId !== null,
+    nextChargeAt: starSubscription?.state === "active" ? starSubscription.expiresAt : null,
   };
 }
 
@@ -110,9 +135,118 @@ export interface PaidPayment {
   /** Что провайдер сообщает о реальной оплате: сверяется с тем, что мы запрашивали. */
   amount: number;
   currency: PaymentCurrency;
+  /** Только для подписки Звёздами: когда прошло списание, до какого числа оно продлило подписку и кто платил. */
+  subscription?: SubscriptionCharge;
+}
+
+export interface SubscriptionCharge {
+  chargedAt: Date;
+  /** subscription_expiration_date из successful_payment; null, если неизвестен (оплата найдена сверкой). */
+  expiresAt: Date | null;
+  /** Telegram ID плательщика: подписку отключают от его имени. */
+  telegramUserId: string | null;
 }
 
 export type FulfillResult = "fulfilled" | "already_paid" | "not_found" | "mismatch";
+
+export interface FulfillOutcome {
+  result: FulfillResult;
+  /** Покупка, которой соответствует платёж: исходная или запись повторного списания по подписке. */
+  purchaseId: string;
+}
+
+type Tx = Prisma.TransactionClient;
+
+/** Блокировка строки пользователя: две одновременные оплаты не должны прочитать один и тот же конец периода. */
+async function lockUser(tx: Tx, userId: string): Promise<void> {
+  await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+}
+
+async function setPremiumPeriodEnd(tx: Tx, userId: string, payment: PaidPayment, currentPeriodEnd: Date): Promise<void> {
+  const data = { tier: "PREMIUM" as const, status: "ACTIVE" as const, provider: payment.provider, externalId: payment.externalId, currentPeriodEnd };
+  await tx.subscription.upsert({ where: { userId }, create: { userId, ...data }, update: data });
+}
+
+/**
+ * Списание по подписке Звёздами с автопродлением. Первое списание делает оплаченной исходную покупку, каждое
+ * следующее записывается отдельной покупкой со ссылкой на неё (новая строка на каждый telegram_payment_charge_id),
+ * поэтому одно и то же списание, пришедшее вебхуком и найденное сверкой, выдаётся один раз. Срок Premium
+ * выставляется по сроку подписки у Telegram (premiumEndAfterSubscriptionCharge).
+ */
+async function fulfillSubscriptionCharge(tx: Tx, purchase: Purchase, payment: PaidPayment): Promise<FulfillOutcome> {
+  if (purchase.product !== "premium_month" || payment.provider !== "stars") return { result: "mismatch", purchaseId: purchase.id };
+  await lockUser(tx, purchase.userId);
+
+  // После блокировки: параллельная доставка того же списания уже записала его и завершилась.
+  const recorded = await tx.purchase.findFirst({ where: { provider: "stars", externalId: payment.externalId }, select: { id: true } });
+  if (recorded) return { result: "already_paid", purchaseId: recorded.id };
+
+  const now = new Date();
+  const chargedAt = payment.subscription?.chargedAt ?? now;
+  const starSubscription = await tx.starSubscription.findUnique({ where: { purchaseId: purchase.id } });
+
+  let chargePurchaseId = purchase.id;
+  if (purchase.status === "pending" || purchase.status === "failed") {
+    const flipped = await tx.purchase.updateMany({
+      where: { id: purchase.id, status: { in: ["pending", "failed"] } },
+      data: { status: "paid", externalId: payment.externalId },
+    });
+    if (flipped.count === 0) return { result: "already_paid", purchaseId: purchase.id };
+  } else {
+    const renewal = await tx.purchase.create({
+      data: {
+        userId: purchase.userId,
+        product: purchase.product,
+        creditsGranted: 0,
+        amount: payment.amount,
+        currency: payment.currency,
+        provider: "stars",
+        externalId: payment.externalId,
+        status: "paid",
+        renewalOfId: purchase.id,
+      },
+      select: { id: true },
+    });
+    chargePurchaseId = renewal.id;
+  }
+
+  const previousExpiration = starSubscription?.expiresAt ?? null;
+  const expiresAt = payment.subscription?.expiresAt ?? estimateSubscriptionExpiration(previousExpiration, chargedAt);
+  const existing = await tx.subscription.findUnique({ where: { userId: purchase.userId } });
+  const currentPeriodEnd = premiumEndAfterSubscriptionCharge({
+    currentPeriodEnd: isPremiumActive(existing, now) ? (existing?.currentPeriodEnd ?? null) : null,
+    previousExpiration,
+    expiresAt,
+    now,
+  });
+  await setPremiumPeriodEnd(tx, purchase.userId, payment, currentPeriodEnd);
+
+  if (starSubscription) {
+    await tx.starSubscription.update({
+      where: { purchaseId: purchase.id },
+      data: {
+        expiresAt: previousExpiration && previousExpiration > expiresAt ? previousExpiration : expiresAt,
+        // Списание новее последней смены состояния: значит, подписка снова продлевается (её возобновили или
+        // повторили неудавшееся списание). Списание, найденное сверкой уже после отмены, отмену не снимает.
+        ...(chargedAt > starSubscription.updatedAt ? { state: "active", canceledBy: null } : {}),
+      },
+    });
+  } else {
+    const owner = await tx.user.findUnique({ where: { id: purchase.userId }, select: { telegramId: true } });
+    await tx.starSubscription.create({
+      data: {
+        purchaseId: purchase.id,
+        userId: purchase.userId,
+        chargeId: payment.externalId,
+        telegramUserId: payment.subscription?.telegramUserId ?? owner?.telegramId ?? "",
+        expiresAt,
+      },
+    });
+  }
+
+  await rewardReferrerOnFirstPayment(tx, purchase.userId, chargePurchaseId);
+  return { result: "fulfilled", purchaseId: chargePurchaseId };
+}
 
 /**
  * Превращает подтверждённый платёж в то, что оплачено, ровно один раз: кредиты (пакет натальных карт)
@@ -125,51 +259,55 @@ export type FulfillResult = "fulfilled" | "already_paid" | "not_found" | "mismat
  * покупка повторно не выдаётся.
  */
 export async function fulfillPurchase(payment: PaidPayment): Promise<FulfillResult> {
+  return (await fulfillPayment(payment)).result;
+}
+
+/** То же, что fulfillPurchase, но сообщает, какой покупке соответствует платёж (у повторного списания — своя). */
+export async function fulfillPayment(payment: PaidPayment): Promise<FulfillOutcome> {
   return prisma.$transaction(async (tx) => {
+    const outcome = (result: FulfillResult): FulfillOutcome => ({ result, purchaseId: payment.purchaseId });
     const purchase = await tx.purchase.findUnique({ where: { id: payment.purchaseId } });
-    if (!purchase) return "not_found";
+    if (!purchase) return outcome("not_found");
     if (purchase.provider !== payment.provider || purchase.amount !== payment.amount || purchase.currency !== payment.currency) {
-      return "mismatch";
+      return outcome("mismatch");
     }
-    if (purchase.status === "paid" || purchase.status === "refunded") return "already_paid";
+    if (purchase.autoRenew) return fulfillSubscriptionCharge(tx, purchase, payment);
+    if (purchase.status === "paid" || purchase.status === "refunded") return outcome("already_paid");
 
     const flipped = await tx.purchase.updateMany({
       where: { id: purchase.id, status: { in: ["pending", "failed"] } },
       data: { status: "paid", externalId: payment.externalId },
     });
-    if (flipped.count === 0) return "already_paid";
+    if (flipped.count === 0) return outcome("already_paid");
 
     if (purchase.product === "premium_month") {
-      // Блокировка строки пользователя: две одновременные оплаты не должны прочитать один и тот же конец периода.
-      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${purchase.userId} FOR UPDATE`;
+      await lockUser(tx, purchase.userId);
       const existing = await tx.subscription.findUnique({ where: { userId: purchase.userId } });
-      const currentPeriodEnd = extendPremiumPeriodEnd(existing?.currentPeriodEnd ?? null, new Date());
-      const data = { tier: "PREMIUM" as const, status: "ACTIVE" as const, provider: payment.provider, externalId: payment.externalId, currentPeriodEnd };
-      await tx.subscription.upsert({ where: { userId: purchase.userId }, create: { userId: purchase.userId, ...data }, update: data });
+      await setPremiumPeriodEnd(tx, purchase.userId, payment, extendPremiumPeriodEnd(existing?.currentPeriodEnd ?? null, new Date()));
     } else {
       await tx.user.update({ where: { id: purchase.userId }, data: { natalChartCredits: { increment: purchase.creditsGranted } } });
     }
     // Первая оплата приглашённого приносит бонус пригласившему (один раз, в той же транзакции).
     await rewardReferrerOnFirstPayment(tx, purchase.userId, purchase.id);
-    return "fulfilled";
+    return outcome("fulfilled");
   });
 }
 
-/** Проверка перед оплатой в Telegram: ждём ли мы ещё эту покупку и именно на эту сумму? */
+/**
+ * Проверка перед оплатой в Telegram: ждём ли мы ещё эту покупку и именно на эту сумму? Счёт подписки после первой
+ * оплаты тоже остаётся оплачиваемым: если Telegram спросит подтверждение повторного списания, отказ оборвал бы
+ * продление.
+ */
 export async function isPurchasePayable(input: {
   purchaseId: string;
   provider: PaymentProviderId;
   amount: number;
   currency: PaymentCurrency;
 }): Promise<boolean> {
-  const purchase = await prisma.purchase.findUnique({ where: { id: input.purchaseId } });
-  return (
-    purchase !== null &&
-    purchase.status === "pending" &&
-    purchase.provider === input.provider &&
-    purchase.amount === input.amount &&
-    purchase.currency === input.currency
-  );
+  const purchase = await prisma.purchase.findUnique({ where: { id: input.purchaseId }, include: { starSubscription: { select: { purchaseId: true } } } });
+  if (!purchase || purchase.provider !== input.provider || purchase.amount !== input.amount || purchase.currency !== input.currency) return false;
+  if (purchase.status === "pending") return true;
+  return purchase.autoRenew === true && Boolean(purchase.starSubscription);
 }
 
 export type RefundResult = "refunded" | "not_found" | "not_paid" | "already_refunded";

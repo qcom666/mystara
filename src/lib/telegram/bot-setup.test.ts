@@ -35,6 +35,8 @@ describe("buildBotSetupRequests", () => {
     expect(buildBotSetupRequests({ siteUrl: SITE }).some((request) => request.method === "setWebhook")).toBe(false);
     const webhook = buildBotSetupRequests({ siteUrl: SITE, webhookSecret: "secret-value" }).find((request) => request.method === "setWebhook");
     expect(webhook?.body).toMatchObject({ url: `${SITE}/api/telegram/webhook`, secret_token: "secret-value" });
+    // Без "subscription" бот не узнает, что пользователь отключил автопродление в Telegram.
+    expect(webhook?.body.allowed_updates).toEqual(["message", "pre_checkout_query", "subscription"]);
   });
 
   it("отвергает адрес без https или со слэшем в конце", () => {

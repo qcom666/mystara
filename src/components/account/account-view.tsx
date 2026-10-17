@@ -2,6 +2,7 @@
 
 import { Star } from "lucide-react";
 import Link from "next/link";
+import { AutoRenewControl } from "@/components/account/auto-renew-control";
 import { Badge } from "@/components/ui/badge";
 import { DeleteAccountSection } from "@/components/account/delete-account-section";
 import { LoginMethodsSection } from "@/components/account/login-methods-section";
@@ -106,8 +107,16 @@ export function AccountView({ data }: { data: AccountViewData }) {
     { id: "favorites", label: a.tabFavorites, href: "/account?tab=favorites" },
   ];
 
-  const productName = (product: string) => (product === "premium_month" ? a.productPremium : a.productNatalPack);
-  const statusName = (status: string) => (status === "paid" ? a.statusPaid : status === "pending" ? a.statusPending : a.statusFailed);
+  const productName = (purchase: AccountData["purchases"][number]) =>
+    purchase.product !== "premium_month"
+      ? a.productNatalPack
+      : purchase.renewal
+        ? a.productPremiumRenewal
+        : purchase.autoRenew
+          ? a.productPremiumAutoRenew
+          : a.productPremium;
+  const statusName = (status: string) =>
+    status === "paid" ? a.statusPaid : status === "pending" ? a.statusPending : status === "refunded" ? a.statusRefunded : a.statusFailed;
 
   const favoriteCards = account.favoriteCardIds.map((id) => getCardById(id)).filter((card) => card !== undefined);
   const favoriteSpreads = account.favoriteSpreadIds.map((id) => getSpreadById(id)).filter((spread) => spread !== undefined);
@@ -173,6 +182,13 @@ export function AccountView({ data }: { data: AccountViewData }) {
                         ? a.freeChartReady
                         : a.freeChartNext.replace("{date}", formatDate(account.premium.nextFreeChartAt, locale))}
                     </p>
+                    {account.premium.autoRenew && (
+                      <AutoRenewControl
+                        autoRenew={account.premium.autoRenew}
+                        premiumUntil={account.premium.currentPeriodEnd}
+                        formatDate={(iso) => formatDate(iso, locale)}
+                      />
+                    )}
                   </>
                 ) : (
                   <>
@@ -198,7 +214,7 @@ export function AccountView({ data }: { data: AccountViewData }) {
                 {account.purchases.map((purchase) => (
                   <li key={purchase.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                     <div>
-                      <p className="text-silver-100">{productName(purchase.product)}</p>
+                      <p className="text-silver-100">{productName(purchase)}</p>
                       <p className="text-xs text-silver-500">{formatDate(purchase.createdAt, locale)}</p>
                     </div>
                     <div className="flex items-center gap-3">

@@ -20,7 +20,47 @@ describe("parseStarsEvent", () => {
           },
         },
       }),
-    ).toEqual({ kind: "paid", purchaseId: "purchase-1", amount: 500, currency: "XTR", chargeId: "charge-9", chatId: null, languageCode: null });
+    ).toEqual({
+      kind: "paid",
+      purchaseId: "purchase-1",
+      amount: 500,
+      currency: "XTR",
+      chargeId: "charge-9",
+      chatId: null,
+      languageCode: null,
+      telegramUserId: null,
+      paidAt: null,
+      recurring: null,
+    });
+  });
+
+  it("reads a subscription charge: first or repeated, with the subscription end", () => {
+    const charge = (extra: Record<string, unknown>) =>
+      parseStarsEvent({
+        message: {
+          date: 1_792_000_000,
+          from: { id: 42 },
+          successful_payment: { currency: "XTR", total_amount: 150, invoice_payload: "purchase-1", telegram_payment_charge_id: "charge-2", ...extra },
+        },
+      });
+    expect(charge({ is_recurring: true, is_first_recurring: true, subscription_expiration_date: 1_794_592_000 })).toMatchObject({
+      kind: "paid",
+      telegramUserId: 42,
+      paidAt: new Date(1_792_000_000_000),
+      recurring: { first: true, expiresAt: new Date(1_794_592_000_000) },
+    });
+    expect(charge({ is_recurring: true, subscription_expiration_date: 1_794_592_000 })).toMatchObject({ recurring: { first: false } });
+  });
+
+  it("reads subscription state changes and ignores unknown states", () => {
+    expect(parseStarsEvent({ subscription: { user: { id: 42, language_code: "ru" }, invoice_payload: "purchase-1", state: "canceled" } })).toEqual({
+      kind: "subscription",
+      purchaseId: "purchase-1",
+      state: "canceled",
+      telegramUserId: 42,
+      languageCode: "ru",
+    });
+    expect(parseStarsEvent({ subscription: { invoice_payload: "purchase-1", state: "paused" } })).toBeNull();
   });
 
   it("keeps the chat and language for the confirmation message", () => {
