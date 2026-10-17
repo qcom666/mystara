@@ -21,6 +21,7 @@ const COMMANDS = {
   ru: [
     { command: "start", description: "Открыть Mystara" },
     { command: "card", description: "Карта дня" },
+    { command: "horoscope", description: "Гороскоп на сегодня (например, /horoscope Лев)" },
     { command: "daily", description: "Карта дня каждое утро (/daily off - отписаться)" },
     { command: "help", description: "Как это работает" },
     { command: "docs", description: "Политика, оферта, контакты" },
@@ -29,6 +30,7 @@ const COMMANDS = {
   en: [
     { command: "start", description: "Open Mystara" },
     { command: "card", description: "Card of the day" },
+    { command: "horoscope", description: "Today's horoscope (e.g. /horoscope Leo)" },
     { command: "daily", description: "Card of the day every morning (/daily off to stop)" },
     { command: "help", description: "How it works" },
     { command: "docs", description: "Privacy, offer, contacts" },

@@ -20,7 +20,7 @@ export function ZodiacSignView({ sign: baseSign }: { sign: ZodiacSign }) {
       </Link>
 
       <div className="mt-6 text-center">
-        <p className="font-display text-6xl text-gradient-gold">{sign.symbol}</p>
+        <p className="font-display text-6xl text-gradient-gold">{`${sign.symbol}\uFE0E`}</p>
         <h1 className="mt-2 font-display text-3xl text-silver-50">{sign.name}</h1>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           <Badge variant="violet">{t.astrologyTerms.elements[sign.element]}</Badge>
@@ -52,6 +52,15 @@ export function ZodiacSignView({ sign: baseSign }: { sign: ZodiacSign }) {
             ))}
           </ul>
         </GlassPanel>
+      </div>
+
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Button asChild variant="secondary">
+          <Link href={`/astrology/horoscope/${sign.id}`}>{t.horoscopePage.resultCta}</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={`/astrology/compatibility?sign=${sign.id}`}>{t.horoscopePage.compatibilityCta}</Link>
+        </Button>
       </div>
 
       <div className="mt-10 text-center">

@@ -117,6 +117,15 @@ export function AstrologyResult({ birthDate, sect, onReset, saved = false }: Ast
         </div>
       )}
 
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Button asChild variant="secondary">
+          <Link href={`/astrology/horoscope/${sign.id}`}>{t.horoscopePage.resultCta}</Link>
+        </Button>
+        <Button asChild variant="secondary">
+          <Link href={`/astrology/compatibility?sign=${sign.id}`}>{t.horoscopePage.compatibilityCta}</Link>
+        </Button>
+      </div>
+
       <p className="mt-6 text-center text-xs text-silver-500">{t.astrologyPage.disclaimer}</p>
 
       {!saved && (

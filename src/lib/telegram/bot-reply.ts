@@ -1,6 +1,9 @@
 import { OPERATOR } from "@/lib/legal/operator";
+import { buildDailyHoroscope } from "@/modules/astrology/services/daily-horoscope";
+import { getSkyOfDay } from "@/modules/astrology/services/sky-of-day";
 import { dailyCard, moscowDay } from "@/modules/tarot/services/daily-card";
 import { type BotLang, dailyCardKeyboard, dailyCardText, subscriptionText } from "./daily-card-message";
+import { horoscopeKeyboard, horoscopeText, parseSignArgument, signPickerKeyboard, signPickerText } from "./horoscope-message";
 
 /**
  * Ответы Telegram-бота в чате (само мини-приложение живёт в веб-приложении).
@@ -52,7 +55,7 @@ const COPY: Record<BotLang, Copy> = {
     start:
       "Добро пожаловать в Mystara ✨\n\nТаро, нумерология и астрология — расклады и толкования в одном приложении. Нажмите кнопку ниже, чтобы начать.",
     help:
-      "Mystara — это развлекательный сервис: расклады и толкования не являются предсказанием и не заменяют консультацию специалиста.\n\nНажмите кнопку ниже, чтобы открыть приложение. Команды: /card — карта дня, /daily — присылать карту дня каждое утро (/daily off — отписаться), /docs — документы, /support — как связаться с нами.",
+      "Mystara — это развлекательный сервис: расклады и толкования не являются предсказанием и не заменяют консультацию специалиста.\n\nНажмите кнопку ниже, чтобы открыть приложение. Команды: /card — карта дня, /horoscope Лев — гороскоп на сегодня, /daily — присылать карту дня каждое утро (/daily off — отписаться), /docs — документы, /support — как связаться с нами.",
     fallback: "Все расклады — в приложении. Нажмите кнопку ниже, чтобы открыть Mystara.",
     docs: "Документы сервиса Mystara: политика конфиденциальности, публичная оферта (она же пользовательское соглашение), контакты и реквизиты продавца.",
     support: (email, telegram, phone) =>
@@ -66,7 +69,7 @@ const COPY: Record<BotLang, Copy> = {
     start:
       "Welcome to Mystara ✨\n\nTarot, numerology and astrology — readings and interpretations in one app. Tap the button below to begin.",
     help:
-      "Mystara is an entertainment service: readings and interpretations are not predictions and are no substitute for professional advice.\n\nTap the button below to open the app. Commands: /card for the card of the day, /daily to get it every morning (/daily off to stop), /docs for the documents, /support to reach us.",
+      "Mystara is an entertainment service: readings and interpretations are not predictions and are no substitute for professional advice.\n\nTap the button below to open the app. Commands: /card for the card of the day, /horoscope Leo for today's horoscope, /daily to get it every morning (/daily off to stop), /docs for the documents, /support to reach us.",
     fallback: "All readings live in the app. Tap the button below to open Mystara.",
     docs: "Mystara documents: the privacy policy, the public offer (also the terms of use), and the seller’s contacts and details.",
     support: (email, telegram, phone) =>
@@ -116,6 +119,13 @@ export function buildBotReply(update: TelegramUpdate, appUrl: string): BotReply 
   if (command === "card") {
     const daily = dailyCard(String(chatId), moscowDay());
     return { method: "sendMessage", chat_id: chatId, text: dailyCardText(daily, lang), reply_markup: dailyCardKeyboard(lang, appUrl, daily.card.id) };
+  }
+
+  if (command === "horoscope") {
+    const sign = parseSignArgument(message.text);
+    if (!sign) return { method: "sendMessage", chat_id: chatId, text: signPickerText(lang), reply_markup: signPickerKeyboard(lang, appUrl) };
+    const horoscope = buildDailyHoroscope(sign, getSkyOfDay(moscowDay()));
+    return { method: "sendMessage", chat_id: chatId, text: horoscopeText(horoscope, lang), reply_markup: horoscopeKeyboard(lang, appUrl, sign) };
   }
 
   let text: string;

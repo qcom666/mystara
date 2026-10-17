@@ -17,6 +17,8 @@
   --violet-500: #8b5cf6;
   --violet-600: #6d3ff0;
 
+  --silver-50: #fafbfd;
+  --silver-100: #f3f4f8;
   --silver-200: #e7e9f0;
   --silver-300: #cdd1de;
   --silver-400: #9ca0b5;
@@ -43,6 +45,8 @@
   --color-violet-500: var(--violet-500);
   --color-violet-600: var(--violet-600);
 
+  --color-silver-50: var(--silver-50);
+  --color-silver-100: var(--silver-100);
   --color-silver-200: var(--silver-200);
   --color-silver-300: var(--silver-300);
   --color-silver-400: var(--silver-400);

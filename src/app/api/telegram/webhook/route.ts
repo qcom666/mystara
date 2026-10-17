@@ -16,7 +16,7 @@ import { buildPreCheckoutAnswer, parseStarsEvent, type TelegramPaymentUpdate } f
  *
  * Ответ уходит телом ответа (Telegram выполняет возвращённый `method`), поэтому токен бота и исходящие
  * запросы не нужны. Обрабатываются:
- *  - сообщения в чате (/start, /help, /card, /docs, /support) → ответ с кнопками мини-приложения и документов;
+ *  - сообщения в чате (/start, /help, /card, /horoscope, /docs, /support) → ответ с кнопками мини-приложения и документов;
  *  - /daily и /daily off → подписка на «Карту дня» и отписка (нужна база);
  *  - платежи Звёздами: `pre_checkout_query` (подтвердить) и `successful_payment` (начислить кредиты).
  */

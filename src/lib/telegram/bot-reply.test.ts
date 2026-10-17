@@ -98,3 +98,29 @@ describe("карта дня в боте", () => {
     expect(unsubscribe.text).toContain("отписались");
   });
 });
+
+describe("гороскоп в боте", () => {
+  const message = (text: string, language_code = "ru") => ({ message: { text, chat: { id: 4242, type: "private" }, from: { language_code } } });
+
+  it("/horoscope Лев присылает гороскоп с кнопкой на страницу знака", () => {
+    const reply = buildBotReply(message("/horoscope Лев"), "https://mystara.example");
+    expect(reply?.text).toMatch(/^♌ Лев — гороскоп на \d+ [а-я]+/);
+    expect(reply?.text).toContain("Совет:");
+    expect(reply?.text).toContain("не предсказание");
+    const button = reply?.reply_markup.inline_keyboard[0][0] as { web_app: { url: string } };
+    expect(button.web_app.url).toBe("https://mystara.example/astrology/horoscope/leo");
+  });
+
+  it("понимает английские имена, регистр и ё", () => {
+    expect(buildBotReply(message("/horoscope@mystara_tarot_bot leo", "en"), "https://a.example")?.text).toMatch(/^♌ Leo — horoscope for /);
+    expect(buildBotReply(message("/horoscope ВОДОЛЕЙ"), "https://a.example")?.text).toMatch(/^♒ Водолей/);
+  });
+
+  it("без знака или с неизвестным словом предлагает выбрать знак", () => {
+    for (const text of ["/horoscope", "/horoscope кот"]) {
+      const reply = buildBotReply(message(text), "https://a.example");
+      expect(reply?.text).toContain("Выберите знак");
+      expect(reply?.reply_markup.inline_keyboard.flat()).toHaveLength(12);
+    }
+  });
+});

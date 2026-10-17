@@ -21,7 +21,7 @@ describe("buildBotSetupRequests", () => {
 
   it("команды совпадают с теми, что понимает бот", () => {
     const commands = buildBotSetupRequests({ siteUrl: SITE })[0].body.commands as { command: string }[];
-    expect(commands.map((item) => item.command)).toEqual(["start", "card", "daily", "help", "docs", "support"]);
+    expect(commands.map((item) => item.command)).toEqual(["start", "card", "horoscope", "daily", "help", "docs", "support"]);
   });
 
   it("описания укладываются в лимиты Telegram", () => {
