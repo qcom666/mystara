@@ -1,7 +1,8 @@
 // Настройка бота одной командой: `npm run bot:setup` (проверка без отправки: `npm run bot:setup -- --dry-run`).
 // Читает TELEGRAM_BOT_TOKEN и NEXT_PUBLIC_SITE_URL из окружения; с флагом `--webhook` ещё регистрирует вебхук
-// по TELEGRAM_WEBHOOK_SECRET. Токен нигде не печатается.
-import { buildBotSetupRequests } from "../src/lib/telegram/bot-setup";
+// по TELEGRAM_WEBHOOK_SECRET. Токен нигде не печатается. Если ключи в Vercel скрытые (Sensitive) и локально их
+// нет, то же самое делает кнопка «Обновить настройки бота» на главной странице админ-панели.
+import { applyBotSetupRequests, buildBotSetupRequests } from "../src/lib/telegram/bot-setup";
 
 async function main(): Promise<void> {
   const args = new Set(process.argv.slice(2));
@@ -15,26 +16,16 @@ async function main(): Promise<void> {
   if (!dryRun && !botToken) throw new Error("Задайте TELEGRAM_BOT_TOKEN (токен из @BotFather).");
 
   const requests = buildBotSetupRequests({ siteUrl, webhookSecret });
-  let failed = 0;
-  for (const request of requests) {
-    const label = `${request.method}${request.body.language_code ? ` (${String(request.body.language_code)})` : ""}`;
-    if (dryRun) {
-      console.log(`[проверка] ${label}`);
-      continue;
-    }
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/${request.method}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request.body),
-    });
-    const data = (await response.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
-    if (response.ok && data?.ok) console.log(`✓ ${label}`);
-    else {
-      failed += 1;
-      console.error(`✗ ${label}: ${data?.description ?? response.status}`);
-    }
+  if (dryRun) {
+    for (const request of requests) console.log(`[проверка] ${request.method}${request.body.language_code ? ` (${String(request.body.language_code)})` : ""}`);
+    return;
   }
-  if (failed > 0) process.exit(1);
+  const results = await applyBotSetupRequests(botToken as string, requests);
+  for (const result of results) {
+    if (result.ok) console.log(`✓ ${result.label}`);
+    else console.error(`✗ ${result.label}: ${result.error}`);
+  }
+  if (results.some((result) => !result.ok)) process.exit(1);
 }
 
 main().catch((error: unknown) => {

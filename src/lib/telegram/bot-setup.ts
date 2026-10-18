@@ -1,8 +1,10 @@
+import { telegramApiUrl } from "./bot-api";
+
 /**
  * Настройка бота через Bot API: команды, описание, кнопка меню с Mini App и (по желанию) вебхук. То же
  * самое можно сделать руками в @BotFather; здесь тексты и порядок собраны в одном месте, чтобы настройку
- * можно было повторить одной командой (`npm run bot:setup`) на любом домене.
- * Чистая функция: возвращает список запросов и ничего не отправляет.
+ * можно было повторить одной командой (`npm run bot:setup`) или кнопкой в админ-панели на любом домене.
+ * `buildBotSetupRequests` — чистая функция: возвращает список запросов и ничего не отправляет.
  */
 
 export interface BotApiRequest {
@@ -77,4 +79,67 @@ export function buildBotSetupRequests({ siteUrl, webhookSecret }: BotSetupOption
     });
   }
   return requests;
+}
+
+export interface BotSetupResult {
+  /** Метод и язык, например «setMyCommands (ru)». */
+  label: string;
+  ok: boolean;
+  /** Ответ Telegram при ошибке (без токена). */
+  error: string | null;
+}
+
+/** Отправляет запросы настройки по очереди и возвращает результат каждого. Токен в результат не попадает. */
+export async function applyBotSetupRequests(
+  botToken: string,
+  requests: BotApiRequest[],
+  fetchImpl: typeof fetch = fetch,
+): Promise<BotSetupResult[]> {
+  const results: BotSetupResult[] = [];
+  for (const request of requests) {
+    const label = `${request.method}${request.body.language_code ? ` (${String(request.body.language_code)})` : ""}`;
+    try {
+      const response = await fetchImpl(telegramApiUrl(botToken, request.method), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request.body),
+        signal: AbortSignal.timeout(8000),
+      });
+      const data = (await response.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
+      const ok = response.ok && data?.ok === true;
+      results.push({ label, ok, error: ok ? null : (data?.description ?? `HTTP ${response.status}`) });
+    } catch {
+      results.push({ label, ok: false, error: "network error" });
+    }
+  }
+  return results;
+}
+
+export interface WebhookInfo {
+  url: string;
+  allowedUpdates: string[] | null;
+  pendingUpdateCount: number;
+  lastErrorMessage: string | null;
+  lastErrorDate: string | null;
+}
+
+/** Текущее состояние вебхука у Telegram (getWebhookInfo): адрес, список обновлений, последняя ошибка. */
+export async function fetchWebhookInfo(botToken: string, fetchImpl: typeof fetch = fetch): Promise<WebhookInfo | null> {
+  try {
+    const response = await fetchImpl(telegramApiUrl(botToken, "getWebhookInfo"), { method: "POST", signal: AbortSignal.timeout(8000) });
+    const data = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      result?: { url?: string; allowed_updates?: string[]; pending_update_count?: number; last_error_message?: string; last_error_date?: number };
+    } | null;
+    if (!response.ok || !data?.ok || !data.result) return null;
+    return {
+      url: data.result.url ?? "",
+      allowedUpdates: data.result.allowed_updates ?? null,
+      pendingUpdateCount: data.result.pending_update_count ?? 0,
+      lastErrorMessage: data.result.last_error_message ?? null,
+      lastErrorDate: data.result.last_error_date ? new Date(data.result.last_error_date * 1000).toISOString() : null,
+    };
+  } catch {
+    return null;
+  }
 }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { buildBotSetupRequests } from "./bot-setup";
+import { describe, expect, it, vi } from "vitest";
+import { applyBotSetupRequests, buildBotSetupRequests, fetchWebhookInfo } from "./bot-setup";
 
 const SITE = "https://mystara.example";
 
@@ -43,5 +43,48 @@ describe("buildBotSetupRequests", () => {
     for (const bad of ["http://mystara.example", "https://mystara.example/", "mystara.example", "https://a.example/path"]) {
       expect(() => buildBotSetupRequests({ siteUrl: bad })).toThrow(/https/);
     }
+  });
+});
+
+describe("применение настроек бота", () => {
+  it("отправляет запросы по очереди и сообщает результат каждого, без токена в ответе", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, result: true }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, description: "Bad Request: wrong url" }), { status: 400 }))
+      .mockRejectedValueOnce(new Error("offline"));
+    const results = await applyBotSetupRequests(
+      "123:SECRET",
+      [
+        { method: "setMyCommands", body: {} },
+        { method: "setMyCommands", body: { language_code: "ru" } },
+        { method: "setWebhook", body: {} },
+      ],
+      fetchImpl as never,
+    );
+    expect(results).toEqual([
+      { label: "setMyCommands", ok: true, error: null },
+      { label: "setMyCommands (ru)", ok: false, error: "Bad Request: wrong url" },
+      { label: "setWebhook", ok: false, error: "network error" },
+    ]);
+    expect(JSON.stringify(results)).not.toContain("SECRET");
+  });
+
+  it("состояние вебхука: адрес, список обновлений, последняя ошибка", async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ ok: true, result: { url: "https://s.test/api/telegram/webhook", allowed_updates: ["message"], pending_update_count: 2, last_error_message: "Wrong response", last_error_date: 1792300000 } }),
+          { status: 200 },
+        ),
+    );
+    await expect(fetchWebhookInfo("t", fetchImpl as never)).resolves.toEqual({
+      url: "https://s.test/api/telegram/webhook",
+      allowedUpdates: ["message"],
+      pendingUpdateCount: 2,
+      lastErrorMessage: "Wrong response",
+      lastErrorDate: new Date(1792300000 * 1000).toISOString(),
+    });
+    await expect(fetchWebhookInfo("t", (async () => new Response("{}", { status: 401 })) as never)).resolves.toBeNull();
   });
 });

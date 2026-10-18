@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDateTime, formatMoney, PRODUCT_LABELS, STATUS_LABELS, userLabel } from "@/components/admin/format";
+import { BotSetupPanel } from "@/components/admin/bot-setup-panel";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { requireAdmin } from "@/lib/admin-guard";
 import { getDashboardStats } from "@/lib/repositories/admin.repository";
@@ -110,6 +111,10 @@ export default async function AdminDashboardPage() {
             ))}
           </ul>
         </div>
+      </section>
+
+      <section>
+        <BotSetupPanel />
       </section>
     </div>
   );

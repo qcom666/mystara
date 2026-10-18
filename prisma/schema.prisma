@@ -352,7 +352,7 @@ model AdminAction {
   id           String   @id @default(cuid())
   adminId      String
   targetUserId String?
-  action       String // "credits.adjust" | "premium.extend" | "premium.end" | "purchase.refund"
+  action       String // "credits.adjust" | "premium.extend" | "premium.end" | "purchase.refund" | "bot.setup"
   details      Json // параметры действия и причина, указанная администратором
   createdAt    DateTime @default(now())
 
