@@ -35,6 +35,8 @@ export interface AccountPurchaseSummary {
   /** Подписка с автопродлением: первая оплата или повторное списание по ней. */
   autoRenew: boolean;
   renewal: boolean;
+  /** Ссылка на чек «Мой налог»; есть только у оплаченной покупки, по которой чек уже выдан. */
+  receiptUrl: string | null;
 }
 
 export interface AccountData {
@@ -167,6 +169,7 @@ export async function getAccountData(userId: string): Promise<AccountData | null
       createdAt: purchase.createdAt.toISOString(),
       autoRenew: purchase.autoRenew,
       renewal: purchase.renewalOfId !== null,
+      receiptUrl: purchase.status === "paid" && purchase.receiptSentAt ? purchase.receiptUrl : null,
     })),
     readings: readings.map(toReadingSummary),
     favoriteReadings: favoriteReadings.map(toReadingSummary),

@@ -711,6 +711,7 @@ export const ru: Dictionary = {
     statusPending: "Ожидает оплаты",
     statusFailed: "Не прошла",
     statusRefunded: "Возвращено",
+    receiptLink: "Чек",
     readingsHeading: "Расклады Таро",
     noReadings: "Раскладов пока нет.",
     startReadingCta: "Сделать расклад",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatDateTime, formatMoney, PRODUCT_LABELS, STATUS_LABELS, userLabel } from "@/components/admin/format";
+import { formatDateTime, formatDay, formatMoney, PRODUCT_LABELS, STATUS_LABELS, userLabel } from "@/components/admin/format";
 import { BotSetupPanel } from "@/components/admin/bot-setup-panel";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { requireAdmin } from "@/lib/admin-guard";
@@ -7,14 +7,15 @@ import { getDashboardStats } from "@/lib/repositories/admin.repository";
 
 export const dynamic = "force-dynamic";
 
-function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
-  return (
-    <GlassPanel padding="sm">
+function Stat({ label, value, hint, href, alert }: { label: string; value: string | number; hint?: string; href?: string; alert?: boolean }) {
+  const panel = (
+    <GlassPanel padding="sm" className={`h-full ${href ? "transition-colors hover:border-gold-400/40" : ""} ${alert ? "border-red-400/40" : ""}`}>
       <p className="text-xs uppercase tracking-wider text-silver-500">{label}</p>
-      <p className="mt-1 text-3xl font-semibold text-silver-50">{value}</p>
+      <p className={`mt-1 text-3xl font-semibold ${alert ? "text-red-300" : "text-silver-50"}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-silver-500">{hint}</p>}
     </GlassPanel>
   );
+  return href ? <Link href={href}>{panel}</Link> : panel;
 }
 
 export default async function AdminDashboardPage() {
@@ -24,6 +25,13 @@ export default async function AdminDashboardPage() {
   const revenue = new Map<string, number>();
   for (const row of stats.paidByProduct) revenue.set(row.currency, (revenue.get(row.currency) ?? 0) + row.sum);
   const paidCount = stats.paidByProduct.reduce((total, row) => total + row.count, 0);
+  const { receipts } = stats;
+  const receiptHint =
+    receipts.pending === 0
+      ? "все чеки выданы"
+      : [receipts.overdue > 0 ? `просрочено: ${receipts.overdue}` : null, receipts.nextDue ? `ближайший срок — до конца ${formatDay(receipts.nextDue)}` : null]
+          .filter(Boolean)
+          .join(" · ");
 
   return (
     <div className="space-y-10">
@@ -34,6 +42,13 @@ export default async function AdminDashboardPage() {
           label="Оплаченных покупок"
           value={paidCount}
           hint={[...revenue].map(([currency, sum]) => formatMoney(sum, currency)).join(" · ") || "пока нет"}
+        />
+        <Stat
+          label="Покупок без чека"
+          value={receipts.pending}
+          hint={`${receiptHint}. Чек — до 9-го числа следующего месяца`}
+          href="/admin/purchases?status=no_receipt"
+          alert={receipts.overdue > 0}
         />
         <Stat label="Зависшие оплаты" value={stats.stalePending} hint="ожидают оплаты больше часа" />
         <Stat label="Раскладов за 30 дней" value={stats.readings30} />

@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
+import { purchasePaidAt, summarizeReceiptBacklog } from "@/lib/payments/receipts";
 import { extendPremiumPeriodEnd } from "@/modules/subscriptions/premium";
+import { listPaidWithoutReceipt } from "./receipt.repository";
 
 const DAY_MS = 86_400_000;
 
@@ -7,7 +9,7 @@ export async function getDashboardStats(now: Date = new Date()) {
   const week = new Date(now.getTime() - 7 * DAY_MS);
   const month = new Date(now.getTime() - 30 * DAY_MS);
 
-  const [users, newUsers, telegramUsers, premiumActive, paidByProduct, pending, natalCharts30, readings30, recentPurchases, recentUsers] =
+  const [users, newUsers, telegramUsers, premiumActive, paidByProduct, pending, natalCharts30, readings30, recentPurchases, recentUsers, withoutReceipt] =
     await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { createdAt: { gte: week } } }),
@@ -19,6 +21,7 @@ export async function getDashboardStats(now: Date = new Date()) {
       prisma.reading.count({ where: { createdAt: { gte: month } } }),
       prisma.purchase.findMany({ orderBy: { createdAt: "desc" }, take: 10, include: { user: { select: { id: true, email: true, name: true, telegramUsername: true } } } }),
       prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 10, select: { id: true, email: true, name: true, telegramUsername: true, createdAt: true } }),
+      listPaidWithoutReceipt(),
     ]);
 
   return {
@@ -37,6 +40,7 @@ export async function getDashboardStats(now: Date = new Date()) {
     readings30,
     recentPurchases,
     recentUsers,
+    receipts: summarizeReceiptBacklog(withoutReceipt.map(purchasePaidAt), now),
   };
 }
 
@@ -102,12 +106,16 @@ export async function getUserDetail(userId: string) {
   return { user, purchases, natalCharts, actions };
 }
 
-export async function listPurchases(options: { status?: string; take?: number }) {
+/**
+ * Покупки для админ-панели. `withoutReceipt` — оплаченные, по которым чек ещё не выдан: сначала самые старые,
+ * у них срок выдачи чека кончается раньше.
+ */
+export async function listPurchases(options: { status?: string; withoutReceipt?: boolean; take?: number }) {
   return prisma.purchase.findMany({
-    where: options.status ? { status: options.status } : {},
-    orderBy: { createdAt: "desc" },
+    where: options.withoutReceipt ? { status: "paid", receiptSentAt: null } : options.status ? { status: options.status } : {},
+    orderBy: { createdAt: options.withoutReceipt ? "asc" : "desc" },
     take: options.take ?? 100,
-    include: { user: { select: { id: true, email: true, name: true, telegramUsername: true } } },
+    include: { user: { select: { id: true, email: true, name: true, telegramUsername: true, telegramId: true } } },
   });
 }
 

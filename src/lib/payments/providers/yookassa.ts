@@ -35,6 +35,8 @@ export interface YooKassaPayment {
   amount?: { value: string; currency: string };
   metadata?: Record<string, string>;
   confirmation?: { confirmation_url?: string };
+  /** Когда платёж подтверждён (ISO 8601); есть у успешных платежей. */
+  captured_at?: string;
 }
 
 function authHeader({ shopId, secretKey }: YooKassaCredentials): string {

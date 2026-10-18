@@ -17,6 +17,8 @@ const ACTION_LABELS: Record<string, string> = {
   "credits.adjust": "Кредиты",
   "premium.extend": "Premium: продление",
   "premium.end": "Premium: прекращение",
+  "receipt.attach": "Чек: внесена ссылка",
+  "receipt.send": "Чек: выдан покупателю",
 };
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -105,7 +107,10 @@ export default async function AdminUserPage({ params }: PageProps) {
               </div>
               <p className="text-right text-silver-200">
                 {formatMoney(purchase.amount, purchase.currency)}
-                <span className="block text-xs text-silver-500">{STATUS_LABELS[purchase.status] ?? purchase.status}</span>
+                <span className="block text-xs text-silver-500">
+                  {STATUS_LABELS[purchase.status] ?? purchase.status}
+                  {purchase.status === "paid" && (purchase.receiptSentAt ? " · чек выдан" : " · чек не выдан")}
+                </span>
               </p>
             </li>
           ))}
@@ -133,7 +138,7 @@ export default async function AdminUserPage({ params }: PageProps) {
           <ul className="mt-3 divide-y divide-white/5 rounded-xl border border-white/10 text-sm">
             {actions.length === 0 && <li className="px-4 py-3 text-silver-500">Ручных действий не было.</li>}
             {actions.map((action) => {
-              const details = action.details as { reason?: string; delta?: number; days?: number } | null;
+              const details = action.details as { reason?: string; delta?: number; days?: number; channels?: string[] } | null;
               return (
                 <li key={action.id} className="px-4 py-3">
                   <p className="text-silver-100">
@@ -142,7 +147,7 @@ export default async function AdminUserPage({ params }: PageProps) {
                     {typeof details?.days === "number" && ` +${details.days} дн.`}
                   </p>
                   <p className="text-xs text-silver-500">
-                    {formatDateTime(action.createdAt)} · {details?.reason ?? ""}
+                    {formatDateTime(action.createdAt)} · {details?.reason ?? details?.channels?.join(", ") ?? ""}
                   </p>
                 </li>
               );

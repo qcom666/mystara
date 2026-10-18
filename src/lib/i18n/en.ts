@@ -711,6 +711,7 @@ export const en = {
     statusPending: "Awaiting payment",
     statusFailed: "Failed",
     statusRefunded: "Refunded",
+    receiptLink: "Receipt",
     readingsHeading: "Tarot readings",
     noReadings: "No readings yet.",
     startReadingCta: "Start a reading",

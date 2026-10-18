@@ -33,6 +33,11 @@ export function purchaseProductLabel(purchase: { product: string; autoRenew: boo
   return purchase.autoRenew ? `${label} · автопродление` : label;
 }
 
+/** Наименование услуги для чека в «Мой налог»: одинаковое у разовой оплаты Premium и продления подписки. */
+export function receiptServiceName(product: string): string {
+  return product === "premium_month" ? "Подписка Mystara Premium на 30 дней" : "Пакет «Натальная карта» (3 построения) в сервисе Mystara";
+}
+
 export const STATUS_LABELS: Record<string, string> = {
   paid: "оплачено",
   pending: "ожидает",

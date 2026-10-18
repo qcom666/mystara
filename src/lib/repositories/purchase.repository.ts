@@ -135,6 +135,8 @@ export interface PaidPayment {
   /** Что провайдер сообщает о реальной оплате: сверяется с тем, что мы запрашивали. */
   amount: number;
   currency: PaymentCurrency;
+  /** Когда прошла оплата по данным провайдера; без неё — момент выдачи. Нужна для срока чека самозанятого. */
+  paidAt?: Date;
   /** Только для подписки Звёздами: когда прошло списание, до какого числа оно продлило подписку и кто платил. */
   subscription?: SubscriptionCharge;
 }
@@ -189,7 +191,7 @@ async function fulfillSubscriptionCharge(tx: Tx, purchase: Purchase, payment: Pa
   if (purchase.status === "pending" || purchase.status === "failed") {
     const flipped = await tx.purchase.updateMany({
       where: { id: purchase.id, status: { in: ["pending", "failed"] } },
-      data: { status: "paid", externalId: payment.externalId },
+      data: { status: "paid", externalId: payment.externalId, paidAt: chargedAt },
     });
     if (flipped.count === 0) return { result: "already_paid", purchaseId: purchase.id };
   } else {
@@ -203,6 +205,7 @@ async function fulfillSubscriptionCharge(tx: Tx, purchase: Purchase, payment: Pa
         provider: "stars",
         externalId: payment.externalId,
         status: "paid",
+        paidAt: chargedAt,
         renewalOfId: purchase.id,
       },
       select: { id: true },
@@ -276,7 +279,7 @@ export async function fulfillPayment(payment: PaidPayment): Promise<FulfillOutco
 
     const flipped = await tx.purchase.updateMany({
       where: { id: purchase.id, status: { in: ["pending", "failed"] } },
-      data: { status: "paid", externalId: payment.externalId },
+      data: { status: "paid", externalId: payment.externalId, paidAt: payment.paidAt ?? payment.subscription?.chargedAt ?? new Date() },
     });
     if (flipped.count === 0) return outcome("already_paid");
 

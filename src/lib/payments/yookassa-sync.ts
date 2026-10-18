@@ -30,12 +30,14 @@ export async function applyYooKassaPayment(payment: YooKassaPayment, expectedPur
   }
   if (payment.status !== "succeeded" || !payment.paid || payment.amount?.currency !== "RUB") return "pending";
 
+  const capturedAt = payment.captured_at ? new Date(payment.captured_at) : null;
   const result = await fulfillPurchase({
     purchaseId,
     provider: "yookassa",
     externalId: payment.id,
     amount: Math.round(Number(payment.amount.value)),
     currency: "RUB",
+    paidAt: capturedAt && !Number.isNaN(capturedAt.getTime()) ? capturedAt : undefined,
   });
   if (result === "fulfilled") {
     await recordEvent({ name: "purchase_paid", product: (await getPurchaseProduct(purchaseId)) ?? undefined, provider: "yookassa" }, { shell: "web" });

@@ -303,6 +303,15 @@ model Purchase {
   // telegram_payment_charge_id в externalId.
   autoRenew      Boolean  @default(false)
   renewalOfId    String?
+  // Когда покупка стала оплаченной. Пусто у покупок, оплаченных до появления поля: для них датой оплаты
+  // считается createdAt.
+  paidAt         DateTime?
+  // Чек самозанятого (422-ФЗ, ст. 14): доход оператор регистрирует сам в приложении «Мой налог», вносит сюда
+  // ссылку на чек (https://lknpd.nalog.ru/…) и отправляет её покупателю. receiptAttachedBy — id администратора,
+  // который внёс ссылку; receiptSentAt — когда чек ушёл покупателю (пусто, пока не отправлен).
+  receiptUrl        String?
+  receiptAttachedBy String?
+  receiptSentAt     DateTime?
   createdAt      DateTime @default(now())
 
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -314,6 +323,8 @@ model Purchase {
   @@unique([provider, externalId])
   @@index([userId, createdAt])
   @@index([renewalOfId])
+  // Оплаченные покупки, по которым чек ещё не выдан (админ-панель).
+  @@index([status, receiptSentAt])
   @@map("NatalChartPurchase")
 }
 
@@ -352,7 +363,7 @@ model AdminAction {
   id           String   @id @default(cuid())
   adminId      String
   targetUserId String?
-  action       String // "credits.adjust" | "premium.extend" | "premium.end" | "purchase.refund" | "bot.setup"
+  action       String // "credits.adjust" | "premium.extend" | "premium.end" | "purchase.refund" | "bot.setup" | "receipt.attach" | "receipt.send"
   details      Json // параметры действия и причина, указанная администратором
   createdAt    DateTime @default(now())
 

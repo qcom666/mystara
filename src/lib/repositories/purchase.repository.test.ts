@@ -10,6 +10,7 @@ interface PurchaseRow {
   status: string;
   creditsGranted: number;
   externalId: string | null;
+  paidAt?: Date | null;
 }
 
 interface SubscriptionRow {
@@ -35,7 +36,7 @@ vi.mock("./referral.repository", () => ({ rewardReferrerOnFirstPayment: async ()
 vi.mock("@/lib/db", () => {
   const purchase = {
     findUnique: async ({ where }: { where: { id: string } }) => state.purchases.get(where.id) ?? null,
-    updateMany: async ({ where, data }: { where: { id: string; status: string | { in: string[] } }; data: { status: string; externalId: string } }) => {
+    updateMany: async ({ where, data }: { where: { id: string; status: string | { in: string[] } }; data: { status: string; externalId: string; paidAt?: Date } }) => {
       const row = state.purchases.get(where.id);
       const allowed = typeof where.status === "string" ? [where.status] : where.status.in;
       if (!row || !allowed.includes(row.status)) return { count: 0 };
@@ -86,6 +87,16 @@ describe("fulfillPurchase — пакет натальных карт", () => {
     expect(state.credits.get("u1")).toBe(3);
     expect(state.purchases.get("p1")).toMatchObject({ status: "paid", externalId: "charge-1" });
     expect(state.subscriptions.size).toBe(0);
+  });
+
+  it("records when the payment went through: the provider's time, otherwise now", async () => {
+    const capturedAt = new Date("2026-10-31T20:59:00Z");
+    await fulfillPurchase({ ...premiumPaid, paidAt: capturedAt });
+    expect(state.purchases.get("m1")?.paidAt).toEqual(capturedAt);
+
+    const before = Date.now();
+    await fulfillPurchase(paid);
+    expect(state.purchases.get("p1")?.paidAt?.getTime()).toBeGreaterThanOrEqual(before);
   });
 
   it("never grants twice when the provider redelivers the same payment", async () => {

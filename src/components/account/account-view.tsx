@@ -218,6 +218,11 @@ export function AccountView({ data }: { data: AccountViewData }) {
                       <p className="text-xs text-silver-500">{formatDate(purchase.createdAt, locale)}</p>
                     </div>
                     <div className="flex items-center gap-3">
+                      {purchase.receiptUrl && (
+                        <a href={purchase.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gold-300 hover:underline">
+                          {a.receiptLink}
+                        </a>
+                      )}
                       <span className="text-silver-200">{formatAmount(purchase.amount, purchase.currency)}</span>
                       <Badge variant={purchase.status === "paid" ? "gold" : "violet"}>{statusName(purchase.status)}</Badge>
                     </div>
