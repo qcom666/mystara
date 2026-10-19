@@ -12,6 +12,7 @@ import { attachReferrer } from "./repositories/referral.repository";
 import { upsertTelegramUser } from "./repositories/telegram-user.repository";
 import { validateTelegramInitData } from "./telegram/validate-init-data";
 import { validateTelegramLoginWidget } from "./telegram/validate-login-widget";
+import { emailWhere, normalizeEmail } from "./email";
 
 /** Приводит значения произвольного JSON к строкам: подпись Telegram считается по их строковому виду. */
 function toStringRecord(value: unknown): Record<string, string> | null {
@@ -39,11 +40,11 @@ const providers: NextAuthConfig["providers"] = [
       // ещё не задан DATABASE_URL.
       if (!isDatabaseConfigured()) return null;
 
-      const email = typeof credentials?.email === "string" ? credentials.email : undefined;
+      const email = typeof credentials?.email === "string" ? normalizeEmail(credentials.email) : undefined;
       const password = typeof credentials?.password === "string" ? credentials.password : undefined;
       if (!email || !password) return null;
 
-      const user = await prisma.user.findUnique({ where: { email } });
+      const user = await prisma.user.findFirst({ where: emailWhere(email), orderBy: { createdAt: "asc" } });
       // Удалённый аккаунт входить не может, даже если e-mail каким-то образом остался.
       if (!user?.passwordHash || user.deletedAt) return null;
 

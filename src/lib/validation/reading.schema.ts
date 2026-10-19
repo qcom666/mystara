@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { emailField } from "@/lib/email";
 
 export const orientationSchema = z.enum(["upright", "reversed"]);
 
@@ -56,7 +57,7 @@ export type FavoriteInput = z.infer<typeof favoriteInputSchema>;
 
 export const signupSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  email: z.string().trim().email(),
+  email: emailField,
   password: z.string().min(8).max(72),
   // Должно быть именно `true`: отсутствующее или false отклоняется, поэтому аккаунт нельзя создать
   // без отмеченной галочки согласия.

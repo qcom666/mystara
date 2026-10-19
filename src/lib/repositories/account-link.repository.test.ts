@@ -28,6 +28,9 @@ vi.mock("@/lib/db", () => {
           rows.find((row) => (where.id !== undefined && row.id === where.id) || (where.email !== undefined && row.email === where.email) || (where.telegramId !== undefined && row.telegramId === where.telegramId)) ?? null
         );
       },
+      // Поиск по e-mail без учёта регистра (emailWhere в lib/email.ts).
+      findFirst: async ({ where }: { where: { email?: { equals: string } } }) =>
+        [...state.users.values()].find((row) => where.email !== undefined && row.email?.toLowerCase() === where.email.equals.toLowerCase()) ?? null,
       update: async ({ where, data }: { where: { id: string }; data: Partial<UserRow> }) => {
         if (state.failNextUpdateWith) {
           const code = state.failNextUpdateWith;

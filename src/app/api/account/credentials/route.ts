@@ -11,11 +11,12 @@ import { enforceRateLimit } from "@/lib/rate-limit";
 import { addPasswordLogin } from "@/lib/repositories/account-link.repository";
 import { issueToken } from "@/lib/repositories/auth-token.repository";
 import { getSiteUrl } from "@/lib/site-url";
+import { emailField } from "@/lib/email";
 
 const BCRYPT_ROUNDS = 12;
 
 const credentialsSchema = z.object({
-  email: z.string().trim().email().max(254),
+  email: emailField,
   password: z.string().min(8).max(72),
 });
 

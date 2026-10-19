@@ -9,8 +9,9 @@ import { passwordResetMessage } from "@/lib/mail/templates";
 import { enforceKeyedRateLimit, enforceRateLimit } from "@/lib/rate-limit";
 import { issueToken } from "@/lib/repositories/auth-token.repository";
 import { getSiteUrl } from "@/lib/site-url";
+import { emailField, emailWhere } from "@/lib/email";
 
-const bodySchema = z.object({ email: z.string().trim().email().max(254) });
+const bodySchema = z.object({ email: emailField });
 
 /**
  * Запрос письма для восстановления пароля. На любой существующий и несуществующий адрес ответ одинаковый
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   if (perEmail) return perEmail;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email }, select: { id: true, passwordHash: true, deletedAt: true } });
+    const user = await prisma.user.findFirst({ where: emailWhere(email), orderBy: { createdAt: "asc" }, select: { id: true, passwordHash: true, deletedAt: true } });
     if (user?.passwordHash && !user.deletedAt) {
       const token = await issueToken("reset", user.id, PASSWORD_RESET_TTL_MS);
       await mailer.send(passwordResetMessage(email, `${getSiteUrl(request)}/reset-password?token=${encodeURIComponent(token)}`));

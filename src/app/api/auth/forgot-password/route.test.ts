@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ findUnique: vi.fn(), issueToken: vi.fn(), send: vi.fn(), getMailer: vi.fn() }));
 
-vi.mock("@/lib/db", () => ({ isDatabaseConfigured: () => true, prisma: { user: { findUnique: mocks.findUnique } } }));
+vi.mock("@/lib/db", () => ({ isDatabaseConfigured: () => true, prisma: { user: { findFirst: mocks.findUnique } } }));
 vi.mock("@/lib/mail/mailer", () => ({ getMailer: mocks.getMailer }));
 vi.mock("@/lib/repositories/auth-token.repository", () => ({ issueToken: mocks.issueToken }));
 

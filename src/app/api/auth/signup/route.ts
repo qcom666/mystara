@@ -12,6 +12,7 @@ import { issueToken } from "@/lib/repositories/auth-token.repository";
 import { attachReferrer } from "@/lib/repositories/referral.repository";
 import { getSiteUrl } from "@/lib/site-url";
 import { signupSchema } from "@/lib/validation/reading.schema";
+import { emailWhere } from "@/lib/email";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_input", issues: parsed.error.flatten() }, { status: 400 });
   }
 
-  const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  const existing = await prisma.user.findFirst({ where: emailWhere(parsed.data.email), select: { id: true } });
   if (existing) {
     return NextResponse.json({ error: "email_taken", message: "An account with that email already exists." }, { status: 409 });
   }

@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { ValidatedTelegramUser } from "@/lib/telegram/validate-init-data";
+import { emailWhere, normalizeEmail } from "@/lib/email";
 
 export type AddPasswordLoginResult = "ok" | "not_found" | "already_has_login" | "email_taken";
 
@@ -15,9 +16,9 @@ export async function addPasswordLogin(userId: string, email: string, passwordHa
       const user = await tx.user.findUnique({ where: { id: userId }, select: { email: true, passwordHash: true, deletedAt: true } });
       if (!user || user.deletedAt) return "not_found";
       if (user.email || user.passwordHash) return "already_has_login";
-      const taken = await tx.user.findUnique({ where: { email }, select: { id: true } });
+      const taken = await tx.user.findFirst({ where: emailWhere(email), select: { id: true } });
       if (taken) return "email_taken";
-      await tx.user.update({ where: { id: userId }, data: { email, passwordHash } });
+      await tx.user.update({ where: { id: userId }, data: { email: normalizeEmail(email), passwordHash } });
       return "ok";
     });
   } catch (error) {
