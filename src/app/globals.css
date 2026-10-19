@@ -62,7 +62,7 @@
   --animate-float: float 6s ease-in-out infinite;
   --animate-shimmer: shimmer 2.5s linear infinite;
   --animate-fade-in-up: fade-in-up 0.7s ease-out both;
-  --animate-star-float: star-float 40s ease-in-out infinite alternate;
+  --animate-sky-drift: sky-drift 300s linear infinite;
 }
 
 @keyframes fade-in-up {
@@ -107,19 +107,16 @@
   }
 }
 
-/* Каждая звезда дрейфует по своей траектории (StarField задаёт для неё --drift-x,
-   --drift-y, --drift-duration и --drift-delay; смещение масштабируется размером,
-   поэтому «ближние», то есть крупные, звёзды летят дальше и быстрее дальних:
-   простой параллакс). Анимация висит на обёртке вокруг звезды, а не на самом
-   <span> (он отдельно анимирует `transform` для мерцания): два вложенных элемента
-   со своими `transform` складываются через обычную вложенность DOM, а две анимации
-   на одном элементе перебивали бы друг друга: победила бы только последняя. */
-@keyframes star-float {
-  0% {
-    transform: translate(0, 0);
+/* Небо плывёт вправо (StarField): слой шириной в два экрана с двумя одинаковыми полосами сдвигается на
+   половину своей ширины, то есть ровно на экран, и начинает заново, поэтому стык не заметен. Скорость
+   задаёт animation-duration у каждого слоя. Мерцание висит на самих звёздах, а сдвиг — на слое: два
+   transform на разных элементах складываются, а на одном перебивали бы друг друга. */
+@keyframes sky-drift {
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  100% {
-    transform: translate(var(--drift-x, 0), var(--drift-y, 0));
+  to {
+    transform: translate3d(50%, 0, 0);
   }
 }
 
