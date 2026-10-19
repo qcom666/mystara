@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/lib/i18n";
+import { RevealGroup, RevealItem, SectionHeading } from "@/components/motion/reveal";
 
 export function FAQ() {
   const t = useTranslation();
@@ -8,13 +9,11 @@ export function FAQ() {
   return (
     <section className="px-4 py-20">
       <div className="mx-auto max-w-2xl">
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.marketing.faq.eyebrow}</p>
-          <h2 className="mt-3 font-display text-3xl text-silver-50">{t.marketing.faq.title}</h2>
-        </div>
-        <div className="mt-10 space-y-3">
+        <SectionHeading eyebrow={t.marketing.faq.eyebrow} title={t.marketing.faq.title} />
+        <RevealGroup className="mt-10 space-y-3" stagger={0.08} delay={0.15}>
           {t.marketing.faq.items.map((faq) => (
-            <details key={faq.q} className="glass-panel group rounded-2xl p-5">
+            <RevealItem key={faq.q}>
+            <details className="glass-panel group rounded-2xl p-5 transition-colors duration-300 hover:border-gold-400/30">
               <summary className="focus-ring cursor-pointer list-none font-display text-lg text-silver-100 marker:content-none">
                 <span className="flex items-center justify-between gap-4">
                   {faq.q}
@@ -23,8 +22,9 @@ export function FAQ() {
               </summary>
               <p className="mt-3 text-sm leading-relaxed text-silver-400">{faq.a}</p>
             </details>
+            </RevealItem>
           ))}
-        </div>
+        </RevealGroup>
       </div>
     </section>
   );

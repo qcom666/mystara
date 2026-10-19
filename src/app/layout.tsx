@@ -49,6 +49,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // data-scroll-behavior: плавная прокрутка из globals.css не мешает переходам между страницами.
     <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${cormorant.variable}`}>
+      <head>
+        {/* Без JavaScript анимации появления не запустятся: блоки показываются сразу. */}
+        <noscript>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important;filter:none!important}"}</style>
+        </noscript>
+      </head>
       <body className="relative min-h-screen bg-midnight-950 font-sans text-silver-200 antialiased">
         <StarField className="fixed" />
         <Providers>

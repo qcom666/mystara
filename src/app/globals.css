@@ -63,6 +63,8 @@
   --animate-shimmer: shimmer 2.5s linear infinite;
   --animate-fade-in-up: fade-in-up 0.7s ease-out both;
   --animate-sky-drift: sky-drift 300s linear infinite;
+  --animate-border-sweep: border-sweep 6s linear infinite;
+  --animate-scroll-cue: scroll-cue 1.8s ease-in-out infinite;
 }
 
 @keyframes fade-in-up {
@@ -104,6 +106,43 @@
   }
   100% {
     background-position: 200% 0;
+  }
+}
+
+/* Подсветка карточки за курсором (SpotlightCard): координаты приходят в --spot-x / --spot-y. */
+.spotlight-card::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(320px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(230, 195, 104, 0.14), transparent 45%);
+}
+.spotlight-card:hover::after {
+  opacity: 1;
+}
+
+/* Бегущий золотой отблеск по рамке (финальный призыв на главной). */
+@keyframes border-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Подсказка «листайте вниз»: точка внутри «мышки» опускается и гаснет. */
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
   }
 }
 

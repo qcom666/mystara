@@ -10,6 +10,7 @@ import { getCardMeanings, getCardName } from "@/modules/tarot/domain/deck";
 import { drawForSpread } from "@/modules/tarot/services/draw-engine";
 import { requireSpreadById } from "@/modules/tarot/domain/spreads.data";
 import type { DrawnCard } from "@/modules/tarot/domain/types";
+import { Reveal, SectionHeading } from "@/components/motion/reveal";
 
 const ONE_CARD_SPREAD = requireSpreadById("one-card");
 
@@ -28,10 +29,9 @@ export function InteractivePreview() {
   return (
     <section className="px-4 py-20">
       <div className="mx-auto max-w-md text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.marketing.preview.eyebrow}</p>
-        <h2 className="mt-3 font-display text-3xl text-silver-50">{t.marketing.preview.title}</h2>
-        <p className="mt-2 text-silver-400">{t.marketing.preview.subtitle}</p>
+        <SectionHeading eyebrow={t.marketing.preview.eyebrow} title={t.marketing.preview.title} subtitle={t.marketing.preview.subtitle} />
 
+        <Reveal delay={0.2} y={40} scale={0.94}>
         <GlassPanel className="mt-8">
           {!drawn ? (
             <div className="py-10">
@@ -59,6 +59,7 @@ export function InteractivePreview() {
             </div>
           )}
         </GlassPanel>
+        </Reveal>
       </div>
     </section>
   );
