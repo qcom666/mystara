@@ -74,6 +74,8 @@ export const en = {
     drawCta: "Draw your cards",
     revealCta: "Reveal",
     revealAllCta: "Reveal all",
+    tapCardsHint: "Tap the cards to reveal them one by one",
+    toInterpretationCta: "Read the interpretation",
     getInterpretationCta: "Get interpretation",
     interpreting: "Reading the cards…",
     saveReadingCta: "Save this reading",
@@ -592,6 +594,13 @@ export const en = {
       title: "Your first reading is one shuffle away",
       subtitle: "Free, no account required, ready in under a minute.",
     },
+  },
+  premiumOffer: {
+    eyebrow: "Mystara Premium",
+    title: "Tarot without limits",
+    body: `Every spread, including the Celtic Cross, Love and Career, readings with no daily limit and a Natal Chart every week — ${PREMIUM_PRICE_RUB} RUB for ${PREMIUM_PERIOD_DAYS} days.`,
+    cta: "Get Premium",
+    note: `Paid ${PREMIUM_PERIOD_DAYS} days up front; it renews only if you choose to.`,
   },
   pricingPage: {
     title: "Simple, honest pricing",

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { EASE_OUT, SectionHeading } from "@/components/motion/reveal";
+import { HoloCard } from "@/components/tarot/holo-card";
 import { TarotCardFace } from "@/components/tarot/tarot-card-face";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getMajorArcana } from "@/modules/tarot/domain/deck";
@@ -38,7 +39,10 @@ export function CardShowcase() {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.9, ease: EASE_OUT, delay: 0.15 + index * 0.09 }}
             >
-              <TarotCardFace card={card} locale={locale} className="card-glow w-full" />
+              {/* Подъём при наведении делает сама обёртка: у HoloCard остаются наклон и блик. */}
+              <HoloCard lift={false}>
+                <TarotCardFace card={card} locale={locale} className="card-glow w-full" />
+              </HoloCard>
             </motion.div>
           );
         })}

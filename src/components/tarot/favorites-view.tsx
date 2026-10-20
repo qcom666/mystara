@@ -2,6 +2,7 @@
 
 import Link from "@/components/shared/localized-link";
 import { FavoriteButton } from "@/components/tarot/favorite-button";
+import { HoloCard } from "@/components/tarot/holo-card";
 import { TarotCardFace } from "@/components/tarot/tarot-card-face";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
@@ -50,7 +51,9 @@ export function FavoritesView({ data }: { data: FavoritesData }) {
             {favoriteCards.map((card) => (
               <div key={card.id} className="text-center">
                 <Link href={`/tarot/cards/${card.id}`}>
-                  <TarotCardFace card={card} locale={locale} className="w-full transition-transform hover:-translate-y-1" />
+                  <HoloCard>
+                    <TarotCardFace card={card} locale={locale} className="w-full" />
+                  </HoloCard>
                 </Link>
                 <p className="mt-2 text-xs text-silver-400">{getCardName(card, locale)}</p>
                 <div className="mt-1 flex justify-center">

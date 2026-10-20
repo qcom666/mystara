@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "@/components/shared/localized-link";
+import { HoloCard } from "@/components/tarot/holo-card";
 import { TarotCardFace } from "@/components/tarot/tarot-card-face";
 import { useLocale, useTranslation, type Locale } from "@/lib/i18n";
 import { getAllCards, getCardName } from "@/modules/tarot/domain/deck";
@@ -17,7 +18,9 @@ function CardTile({ card, locale, index }: { card: TarotCard; locale: Locale; in
       className="focus-ring scroll-reveal-step group block"
       style={{ "--reveal-index": index % 7 } as CSSProperties}
     >
-      <TarotCardFace card={card} locale={locale} className="w-full transition-[translate,box-shadow] duration-300 group-hover:-translate-y-1.5 group-hover:shadow-[0_0_40px_-10px_rgba(212,175,55,0.6)]" />
+      <HoloCard>
+        <TarotCardFace card={card} locale={locale} className="w-full transition-[filter] duration-300 group-hover:drop-shadow-[0_0_18px_rgba(212,175,55,0.55)]" />
+      </HoloCard>
       <p className="mt-2 text-center text-xs text-silver-400 group-hover:text-gold-300">{getCardName(card, locale)}</p>
     </Link>
   );

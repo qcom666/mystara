@@ -1,34 +1,43 @@
 "use client";
 
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import Link, { useLocalizedHref } from "@/components/shared/localized-link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { CardDetailContent } from "@/components/tarot/card-detail-content";
-import { FlippableCard } from "@/components/tarot/flippable-card";
-import { SpreadLayout } from "@/components/tarot/spread-layout";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PremiumOffer } from "@/components/marketing/premium-offer";
+import { EASE_OUT } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
 import { PrimaryActionBar } from "@/components/telegram/primary-action-bar";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { FunFactCard } from "@/components/shared/fun-fact-card";
 import { track } from "@/lib/analytics";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getActorFunFactByReading } from "@/modules/fun-facts/services/actor-match.service";
-import { getCardName } from "@/modules/tarot/domain/deck";
 import { getSpreadName } from "@/modules/tarot/domain/spreads.data";
-import type { DrawnCard, TarotSpread } from "@/modules/tarot/domain/types";
+import type { TarotSpread } from "@/modules/tarot/domain/types";
 import { useReadingFlowStore } from "@/store/reading-flow.store";
 import { AIInterpretationPanel } from "./ai-interpretation-panel";
 import { ShareReadingButton } from "./share-reading-button";
 
-interface ResultStepProps {
+interface ResultDetailsProps {
   spread: TarotSpread;
   isAuthenticated: boolean;
 }
 
 type SaveStatus = "idle" | "saving" | "saved" | "error" | "limit";
 
-export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
+const detailsVariants: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.18, delayChildren: 0.35 } } };
+const riseVariants: Variants = {
+  hidden: { opacity: 0, y: 36, filter: "blur(8px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, ease: EASE_OUT } },
+};
+
+/**
+ * Всё, что идёт под картами после «Продолжить»: толкование, интересный факт, сохранение, «поделиться» и
+ * новый расклад. Блоки поднимаются по очереди, а страница плавно доезжает до толкования. Сами карты
+ * остаются на столе (TableStep) и заново не раздаются.
+ */
+export function ResultDetails({ spread, isAuthenticated }: ResultDetailsProps) {
   // Встроенный генератор по шаблонам («mock») не ИИ, поэтому подпись заслуживает только настоящая модель.
   const aiProvider = useReadingFlowStore((s) => s.aiResult?.provider);
   const t = useTranslation();
@@ -44,8 +53,20 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
   const setSavedReadingId = useReadingFlowStore((s) => s.setSavedReadingId);
   const reset = useReadingFlowStore((s) => s.reset);
 
-  const [activeCard, setActiveCard] = useState<DrawnCard | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const reduceMotion = useReducedMotion();
+
+  // Доезжаем до толкования, когда карты уже «поприветствовали» переход золотой волной.
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => headingRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }),
+      reduceMotion ? 0 : 450,
+    );
+    return () => window.clearTimeout(timer);
+    // Один раз при появлении результата.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const funFact = useMemo(() => (seed ? getActorFunFactByReading(drawnCards, seed, locale) : null), [drawnCards, seed, locale]);
 
@@ -90,31 +111,11 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
 
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
-      <div className="text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{getSpreadName(spread, locale)}</p>
-        {question && <p className="mx-auto mt-3 max-w-md text-sm italic text-silver-400">{`“${question}”`}</p>}
-      </div>
-
-      <div className="mt-10">
-        <SpreadLayout
-          spread={spread}
-          cards={drawnCards}
-          renderCard={(drawn) => (
-            <button
-              type="button"
-              onClick={() => setActiveCard(drawn)}
-              aria-label={`${t.reading.viewDetailsFor} ${getCardName(drawn.card, locale)}${drawn.orientation === "reversed" ? ` (${t.reading.reversed.toLowerCase()})` : ""}`}
-              className="focus-ring block w-full"
-            >
-              <FlippableCard card={drawn.card} orientation={drawn.orientation} revealed interactive={false} />
-            </button>
-          )}
-        />
-      </div>
-
-      <div className="mx-auto mt-12 max-w-2xl">
-        <h2 className="text-center font-display text-2xl text-silver-100">{interpretationHeading}</h2>
+    <motion.div variants={detailsVariants} initial="hidden" animate="show">
+      <motion.div data-reveal variants={riseVariants} className="mx-auto mt-12 max-w-2xl">
+        <h2 ref={headingRef} className="scroll-mt-24 text-center font-display text-2xl text-silver-100 sm:text-3xl">
+          <span className="text-shimmer-gold">{interpretationHeading}</span>
+        </h2>
         <div className="mt-5">
           <AIInterpretationPanel spread={spread} question={question} cards={drawnCards} />
         </div>
@@ -123,9 +124,11 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
             <FunFactCard fact={funFact} />
           </div>
         )}
-      </div>
+      </motion.div>
 
-      <div className="mx-auto mt-10 max-w-md text-center">
+      <PremiumOffer className="mt-14" />
+
+      <motion.div data-reveal variants={riseVariants} className="mx-auto mt-10 max-w-md text-center">
         {isAuthenticated ? (
           savedReadingId ? (
             <GlassPanel>
@@ -168,18 +171,7 @@ export function ResultStep({ spread, isAuthenticated }: ResultStepProps) {
         <Button variant="ghost" className="mt-4" onClick={handleNewReading}>
           {t.reading.newReadingCta}
         </Button>
-      </div>
-
-      <Dialog open={Boolean(activeCard)} onOpenChange={(open) => !open && setActiveCard(null)}>
-        <DialogContent>
-          {activeCard && (
-            <>
-              <DialogTitle className="sr-only">{getCardName(activeCard.card, locale)}</DialogTitle>
-              <CardDetailContent card={activeCard.card} orientation={activeCard.orientation} />
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

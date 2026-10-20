@@ -4,6 +4,7 @@ import Link from "@/components/shared/localized-link";
 import { FavoriteToggle } from "@/components/reading/favorite-toggle";
 import { CardDetailContent } from "@/components/tarot/card-detail-content";
 import { SpreadLayout } from "@/components/tarot/spread-layout";
+import { HoloCard } from "@/components/tarot/holo-card";
 import { TarotCardFace } from "@/components/tarot/tarot-card-face";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { GlassPanel } from "@/components/ui/glass-panel";
@@ -55,12 +56,14 @@ export function ReadingDetailView({ readingId, spread, question, createdAt, isFa
             <Dialog>
               <DialogTrigger asChild>
                 <button type="button" className="focus-ring block w-full">
-                  <TarotCardFace
-                    card={drawn.card}
-                    orientation={drawn.orientation}
-                    locale={locale}
-                    className={`card-glow w-full ${drawn.orientation === "reversed" ? "rotate-180" : ""}`}
-                  />
+                  <HoloCard>
+                    <TarotCardFace
+                      card={drawn.card}
+                      orientation={drawn.orientation}
+                      locale={locale}
+                      className={`card-glow w-full ${drawn.orientation === "reversed" ? "rotate-180" : ""}`}
+                    />
+                  </HoloCard>
                 </button>
               </DialogTrigger>
               <DialogContent>

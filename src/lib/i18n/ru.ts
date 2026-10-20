@@ -74,6 +74,8 @@ export const ru: Dictionary = {
     drawCta: "Вытянуть карты",
     revealCta: "Открыть",
     revealAllCta: "Открыть все",
+    tapCardsHint: "Нажимайте на карты, чтобы открыть их по одной",
+    toInterpretationCta: "Перейти к толкованию",
     getInterpretationCta: "Получить толкование",
     interpreting: "Читаем карты…",
     saveReadingCta: "Сохранить расклад",
@@ -591,6 +593,13 @@ export const ru: Dictionary = {
       title: "Ваш первый расклад — всего в одной тасовке",
       subtitle: "Бесплатно, без регистрации, готово меньше чем за минуту.",
     },
+  },
+  premiumOffer: {
+    eyebrow: "Mystara Premium",
+    title: "Таро без ограничений",
+    body: `Все расклады, включая Кельтский крест, «Любовь» и «Карьеру», расклады без дневного лимита и натальная карта раз в неделю — ${PREMIUM_PRICE_RUB} ₽ за ${PREMIUM_PERIOD_DAYS} дней.`,
+    cta: "Оформить Premium",
+    note: `Оплата за ${PREMIUM_PERIOD_DAYS} дней вперёд, продление — только по вашему желанию.`,
   },
   pricingPage: {
     title: "Простые, честные тарифы",
