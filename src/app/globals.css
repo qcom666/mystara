@@ -7,6 +7,9 @@
   --midnight-700: #1d192e;
   --midnight-600: #2a2440;
 
+  /* Светлые оттенки — для искр, бликов и надписей на тёмном (без них классы gold-100/200 не давали цвета). */
+  --gold-100: #fcf3d6;
+  --gold-200: #f8e7b0;
   --gold-300: #f3da8f;
   --gold-400: #e6c368;
   --gold-500: #d4af37;
@@ -35,6 +38,8 @@
   --color-midnight-700: var(--midnight-700);
   --color-midnight-600: var(--midnight-600);
 
+  --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
   --color-gold-300: var(--gold-300);
   --color-gold-400: var(--gold-400);
   --color-gold-500: var(--gold-500);
@@ -357,6 +362,35 @@ body {
     .text-shimmer-gold {
       animation: text-shimmer 5.5s ease-in-out infinite;
     }
+  }
+
+  /* Сборка страницы при переходе (components/motion/page-assemble.ts): кольцо от центра и слетающиеся искры. */
+  .page-assemble-ring {
+    position: fixed;
+    left: 50%;
+    top: 45%;
+    width: 60vmin;
+    height: 60vmin;
+    border-radius: 9999px;
+    border: 1px solid rgb(243 218 143 / 0.6);
+    box-shadow:
+      0 0 80px rgb(212 175 55 / 0.35),
+      inset 0 0 60px rgb(212 175 55 / 0.25);
+    pointer-events: none;
+    z-index: 30;
+  }
+  .page-assemble-spark {
+    position: fixed;
+    left: 50%;
+    top: 45%;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 9999px;
+    background: var(--gold-200);
+    box-shadow: 0 0 10px 2px rgb(243 218 143 / 0.8);
+    pointer-events: none;
+    z-index: 30;
   }
 
   .card-glow {
