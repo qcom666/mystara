@@ -17,6 +17,7 @@ const RU_ROUTE_PATTERNS: readonly RegExp[] = [
   /^\/pricing$/,
   /^\/tarot$/,
   /^\/tarot\/how-to-read-tarot$/,
+  /^\/tarot\/card-of-the-day$/,
   /^\/tarot\/cards(\/[a-z0-9-]+)?$/,
   /^\/tarot\/spreads(\/[a-z0-9-]+)?$/,
   /^\/numerology(\/\d+)?$/,

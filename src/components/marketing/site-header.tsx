@@ -24,6 +24,17 @@ const itemVariants = (reduce: boolean | null): Variants => ({
   show: { opacity: 1, y: 0, transition: { duration: reduce ? 0 : 0.22, ease: "easeOut" } },
 });
 
+const DAILY_CARD_HREF = "/tarot/card-of-the-day";
+
+/** Мерцающая звёздочка у пункта «Карта дня»: новый ежедневный раздел заметен в меню, но не кричит. */
+function DailyCardSparkle({ className }: { className?: string }) {
+  return (
+    <span aria-hidden="true" className={cn("pointer-events-none text-[10px] leading-none text-gold-300 motion-safe:animate-twinkle", className)}>
+      ✦
+    </span>
+  );
+}
+
 export function SiteHeader() {
   const t = useTranslation();
   const { data: session, status } = useSession();
@@ -38,6 +49,7 @@ export function SiteHeader() {
 
   const navLinks = [
     { href: "/reading", label: t.nav.newReading },
+    { href: DAILY_CARD_HREF, label: t.nav.dailyCard },
     { href: "/numerology", label: t.nav.numerology },
     { href: "/astrology", label: t.nav.astrology },
     { href: "/astrology/natal-chart", label: t.nav.natalChart },
@@ -77,7 +89,8 @@ export function SiteHeader() {
                 link.href === activeHref ? "text-gold-300" : "text-silver-300",
               )}
             >
-              {link.label}
+              {link.href === DAILY_CARD_HREF && link.href !== activeHref ? <span className="text-shimmer-gold">{link.label}</span> : link.label}
+              {link.href === DAILY_CARD_HREF && <DailyCardSparkle className="absolute -right-2.5 -top-1" />}
               {/* Подчёркивание активного раздела перетекает к новому пункту при переходе (общий layoutId). */}
               {link.href === activeHref && (
                 <motion.span
@@ -114,7 +127,8 @@ export function SiteHeader() {
                 <Link href="/login" className={quietLink}>
                   {t.common.signIn}
                 </Link>
-                <Button asChild size="sm">
+                {/* С 7 пунктами меню на ширине 1280–1535 px этой кнопке не хватает места; там её заменяет пункт «Новый расклад». */}
+                <Button asChild size="sm" className="hidden 2xl:inline-flex">
                   <Link href="/reading">{t.landing.ctaPrimary}</Link>
                 </Button>
               </>
@@ -172,10 +186,11 @@ export function SiteHeader() {
                 <Link
                   href={link.href}
                   aria-current={link.href === activeHref ? "page" : undefined}
-                  className={cn("block py-2 text-sm", link.href === activeHref ? "text-gold-300" : "text-silver-300")}
+                  className={cn("flex items-center gap-1.5 py-2 text-sm", link.href === activeHref ? "text-gold-300" : "text-silver-300")}
                   onClick={() => setOpen(false)}
                 >
                   {link.label}
+                  {link.href === DAILY_CARD_HREF && <DailyCardSparkle />}
                 </Link>
               </motion.div>
             ))}

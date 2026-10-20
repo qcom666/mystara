@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FULL_DECK } from "../domain/deck";
-import { dailyCard, moscowDay } from "./daily-card";
+import { dailyCard, moscowDay, msUntilNextMoscowDay } from "./daily-card";
 
 describe("dailyCard", () => {
   it("в один день одному человеку выпадает одна и та же карта", () => {
@@ -27,5 +27,13 @@ describe("moscowDay", () => {
   it("день меняется в полночь по Москве, а не по UTC", () => {
     expect(moscowDay(new Date("2026-10-17T20:59:00Z"))).toBe("2026-10-17");
     expect(moscowDay(new Date("2026-10-17T21:01:00Z"))).toBe("2026-10-18");
+  });
+});
+
+describe("msUntilNextMoscowDay", () => {
+  it("считает время до полуночи по Москве", () => {
+    expect(msUntilNextMoscowDay(Date.parse("2026-10-17T20:59:00Z"))).toBe(60_000);
+    expect(msUntilNextMoscowDay(Date.parse("2026-10-17T21:00:00Z"))).toBe(24 * 60 * 60 * 1000);
+    expect(msUntilNextMoscowDay(Date.parse("2026-10-17T09:00:00Z"))).toBe(12 * 60 * 60 * 1000);
   });
 });

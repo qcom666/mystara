@@ -39,3 +39,9 @@ export async function rememberTelegramLanguage(telegramId: string, languageCode:
   const language = languageCode.toLowerCase().startsWith("ru") ? "ru" : "en";
   await prisma.user.updateMany({ where: { telegramId, deletedAt: null, NOT: { language } }, data: { language } });
 }
+
+/** Telegram ID аккаунта, если он привязан: по нему «Карта дня» на сайте совпадает с картой, которую присылает бот. */
+export async function findTelegramIdByUserId(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { telegramId: true } });
+  return user?.telegramId ?? null;
+}

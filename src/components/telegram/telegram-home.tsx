@@ -1,6 +1,6 @@
 "use client";
 
-import { Layers, Moon, Sparkles, Sun } from "lucide-react";
+import { Layers, Moon, Sparkles, Star, Sun } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "@/components/shared/localized-link";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
@@ -20,6 +20,7 @@ export function TelegramHome() {
 
   const modules = [
     { href: "/reading", title: t.telegramHome.tarotTitle, description: t.telegramHome.tarotDescription, icon: Sparkles },
+    { href: "/tarot/card-of-the-day", title: t.telegramHome.dailyCardTitle, description: t.telegramHome.dailyCardDescription, icon: Star },
     { href: "/numerology", title: t.nav.numerology, description: t.telegramHome.numerologyDescription, icon: Layers },
     { href: "/astrology", title: t.nav.astrology, description: t.telegramHome.astrologyDescription, icon: Moon },
     { href: "/astrology/horoscope", title: t.telegramHome.horoscopeTitle, description: t.telegramHome.horoscopeDescription, icon: Sun },

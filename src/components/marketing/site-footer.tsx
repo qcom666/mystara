@@ -16,6 +16,7 @@ export function SiteFooter() {
       title: t.footer.groups.product.title,
       links: [
         { href: "/reading", label: t.footer.groups.product.startReading },
+        { href: "/tarot/card-of-the-day", label: t.footer.groups.product.dailyCard },
         { href: "/numerology", label: t.footer.groups.product.numerology },
         { href: "/astrology", label: t.footer.groups.product.astrology },
         { href: "/astrology/horoscope", label: t.footer.groups.product.horoscope },
