@@ -1,9 +1,9 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion, useSpring, type TargetAndTransition, type Variants } from "framer-motion";
+import { AnimatePresence, motion, useInView, useReducedMotion, useSpring, type TargetAndTransition, type Variants } from "framer-motion";
 import { Briefcase, Heart, Hourglass, Send, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { type PointerEvent, useEffect, useState, useSyncExternalStore } from "react";
+import { type PointerEvent, type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Magnetic, ZodiacWheel } from "@/components/motion/effects";
 import { EASE_OUT, SpotlightCard, SplitWords } from "@/components/motion/reveal";
 import Link from "@/components/shared/localized-link";
@@ -214,13 +214,22 @@ const chipVariants: Variants = {
 };
 const aspectsVariants: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.14 } } };
 
+interface DailyCardRitualProps {
+  /** page — отдельная страница с полным толкованием; home — секция главной: коротко и ссылка на страницу. */
+  variant: "page" | "home";
+  /** Заголовок над отсчётом и колодой. */
+  header: ReactNode;
+  botUsername?: string;
+}
+
 /**
- * Страница «Карта дня». Колода парит и зовёт коснуться; по касанию карты разлетаются веером и тасуются,
+ * Ритуал «Карты дня». Колода парит и зовёт коснуться; по касанию карты разлетаются веером и тасуются,
  * верхняя выходит вперёд и переворачивается со вспышкой, за ней остаются вращающиеся лучи, а значение
  * проявляется по частям. Карту выбирает сервер (GET /api/tarot/daily-card): у вошедшего — личная, у гостя —
- * общая. При «уменьшить движение» карта открывается сразу.
+ * общая. При «уменьшить движение» карта открывается сразу. На главной карту спрашиваем, только когда секция
+ * подъезжает к экрану, а колода появляется, когда секцию видно.
  */
-export function DailyCardContent({ botUsername }: { botUsername: string }) {
+export function DailyCardRitual({ variant, header, botUsername = "" }: DailyCardRitualProps) {
   const t = useTranslation();
   const copy = t.dailyCardPage;
   const { locale } = useLocale();
@@ -235,13 +244,19 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
   // Открытая карта не меняется, даже если после входа сервер ответит другой: человек уже её прочитал.
   const [revealed, setRevealed] = useState<DailyCardPayload | null>(null);
 
+  const stageRef = useRef<HTMLDivElement>(null);
+  const nearView = useInView(stageRef, { once: true, margin: "400px 0px" });
+  const inView = useInView(stageRef, { once: true, amount: 0.35 });
+  const active = variant === "page" || nearView;
+  const shown = variant === "page" || inView;
+
   const tiltX = useSpring(0, { stiffness: 150, damping: 15 });
   const tiltY = useSpring(0, { stiffness: 150, damping: 15 });
 
   // Карта зависит от того, кто смотрит, поэтому ждём сессию и спрашиваем заново после входа (в мини-приложении
   // вход проходит уже после открытия страницы).
   useEffect(() => {
-    if (status === "loading") return;
+    if (status === "loading" || !active) return;
     const controller = new AbortController();
     fetch("/api/tarot/daily-card", { cache: "no-store", signal: controller.signal })
       .then((response) => (response.ok ? (response.json() as Promise<DailyCardPayload>) : Promise.reject(new Error(`HTTP ${response.status}`))))
@@ -253,7 +268,7 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
         if (!controller.signal.aborted) setFailed(true);
       });
     return () => controller.abort();
-  }, [status, userId, attempt]);
+  }, [status, userId, attempt, active]);
 
   useEffect(() => {
     if (!payload) return;
@@ -319,47 +334,34 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
     : [];
 
   return (
-    <div className="overflow-x-clip px-4 pb-24 pt-14">
+    <>
       <div className="mx-auto max-w-3xl text-center">
-        <motion.p
-          data-reveal
-          className="text-xs uppercase tracking-[0.25em] text-gold-400"
-          initial={{ opacity: 0, letterSpacing: "0.6em" }}
-          animate={{ opacity: 1, letterSpacing: "0.25em" }}
-          transition={{ duration: 1, ease: EASE_OUT }}
-        >
-          {copy.eyebrow}
-        </motion.p>
-        <h1 className="mt-3 font-display text-4xl text-silver-50 sm:text-5xl">
-          <SplitWords text={copy.title} immediate delay={0.15} />{" "}
-          <SplitWords text={copy.titleAccent} immediate delay={0.4} wordClassName="text-shimmer-gold" />
-        </h1>
-        <motion.p
-          data-reveal
-          className="mx-auto mt-4 max-w-xl text-silver-400"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.55, ease: EASE_OUT }}
-        >
-          {copy.subtitle}
-        </motion.p>
-
+        {header}
         <div className="mt-5 flex min-h-10 items-center justify-center">
           <NextCardCountdown revealedDay={revealed?.day ?? null} onNewDay={openNewCard} />
         </div>
       </div>
 
       {/* Сцена: круг, орбита и лучи позади, колода в центре. Наклон за курсором — только у открытой карты. */}
-      <div className="relative mx-auto mt-2 flex h-[27rem] max-w-3xl items-center justify-center sm:h-[31rem]" onPointerMove={handlePointerMove} onPointerLeave={handlePointerLeave}>
+      <div
+        ref={stageRef}
+        className="relative mx-auto mt-2 flex h-[27rem] max-w-3xl items-center justify-center sm:h-[31rem]"
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
+      >
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 sm:h-[34rem] sm:w-[34rem]"
           initial={{ opacity: 0, scale: 0.7, rotate: -40 }}
-          animate={{
-            opacity: phase === "revealed" ? 0.55 : 0.85,
-            scale: phase === "shuffling" ? 1.08 : phase === "revealed" ? 1.15 : 1,
-            rotate: phase === "idle" ? 0 : 120,
-          }}
+          animate={
+            shown
+              ? {
+                  opacity: phase === "revealed" ? 0.55 : 0.85,
+                  scale: phase === "shuffling" ? 1.08 : phase === "revealed" ? 1.15 : 1,
+                  rotate: phase === "idle" ? 0 : 120,
+                }
+              : { opacity: 0, scale: 0.7, rotate: -40 }
+          }
           transition={{ duration: phase === "shuffling" ? SHUFFLE_MS / 1000 : 1.4, ease: EASE_OUT }}
         >
           <ZodiacWheel className="relative h-full w-full" />
@@ -431,7 +433,7 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
             phase === "idle" && "cursor-pointer",
           )}
           initial={{ opacity: 0, y: 60, scale: 0.85 }}
-          animate={{ opacity: 1, y: phase === "idle" ? [0, -10, 0] : 0, scale: 1 }}
+          animate={shown ? { opacity: 1, y: phase === "idle" ? [0, -10, 0] : 0, scale: 1 } : { opacity: 0, y: 60, scale: 0.85 }}
           transition={
             phase === "idle"
               ? { opacity: { duration: 0.8 }, scale: { duration: 0.8, ease: EASE_OUT }, y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }
@@ -513,9 +515,15 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
             <motion.p variants={riseVariants} className="text-xs uppercase tracking-[0.2em] text-gold-400">
               {reversed ? copy.reversed : copy.upright}
             </motion.p>
-            <motion.h2 variants={riseVariants} className="mt-2 font-display text-4xl sm:text-5xl">
-              <span className="text-shimmer-gold">{name}</span>
-            </motion.h2>
+            {variant === "page" ? (
+              <motion.h2 variants={riseVariants} className="mt-2 font-display text-4xl sm:text-5xl">
+                <span className="text-shimmer-gold">{name}</span>
+              </motion.h2>
+            ) : (
+              <motion.h3 variants={riseVariants} className="mt-2 font-display text-4xl sm:text-5xl">
+                <span className="text-shimmer-gold">{name}</span>
+              </motion.h3>
+            )}
 
             <motion.ul variants={chipsVariants} className="mt-5 flex flex-wrap justify-center gap-2">
               {getCardKeywords(card, locale).map((keyword) => (
@@ -535,21 +543,23 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
               </GlassPanel>
             </motion.div>
 
-            <motion.div variants={aspectsVariants} className="mt-4 grid gap-4 sm:grid-cols-3">
-              {aspects.map((aspect) => (
-                <motion.div key={aspect.key} variants={riseVariants}>
-                  <SpotlightCard>
-                    <GlassPanel scrollReveal={false} className="h-full text-left">
-                      <div className="flex items-center gap-2 text-gold-300">
-                        <aspect.icon className="h-4 w-4" />
-                        <h3 className="font-display text-lg">{aspect.title}</h3>
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-silver-300">{aspect.text}</p>
-                    </GlassPanel>
-                  </SpotlightCard>
-                </motion.div>
-              ))}
-            </motion.div>
+            {variant === "page" && (
+              <motion.div variants={aspectsVariants} className="mt-4 grid gap-4 sm:grid-cols-3">
+                {aspects.map((aspect) => (
+                  <motion.div key={aspect.key} variants={riseVariants}>
+                    <SpotlightCard>
+                      <GlassPanel scrollReveal={false} className="h-full text-left">
+                        <div className="flex items-center gap-2 text-gold-300">
+                          <aspect.icon className="h-4 w-4" />
+                          <h3 className="font-display text-lg">{aspect.title}</h3>
+                        </div>
+                        <p className="mt-2 text-sm leading-relaxed text-silver-300">{aspect.text}</p>
+                      </GlassPanel>
+                    </SpotlightCard>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
 
             <motion.p variants={riseVariants} className="mt-6 text-sm text-silver-500">
               {copy.reflection}
@@ -571,7 +581,7 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
               </Magnetic>
               <Magnetic>
                 <Button asChild size="lg" variant="secondary">
-                  <Link href="/reading">{copy.fullReading}</Link>
+                  {variant === "page" ? <Link href="/reading">{copy.fullReading}</Link> : <Link href="/tarot/card-of-the-day">{copy.fullDayReading}</Link>}
                 </Button>
               </Magnetic>
             </motion.div>
@@ -593,6 +603,45 @@ export function DailyCardContent({ botUsername }: { botUsername: string }) {
           </motion.section>
         )}
       </AnimatePresence>
+    </>
+  );
+}
+
+/** Страница «Карта дня»: крупный заголовок, ритуал и полное толкование с аспектами. */
+export function DailyCardContent({ botUsername }: { botUsername: string }) {
+  const copy = useTranslation().dailyCardPage;
+  return (
+    <div className="overflow-x-clip px-4 pb-24 pt-14">
+      <DailyCardRitual
+        variant="page"
+        botUsername={botUsername}
+        header={
+          <>
+            <motion.p
+              data-reveal
+              className="text-xs uppercase tracking-[0.25em] text-gold-400"
+              initial={{ opacity: 0, letterSpacing: "0.6em" }}
+              animate={{ opacity: 1, letterSpacing: "0.25em" }}
+              transition={{ duration: 1, ease: EASE_OUT }}
+            >
+              {copy.eyebrow}
+            </motion.p>
+            <h1 className="mt-3 font-display text-4xl text-silver-50 sm:text-5xl">
+              <SplitWords text={copy.title} immediate delay={0.15} />{" "}
+              <SplitWords text={copy.titleAccent} immediate delay={0.4} wordClassName="text-shimmer-gold" />
+            </h1>
+            <motion.p
+              data-reveal
+              className="mx-auto mt-4 max-w-xl text-silver-400"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.55, ease: EASE_OUT }}
+            >
+              {copy.subtitle}
+            </motion.p>
+          </>
+        }
+      />
     </div>
   );
 }

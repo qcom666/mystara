@@ -406,6 +406,7 @@ export const en = {
     reflection: "Something to reflect on, not a prediction.",
     moreAboutCard: "More about this card",
     fullReading: "Do a full reading",
+    fullDayReading: "Full reading of the day",
     telegramCta: "Card of the day every morning in Telegram",
     telegramHint: "Open the bot and send /daily",
     guestNote: "This is the shared card of the day for guests.",
@@ -575,6 +576,11 @@ export const en = {
       ],
     },
     marquee: ["Tarot readings", "Numerology", "Today's horoscope", "Natal Chart", "Zodiac compatibility", "Card of the day in Telegram", "78 cards", "Readings for your question"],
+    dailyCard: {
+      eyebrow: "Card of the day",
+      title: "Your card for today",
+      subtitle: "Tap the deck: one card hints at what to pay attention to today. A new one every day at midnight Moscow time.",
+    },
     stats: {
       eyebrow: "Mystara in numbers",
       cards: "Tarot cards, each with its own meaning",

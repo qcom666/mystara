@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AIShowcase } from "@/components/marketing/ai-showcase";
 import { CardShowcase } from "@/components/marketing/card-showcase";
 import { CTASection } from "@/components/marketing/cta-section";
+import { DailyCardSection } from "@/components/marketing/daily-card-section";
 import { FAQ } from "@/components/marketing/faq";
 import { Hero } from "@/components/marketing/hero";
 import { HomeMarquee } from "@/components/marketing/home-marquee";
@@ -25,6 +26,7 @@ export default function Home() {
       <LandingMotion>
         <Hero />
         <HomeMarquee />
+        <DailyCardSection />
         <InteractivePreview />
         <PopularSpreads />
         <StatsBand />
