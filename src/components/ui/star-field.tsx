@@ -26,9 +26,9 @@ interface SkyLayer {
  * медленно, ближние крупные — быстрее) дают объём и прячут повтор узора.
  */
 const LAYERS: readonly { id: string; count: number; minSize: number; maxSize: number; secondsPerScreen: number }[] = [
-  { id: "far", count: 44, minSize: 0.5, maxSize: 1.1, secondsPerScreen: 360 },
-  { id: "mid", count: 26, minSize: 0.9, maxSize: 1.6, secondsPerScreen: 240 },
-  { id: "near", count: 12, minSize: 1.4, maxSize: 2.2, secondsPerScreen: 160 },
+  { id: "far", count: 44, minSize: 0.5, maxSize: 1.1, secondsPerScreen: 170 },
+  { id: "mid", count: 26, minSize: 0.9, maxSize: 1.6, secondsPerScreen: 110 },
+  { id: "near", count: 12, minSize: 1.4, maxSize: 2.2, secondsPerScreen: 70 },
 ];
 
 // Фиксированное зерно, считается один раз при загрузке модуля: на сервере и на клиенте одинаково,
@@ -52,13 +52,16 @@ function generateLayers(): SkyLayer[] {
 const SKY = generateLayers();
 
 /**
- * Падающие звёзды: редкий росчерк через небо. Каждая со своей паузой и траекторией, поэтому появляются
- * вразнобой, примерно раз в несколько секунд то одна, то другая.
+ * Падающие звёзды: росчерк через небо. У каждой свой цикл и траектория, поэтому появляются вразнобой,
+ * в среднем раз в 3–4 секунды то одна, то другая. Полёт занимает 10 % цикла (с 86 % до 96 %, см. keyframes
+ * shooting-star); отрицательная задержка начинает цикл с середины, чтобы первые кометы пролетели в первые
+ * секунды на странице (примерно на 2-й, 5-й, 9-й и 12-й), а не после полной паузы.
  */
 const SHOOTING_STARS = [
-  { top: "12%", left: "8%", duration: 14, delay: 2, angle: 18, x: "46vw", y: "15vw" },
-  { top: "28%", left: "52%", duration: 19, delay: 9, angle: 24, x: "38vw", y: "17vw" },
-  { top: "6%", left: "34%", duration: 23, delay: 15, angle: 14, x: "52vw", y: "13vw" },
+  { top: "12%", left: "8%", duration: 10, delay: -6.6, angle: 18, x: "46vw", y: "15vw" },
+  { top: "28%", left: "52%", duration: 13, delay: -5.7, angle: 24, x: "38vw", y: "17vw" },
+  { top: "6%", left: "34%", duration: 16, delay: -4.8, angle: 14, x: "52vw", y: "13vw" },
+  { top: "44%", left: "16%", duration: 19, delay: -3.8, angle: 21, x: "40vw", y: "16vw" },
 ] as const;
 
 function StarStrip({ stars, offset }: { stars: Star[]; offset: "left-0" | "left-1/2" }) {
