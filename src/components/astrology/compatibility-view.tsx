@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { CountUp } from "@/components/motion/effects";
 import Link, { useLocalizedHref } from "@/components/shared/localized-link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -11,6 +13,7 @@ import { useLocale, useTranslation } from "@/lib/i18n";
 import type { ZodiacSignId } from "@/modules/astrology/domain/types";
 import { getAllZodiacSigns, getZodiacSignById, localizeZodiacSign } from "@/modules/astrology/domain/zodiac-signs.data";
 import { type Compatibility, compatibilitySlug } from "@/modules/astrology/services/compatibility";
+import { SplitWords } from "@/components/motion/reveal";
 
 /** Символ знака текстом, а не цветным эмодзи (U+FE0E). */
 const asText = (symbol: string) => `${symbol}\uFE0E`;
@@ -68,21 +71,33 @@ export function CompatibilityIntro() {
   return (
     <div className="text-center">
       <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.compatibilityPage.eyebrow}</p>
-      <h1 className="mt-2 font-display text-3xl text-silver-50 sm:text-4xl">{t.compatibilityPage.title}</h1>
+      <h1 className="mt-2 font-display text-3xl text-silver-50 sm:text-4xl"><SplitWords text={t.compatibilityPage.title} immediate delay={0.1} /></h1>
       <p className="mx-auto mt-3 max-w-xl text-sm text-silver-400">{t.compatibilityPage.subtitle}</p>
     </div>
   );
 }
 
-function ScoreBar({ label, value, large = false }: { label: string; value: number; large?: boolean }) {
+/** Шкала оценки: при появлении заполняется от нуля, проценты отсчитываются вместе с ней. */
+function ScoreBar({ label, value, large = false, delay = 0 }: { label: string; value: number; large?: boolean; delay?: number }) {
   return (
     <div>
       <div className="flex items-baseline justify-between">
         <span className={large ? "font-display text-lg text-silver-100" : "text-sm text-silver-300"}>{label}</span>
-        <span className={large ? "font-display text-2xl text-gold-300" : "text-sm text-gold-300"}>{value}%</span>
+        <span className={large ? "font-display text-2xl text-gold-300" : "text-sm text-gold-300"}>
+          <CountUp value={value} duration={1.4} />%
+        </span>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-midnight-700" role="presentation">
-        <div className="h-full rounded-full bg-gradient-to-r from-gold-400 to-gold-600" style={{ width: `${value}%` }} />
+        <motion.div
+          className="relative h-full origin-left rounded-full bg-gradient-to-r from-gold-400 to-gold-600"
+          style={{ width: `${value}%` }}
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true, amount: 0.8 }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay }}
+        >
+          <span className="absolute inset-0 rounded-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.45),transparent)] bg-[length:40%_100%] bg-no-repeat motion-safe:animate-[bar-glint_2.4s_ease-in-out_1.6s_infinite]" />
+        </motion.div>
       </div>
     </div>
   );
@@ -113,9 +128,9 @@ export function CompatibilityResult({ result }: { result: Compatibility }) {
 
       <GlassPanel className="mt-8 space-y-4">
         <ScoreBar label={t.compatibilityPage.scores.overall} value={result.scores.overall} large />
-        <ScoreBar label={t.compatibilityPage.scores.love} value={result.scores.love} />
-        <ScoreBar label={t.compatibilityPage.scores.friendship} value={result.scores.friendship} />
-        <ScoreBar label={t.compatibilityPage.scores.work} value={result.scores.work} />
+        <ScoreBar label={t.compatibilityPage.scores.love} value={result.scores.love} delay={0.15} />
+        <ScoreBar label={t.compatibilityPage.scores.friendship} value={result.scores.friendship} delay={0.3} />
+        <ScoreBar label={t.compatibilityPage.scores.work} value={result.scores.work} delay={0.45} />
       </GlassPanel>
 
       <GlassPanel className="mt-4">

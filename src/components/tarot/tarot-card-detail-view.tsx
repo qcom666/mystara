@@ -22,7 +22,8 @@ export function TarotCardDetailView({ card }: { card: TarotCard }) {
         <FavoriteButton type="CARD" targetId={card.id} />
       </div>
       <div className="mt-10 text-center">
-        <Button asChild size="lg">
+        {/* Длинная надпись на телефоне переносится, а не растягивает страницу вбок. */}
+        <Button asChild size="lg" className="h-auto min-h-13 whitespace-normal py-3">
           <Link href="/reading">{t.tarotCardsPage.drawThisEnergyCta}</Link>
         </Button>
       </div>

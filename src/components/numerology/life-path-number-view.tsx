@@ -7,6 +7,8 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getLifePathMeaning } from "@/modules/numerology/domain/life-path-meanings.data";
 import type { LifePathNumber } from "@/modules/numerology/domain/types";
+import { CountUp, HeroGlyph } from "@/components/motion/effects";
+import { SplitWords } from "@/components/motion/reveal";
 
 export function LifePathNumberView({ number }: { number: LifePathNumber }) {
   const t = useTranslation();
@@ -20,8 +22,10 @@ export function LifePathNumberView({ number }: { number: LifePathNumber }) {
       </Link>
 
       <div className="mt-6 text-center">
-        <p className="font-display text-6xl text-gradient-gold">{meaning.number}</p>
-        <h1 className="mt-2 font-display text-3xl text-silver-50">{meaning.title}</h1>
+        <HeroGlyph>
+          <CountUp value={meaning.number} duration={1.2} />
+        </HeroGlyph>
+        <h1 className="mt-2 font-display text-3xl text-silver-50"><SplitWords text={meaning.title} immediate delay={0.4} /></h1>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           {meaning.keywords.map((keyword) => (
             <Badge key={keyword} variant="gold">

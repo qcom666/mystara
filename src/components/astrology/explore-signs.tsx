@@ -3,6 +3,7 @@
 import Link from "@/components/shared/localized-link";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { getAllZodiacSigns, localizeZodiacSign } from "@/modules/astrology/domain/zodiac-signs.data";
+import type { CSSProperties } from "react";
 
 // Клиентский компонент, чтобы названия знаков следовали выбранному языку, а остальная часть
 // `astrology/page.tsx` осталась серверным компонентом (и сохранила metadata).
@@ -22,13 +23,14 @@ export function ExploreSigns() {
       </div>
       <p className="text-xs uppercase tracking-[0.2em] text-silver-500">{t.astrologyPage.exploreHeading}</p>
       <div className="mt-3 flex flex-wrap justify-center gap-2">
-        {getAllZodiacSigns().map((base) => {
+        {getAllZodiacSigns().map((base, index) => {
           const sign = localizeZodiacSign(base, locale);
           return (
             <Link
               key={sign.id}
               href={`/astrology/${sign.id}`}
-              className="rounded-full border border-silver-500/25 px-3 py-2 text-sm sm:py-1 text-silver-400 transition-colors hover:border-gold-400/40 hover:text-gold-300"
+              style={{ "--reveal-index": index % 6 } as CSSProperties}
+              className="scroll-reveal-step rounded-full border border-silver-500/25 px-3 py-2 text-sm sm:py-1 text-silver-400 transition-colors hover:border-gold-400/40 hover:text-gold-300"
             >
               {`${sign.symbol}\uFE0E`} {sign.name}
             </Link>

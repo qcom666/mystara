@@ -51,6 +51,16 @@ function generateLayers(): SkyLayer[] {
 
 const SKY = generateLayers();
 
+/**
+ * Падающие звёзды: редкий росчерк через небо. Каждая со своей паузой и траекторией, поэтому появляются
+ * вразнобой, примерно раз в несколько секунд то одна, то другая.
+ */
+const SHOOTING_STARS = [
+  { top: "12%", left: "8%", duration: 14, delay: 2, angle: 18, x: "46vw", y: "15vw" },
+  { top: "28%", left: "52%", duration: 19, delay: 9, angle: 24, x: "38vw", y: "17vw" },
+  { top: "6%", left: "34%", duration: 23, delay: 15, angle: 14, x: "52vw", y: "13vw" },
+] as const;
+
 function StarStrip({ stars, offset }: { stars: Star[]; offset: "left-0" | "left-1/2" }) {
   return (
     <div className={cn("absolute inset-y-0 w-1/2", offset)}>
@@ -80,6 +90,23 @@ interface StarFieldProps {
 export function StarField({ className }: StarFieldProps) {
   return (
     <div aria-hidden="true" className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
+      {SHOOTING_STARS.map((star) => (
+        <span
+          key={`${star.top}-${star.left}`}
+          className="absolute h-px w-28 origin-left rounded-full bg-gradient-to-r from-transparent via-silver-200/70 to-white opacity-0 motion-safe:animate-shooting-star"
+          style={
+            {
+              top: star.top,
+              left: star.left,
+              animationDuration: `${star.duration}s`,
+              animationDelay: `${star.delay}s`,
+              "--shoot-angle": `${star.angle}deg`,
+              "--shoot-x": star.x,
+              "--shoot-y": star.y,
+            } as CSSProperties
+          }
+        />
+      ))}
       {SKY.map((layer) => (
         <div
           key={layer.id}

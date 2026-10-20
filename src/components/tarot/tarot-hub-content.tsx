@@ -4,6 +4,7 @@ import { BookOpen, Layers, Sparkles } from "lucide-react";
 import Link from "@/components/shared/localized-link";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useTranslation } from "@/lib/i18n";
+import { SplitWords } from "@/components/motion/reveal";
 
 export function TarotHubContent() {
   const t = useTranslation();
@@ -16,7 +17,7 @@ export function TarotHubContent() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-16">
-      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl">{t.nav.learn}</h1>
+      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl"><SplitWords text={t.nav.learn} immediate delay={0.1} /></h1>
       <p className="mt-3 max-w-2xl text-silver-400">{t.tarotHubPage.subtitle}</p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-3">

@@ -18,6 +18,7 @@ import type { LifePathNumber, NumerologyNumberType, NumerologyProfile } from "@/
 import { calculateBirthdayNumber, calculateLifePathNumber } from "@/modules/numerology/services/calculate-life-path";
 import { isCyrillic } from "@/modules/numerology/domain/letter-values.data";
 import { calculateNumerologyProfile, hasCalculableLetters } from "@/modules/numerology/services/calculate-name-numbers";
+import { CountUp, HeroGlyph } from "@/components/motion/effects";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -124,7 +125,9 @@ export function NumerologyResult({ fullName, birthDate, onReset, saved = false }
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl px-4 py-16 sm:py-24">
       <div className="text-center">
         <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.numerologyPage.eyebrow}</p>
-        <p className="mt-3 font-display text-6xl text-gradient-gold">{lifePathMeaning.number}</p>
+        <HeroGlyph className="mt-3">
+          <CountUp value={lifePathMeaning.number} duration={1.2} />
+        </HeroGlyph>
         <h1 className="mt-2 font-display text-3xl text-silver-50">{lifePathMeaning.title}</h1>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           {lifePathMeaning.keywords.map((keyword) => (

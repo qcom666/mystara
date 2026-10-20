@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { formatCardCount, useLocale, useTranslation } from "@/lib/i18n";
 import { getAllSpreads, getSpreadDescription, getSpreadName } from "@/modules/tarot/domain/spreads.data";
+import { SplitWords } from "@/components/motion/reveal";
 
 export function TarotSpreadsContent() {
   const t = useTranslation();
@@ -13,7 +14,7 @@ export function TarotSpreadsContent() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-16">
-      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl">{t.tarotSpreadsPage.title}</h1>
+      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl"><SplitWords text={t.tarotSpreadsPage.title} immediate delay={0.1} /></h1>
       <p className="mt-3 max-w-2xl text-silver-400">{t.tarotSpreadsPage.subtitle}</p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">

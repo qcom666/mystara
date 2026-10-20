@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Link from "@/components/shared/localized-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { SIGN_LOCATIVE_RU } from "@/modules/astrology/domain/horoscope.data";
 import { getZodiacSignById, localizeZodiacSign } from "@/modules/astrology/domain/zodiac-signs.data";
 import type { ZodiacSignId } from "@/modules/astrology/domain/types";
 import type { DailyHoroscope, HoroscopeRatings, SkyOfDay } from "@/modules/astrology/services/daily-horoscope";
+import { HeroGlyph } from "@/components/motion/effects";
+import { SplitWords } from "@/components/motion/reveal";
 
 function signOf(id: ZodiacSignId, locale: Locale) {
   const base = getZodiacSignById(id);
@@ -57,9 +60,21 @@ function RatingRow({ ratings }: { ratings: HoroscopeRatings }) {
       {(["love", "work", "energy"] as const).map((key) => (
         <div key={key}>
           <dt className="text-xs uppercase tracking-[0.15em] text-silver-500">{t.horoscopePage.ratings[key]}</dt>
-          <dd className="mt-1 text-gold-300" aria-label={`${ratings[key]} / 5`}>
-            {"●".repeat(ratings[key])}
-            <span className="text-midnight-600">{"●".repeat(5 - ratings[key])}</span>
+          <dd className="mt-1" aria-label={`${ratings[key]} / 5`}>
+            {/* Точки загораются по одной, слева направо, у каждой оценки со своей задержкой. */}
+            {Array.from({ length: 5 }, (_, dot) => (
+              <motion.span
+                key={dot}
+                aria-hidden="true"
+                className={dot < ratings[key] ? "inline-block text-gold-300" : "inline-block text-midnight-600"}
+                initial={{ opacity: 0, scale: 0.2 }}
+                whileInView={{ opacity: 1, scale: dot < ratings[key] ? [0.2, 1.5, 1] : 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 + dot * 0.09 + ["love", "work", "energy"].indexOf(key) * 0.15 }}
+              >
+                ●
+              </motion.span>
+            ))}
           </dd>
         </div>
       ))}
@@ -75,7 +90,7 @@ export function HoroscopeOverview({ sky, horoscopes }: { sky: SkyOfDay; horoscop
     <div className="mx-auto max-w-3xl px-4 py-16">
       <div className="text-center">
         <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.horoscopePage.eyebrow}</p>
-        <h1 className="mt-2 font-display text-3xl text-silver-50 sm:text-4xl">{t.horoscopePage.title}</h1>
+        <h1 className="mt-2 font-display text-3xl text-silver-50 sm:text-4xl"><SplitWords text={t.horoscopePage.title} immediate delay={0.1} /></h1>
         <p className="mt-1 text-sm text-silver-400">{formatDay(sky.day, locale)}</p>
         <p className="mx-auto mt-3 max-w-xl text-sm text-silver-400">{t.horoscopePage.subtitle}</p>
         <div className="mt-4">
@@ -138,7 +153,7 @@ export function HoroscopeSignView({ sky, horoscope }: { sky: SkyOfDay; horoscope
       </Link>
 
       <div className="mt-6 text-center">
-        <p className="font-display text-6xl text-gradient-gold">{asText(sign.symbol)}</p>
+        <HeroGlyph ring>{asText(sign.symbol)}</HeroGlyph>
         <h1 className="mt-2 font-display text-3xl text-silver-50">{t.horoscopePage.signTitle.replace("{name}", sign.name)}</h1>
         <p className="mt-1 text-sm text-silver-400">{formatDay(sky.day, locale)}</p>
         <div className="mt-4">

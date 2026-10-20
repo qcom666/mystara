@@ -11,6 +11,7 @@ import {
   PRIVACY_POLICY_VERSION,
 } from "@/lib/legal/operator";
 import { PRIVACY_POLICY_SECTIONS, type LegalSection } from "@/lib/legal/privacy-policy";
+import { SplitWords } from "@/components/motion/reveal";
 
 type DocumentKind = "privacy" | "consent" | "offer";
 
@@ -35,7 +36,7 @@ export function LegalDocumentView({ kind }: { kind: DocumentKind }) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-16">
-      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl">{title}</h1>
+      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl"><SplitWords text={title} immediate delay={0.1} /></h1>
       <p className="mt-2 text-xs text-silver-500">
         {t.legal.inForceSince} {effectiveDate[locale]} · {t.legal.versionLabel} {version}
       </p>
@@ -44,7 +45,7 @@ export function LegalDocumentView({ kind }: { kind: DocumentKind }) {
 
       <div className="mt-10 space-y-9">
         {sections.map((section) => (
-          <section key={section.id} id={section.id}>
+          <section key={section.id} id={section.id} className="scroll-reveal">
             <h2 className="font-display text-xl text-silver-100">{section.title[locale]}</h2>
             <div className="mt-3 space-y-3 text-sm leading-relaxed text-silver-300">
               {section.body[locale].map((block, index) =>

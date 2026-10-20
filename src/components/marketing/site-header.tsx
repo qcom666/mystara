@@ -73,11 +73,19 @@ export function SiteHeader() {
               href={link.href}
               aria-current={link.href === activeHref ? "page" : undefined}
               className={cn(
-                "whitespace-nowrap py-1 text-sm transition-colors hover:text-gold-300",
-                link.href === activeHref ? "text-gold-300 underline decoration-gold-400/70 decoration-1 underline-offset-[10px]" : "text-silver-300",
+                "relative whitespace-nowrap py-1 text-sm transition-colors hover:text-gold-300",
+                link.href === activeHref ? "text-gold-300" : "text-silver-300",
               )}
             >
               {link.label}
+              {/* Подчёркивание активного раздела перетекает к новому пункту при переходе (общий layoutId). */}
+              {link.href === activeHref && (
+                <motion.span
+                  layoutId="site-header-active"
+                  className="absolute inset-x-0 -bottom-[9px] h-px bg-gradient-to-r from-transparent via-gold-300 to-transparent"
+                  transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
             </Link>
           ))}
         </nav>

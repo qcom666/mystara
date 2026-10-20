@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import type { ZodiacSign } from "@/modules/astrology/domain/types";
 import { localizeZodiacSign } from "@/modules/astrology/domain/zodiac-signs.data";
+import { HeroGlyph } from "@/components/motion/effects";
 
 export function ZodiacSignView({ sign: baseSign }: { sign: ZodiacSign }) {
   const t = useTranslation();
@@ -20,7 +21,7 @@ export function ZodiacSignView({ sign: baseSign }: { sign: ZodiacSign }) {
       </Link>
 
       <div className="mt-6 text-center">
-        <p className="font-display text-6xl text-gradient-gold">{`${sign.symbol}\uFE0E`}</p>
+        <HeroGlyph ring>{`${sign.symbol}\uFE0E`}</HeroGlyph>
         <h1 className="mt-2 font-display text-3xl text-silver-50">{sign.name}</h1>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           <Badge variant="violet">{t.astrologyTerms.elements[sign.element]}</Badge>

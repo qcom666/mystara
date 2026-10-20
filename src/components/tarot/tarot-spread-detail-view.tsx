@@ -39,7 +39,8 @@ export function TarotSpreadDetailView({ spread }: { spread: TarotSpread }) {
       </div>
 
       <div className="mt-10 text-center">
-        <Button asChild size="lg">
+        {/* Длинная надпись на телефоне переносится, а не растягивает страницу вбок. */}
+        <Button asChild size="lg" className="h-auto min-h-13 whitespace-normal py-3">
           <Link href={`/reading/${spread.id}`}>{t.tarotSpreadsPage.startReadingCta.replace("{name}", spreadName)}</Link>
         </Button>
       </div>

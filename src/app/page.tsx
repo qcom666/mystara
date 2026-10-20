@@ -4,9 +4,11 @@ import { CardShowcase } from "@/components/marketing/card-showcase";
 import { CTASection } from "@/components/marketing/cta-section";
 import { FAQ } from "@/components/marketing/faq";
 import { Hero } from "@/components/marketing/hero";
+import { HomeMarquee } from "@/components/marketing/home-marquee";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { InteractivePreview } from "@/components/marketing/interactive-preview";
 import { PopularSpreads } from "@/components/marketing/popular-spreads";
+import { StatsBand } from "@/components/marketing/stats-band";
 import { LandingMotion } from "@/components/motion/landing-motion";
 import { TrackOnMount } from "@/components/shared/track-on-mount";
 import { TelegramGate } from "@/components/telegram/telegram-gate";
@@ -22,8 +24,10 @@ export default function Home() {
       <TrackOnMount event={{ name: "landing_viewed" }} />
       <LandingMotion>
         <Hero />
+        <HomeMarquee />
         <InteractivePreview />
         <PopularSpreads />
+        <StatsBand />
         <HowItWorks />
         <CardShowcase />
         <AIShowcase />

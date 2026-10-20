@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 import { useLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -20,13 +21,22 @@ const CELTIC_CROSS_TEMPLATE = ['". crown . outcome"', '"recentPast present nearF
   " ",
 );
 
-function PositionedCard({ drawn, renderCard, areaName }: { drawn: DrawnCard; renderCard: (d: DrawnCard) => ReactNode; areaName?: string }) {
+/** Карта на своей позиции: при появлении на экране ложится по очереди, будто её выкладывают на стол. */
+function PositionedCard({ drawn, renderCard, areaName, index }: { drawn: DrawnCard; renderCard: (d: DrawnCard) => ReactNode; areaName?: string; index: number }) {
   const { locale } = useLocale();
   return (
-    <div style={areaName ? { gridArea: areaName } : undefined} className="flex flex-col items-center gap-2">
+    <motion.div
+      data-reveal
+      style={areaName ? { gridArea: areaName } : undefined}
+      className="flex flex-col items-center gap-2"
+      initial={{ opacity: 0, y: 40, rotate: index % 2 === 0 ? -6 : 6, scale: 0.9 }}
+      whileInView={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 + index * 0.12 }}
+    >
       {renderCard(drawn)}
       <span className="text-center text-xs text-silver-400 sm:text-sm">{getPositionLabel(drawn.position, locale)}</span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -36,14 +46,14 @@ export function SpreadLayout({ spread, cards, renderCard }: SpreadLayoutProps) {
     return (
       <div>
         <div className="hidden gap-4 md:grid" style={{ gridTemplateAreas: CELTIC_CROSS_TEMPLATE, gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
-          {spread.positions.map((position) => {
+          {spread.positions.map((position, index) => {
             const drawn = byPosition.get(position.id);
-            return drawn ? <PositionedCard key={position.id} drawn={drawn} renderCard={renderCard} areaName={position.id} /> : null;
+            return drawn ? <PositionedCard key={position.id} drawn={drawn} renderCard={renderCard} areaName={position.id} index={index} /> : null;
           })}
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:hidden">
-          {cards.map((drawn) => (
-            <PositionedCard key={drawn.position.id} drawn={drawn} renderCard={renderCard} />
+          {cards.map((drawn, index) => (
+            <PositionedCard key={drawn.position.id} drawn={drawn} renderCard={renderCard} index={index} />
           ))}
         </div>
       </div>
@@ -52,7 +62,7 @@ export function SpreadLayout({ spread, cards, renderCard }: SpreadLayoutProps) {
 
   if (spread.cardCount === 1) {
     const only = cards[0];
-    return <div className="mx-auto max-w-[240px]">{only && <PositionedCard drawn={only} renderCard={renderCard} />}</div>;
+    return <div className="mx-auto max-w-[240px]">{only && <PositionedCard drawn={only} renderCard={renderCard} index={0} />}</div>;
   }
 
   return (
@@ -63,8 +73,8 @@ export function SpreadLayout({ spread, cards, renderCard }: SpreadLayoutProps) {
         spread.cardCount >= 5 && "md:grid-cols-5",
       )}
     >
-      {cards.map((drawn) => (
-        <PositionedCard key={drawn.position.id} drawn={drawn} renderCard={renderCard} />
+      {cards.map((drawn, index) => (
+        <PositionedCard key={drawn.position.id} drawn={drawn} renderCard={renderCard} index={index} />
       ))}
     </div>
   );

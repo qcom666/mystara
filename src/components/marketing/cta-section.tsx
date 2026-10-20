@@ -1,5 +1,6 @@
 "use client";
 
+import { Magnetic } from "@/components/motion/effects";
 import { Reveal, SplitWords } from "@/components/motion/reveal";
 import Link from "@/components/shared/localized-link";
 import { Button } from "@/components/ui/button";
@@ -28,9 +29,11 @@ export function CTASection() {
             {t.marketing.cta.subtitle}
           </Reveal>
           <Reveal delay={0.7} y={16}>
-            <Button size="lg" className="mt-8 shadow-[0_0_40px_-8px_rgba(212,175,55,0.7)]" asChild>
-              <Link href="/reading">{t.landing.ctaPrimary}</Link>
-            </Button>
+            <Magnetic className="mt-8">
+              <Button size="lg" className="shadow-[0_0_40px_-8px_rgba(212,175,55,0.7)]" asChild>
+                <Link href="/reading">{t.landing.ctaPrimary}</Link>
+              </Button>
+            </Magnetic>
           </Reveal>
         </div>
       </Reveal>

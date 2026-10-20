@@ -542,6 +542,14 @@ export const en = {
         },
       ],
     },
+    marquee: ["Tarot readings", "Numerology", "Today's horoscope", "Natal Chart", "Zodiac compatibility", "Card of the day in Telegram", "78 cards", "Readings for your question"],
+    stats: {
+      eyebrow: "Mystara in numbers",
+      cards: "Tarot cards, each with its own meaning",
+      spreads: "spreads for any question",
+      signs: "zodiac signs",
+      planets: "planets in the Natal Chart",
+    },
     cta: {
       title: "Your first reading is one shuffle away",
       subtitle: "Free, no account required, ready in under a minute.",

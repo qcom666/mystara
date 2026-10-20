@@ -15,6 +15,7 @@ import type { Sect } from "@/modules/astrology/domain/types";
 import { localizeZodiacSign } from "@/modules/astrology/domain/zodiac-signs.data";
 import { calculateSunSign } from "@/modules/astrology/services/calculate-sun-sign";
 import { getActorFunFactByZodiac } from "@/modules/fun-facts/services/actor-match.service";
+import { HeroGlyph } from "@/components/motion/effects";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -60,7 +61,7 @@ export function AstrologyResult({ birthDate, sect, onReset, saved = false }: Ast
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mx-auto max-w-2xl px-4 py-16 sm:py-24">
       <div className="text-center">
         <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.astrologyPage.eyebrow}</p>
-        <p className="mt-3 font-display text-6xl text-gradient-gold">{sign.symbol}</p>
+        <HeroGlyph ring className="mt-3">{`${sign.symbol}\uFE0E`}</HeroGlyph>
         <h1 className="mt-2 font-display text-3xl text-silver-50">{sign.name}</h1>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           <Badge variant="violet">{t.astrologyTerms.elements[sign.element]}</Badge>

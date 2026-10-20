@@ -27,9 +27,12 @@ const panelVariants = cva("rounded-2xl", {
   },
 });
 
-export interface GlassPanelProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof panelVariants> {}
+export interface GlassPanelProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof panelVariants> {
+  /** Проявляться при прокрутке (CSS, класс scroll-reveal в globals.css); false — для закреплённых и всплывающих панелей. */
+  scrollReveal?: boolean;
+}
 
-export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(({ className, variant, padding, ...props }, ref) => (
-  <div ref={ref} className={cn(panelVariants({ variant, padding }), className)} {...props} />
+export const GlassPanel = forwardRef<HTMLDivElement, GlassPanelProps>(({ className, variant, padding, scrollReveal = true, ...props }, ref) => (
+  <div ref={ref} className={cn(panelVariants({ variant, padding }), scrollReveal && "scroll-reveal", className)} {...props} />
 ));
 GlassPanel.displayName = "GlassPanel";

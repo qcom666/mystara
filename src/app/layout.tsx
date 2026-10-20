@@ -52,7 +52,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* Без JavaScript анимации появления не запустятся: блоки показываются сразу. */}
         <noscript>
-          <style>{"[data-reveal]{opacity:1!important;transform:none!important;filter:none!important}"}</style>
+          <style>{"[data-reveal],[data-page-enter]{opacity:1!important;transform:none!important;filter:none!important}"}</style>
         </noscript>
       </head>
       <body className="relative min-h-screen bg-midnight-950 font-sans text-silver-200 antialiased">

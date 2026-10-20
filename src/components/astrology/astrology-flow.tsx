@@ -6,6 +6,7 @@ import { useTranslation } from "@/lib/i18n";
 import { calculateSunSign } from "@/modules/astrology/services/calculate-sun-sign";
 import { AstrologyInputForm, type AstrologyInputValue } from "./astrology-input-form";
 import { AstrologyResult } from "./astrology-result";
+import { SplitWords } from "@/components/motion/reveal";
 
 export function AstrologyFlow() {
   const t = useTranslation();
@@ -21,7 +22,7 @@ export function AstrologyFlow() {
       <div className="mx-auto max-w-md px-4 py-16 sm:py-24">
         <div className="mb-8 text-center">
           <p className="text-xs uppercase tracking-[0.2em] text-gold-400">{t.astrologyPage.flowEyebrow}</p>
-          <h1 className="mt-3 font-display text-3xl text-silver-50">{t.astrologyPage.flowTitle}</h1>
+          <h1 className="mt-3 font-display text-3xl text-silver-50"><SplitWords text={t.astrologyPage.flowTitle} immediate delay={0.1} /></h1>
           <p className="mt-2 text-silver-400">{t.astrologyPage.flowSubtitle}</p>
         </div>
         <AstrologyInputForm onSubmit={handleSubmit} />

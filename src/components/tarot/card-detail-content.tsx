@@ -6,6 +6,7 @@ import { useLocale, useTranslation } from "@/lib/i18n";
 import { getCardDescription, getCardKeywords, getCardMeanings, getCardName } from "@/modules/tarot/domain/deck";
 import type { Orientation, TarotCard } from "@/modules/tarot/domain/types";
 import { TarotCardFace } from "./tarot-card-face";
+import { CardFlipIn } from "@/components/motion/effects";
 
 interface CardDetailContentProps {
   card: TarotCard;
@@ -20,9 +21,9 @@ export function CardDetailContent({ card, orientation }: CardDetailContentProps)
   return (
     <div className="space-y-5">
       <div className="flex gap-4">
-        <div className="w-24 shrink-0 sm:w-28">
+        <CardFlipIn className="w-24 shrink-0 sm:w-28">
           <TarotCardFace card={card} orientation={orientation} locale={locale} className="card-glow w-full" />
-        </div>
+        </CardFlipIn>
         <div>
           <p className="text-xs uppercase tracking-wide text-silver-500">
             {card.arcana === "major" ? t.reading.majorArcana : card.suit ? t.reading.suits[card.suit] : ""}

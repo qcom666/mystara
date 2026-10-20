@@ -4,6 +4,7 @@ import Link from "@/components/shared/localized-link";
 import { useTelegram } from "@/components/telegram/telegram-provider";
 import { useTranslation } from "@/lib/i18n";
 import { OPERATOR } from "@/lib/legal/operator";
+import type { CSSProperties } from "react";
 
 export function SiteFooter() {
   const t = useTranslation();
@@ -51,8 +52,8 @@ export function SiteFooter() {
             <p className="font-display text-xl text-gold-300">Mystara</p>
             <p className="mt-2 max-w-xs text-sm text-silver-500">{t.footer.tagline}</p>
           </div>
-          {footerGroups.map((group) => (
-            <div key={group.title}>
+          {footerGroups.map((group, index) => (
+            <div key={group.title} className="scroll-reveal-step" style={{ "--reveal-index": index } as CSSProperties}>
               <p className="text-sm font-medium text-silver-300">{group.title}</p>
               <ul className="mt-3 space-y-2">
                 {group.links.map((link) => (

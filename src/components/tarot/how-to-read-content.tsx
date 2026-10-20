@@ -4,13 +4,14 @@ import Link from "@/components/shared/localized-link";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useTranslation } from "@/lib/i18n";
+import { SplitWords } from "@/components/motion/reveal";
 
 export function HowToReadContent() {
   const t = useTranslation();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl">{t.footer.groups.learn.howToRead}</h1>
+      <h1 className="font-display text-3xl text-silver-50 sm:text-4xl"><SplitWords text={t.footer.groups.learn.howToRead} immediate delay={0.1} /></h1>
       <p className="mt-3 text-silver-400">{t.howToReadPage.subtitle}</p>
 
       <div className="mt-10 space-y-5">
