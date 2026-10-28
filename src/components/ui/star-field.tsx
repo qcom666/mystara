@@ -2,19 +2,11 @@ import type { CSSProperties } from "react";
 import { createSeededRandom } from "@/lib/rng";
 import { cn } from "@/lib/utils";
 
-interface Star {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  delay: number;
-  duration: number;
-  opacity: number;
-}
-
-interface SkyLayer {
-  id: string;
-  stars: Star[];
+interface SkyLayerConfig {
+  id: "far" | "mid" | "near";
+  count: number;
+  minSize: number;
+  maxSize: number;
   /** За сколько секунд слой проходит ширину экрана: дальние звёзды движутся медленнее ближних. */
   secondsPerScreen: number;
 }
@@ -25,27 +17,51 @@ interface SkyLayer {
  * и начинает заново, поэтому стык не виден. Три слоя с разными звёздами и скоростями (дальние мелкие —
  * медленно, ближние крупные — быстрее) дают объём и прячут повтор узора.
  */
-const LAYERS: readonly { id: string; count: number; minSize: number; maxSize: number; secondsPerScreen: number }[] = [
+const LAYERS: readonly SkyLayerConfig[] = [
   { id: "far", count: 44, minSize: 0.5, maxSize: 1.1, secondsPerScreen: 170 },
   { id: "mid", count: 26, minSize: 0.9, maxSize: 1.6, secondsPerScreen: 110 },
   { id: "near", count: 12, minSize: 1.4, maxSize: 2.2, secondsPerScreen: 70 },
 ];
+
+/**
+ * Звёзды слоя делятся на несколько групп, которые мерцают каждая в своём ритме. Звезда — не отдельный элемент,
+ * а одна из теней (box-shadow) элемента группы: так на весь фон приходится около двух десятков элементов и
+ * анимаций вместо трёх сотен, а мерцание (opacity) и дрейф (transform) целиком крутит видеокарта.
+ */
+const TWINKLE_GROUPS = [
+  { duration: 3.4, delay: 0 },
+  { duration: 4.6, delay: 1.3 },
+  { duration: 5.8, delay: 2.6 },
+  { duration: 4.1, delay: 3.4 },
+] as const;
+
+interface SkyLayer {
+  id: SkyLayerConfig["id"];
+  secondsPerScreen: number;
+  /** Готовое значение box-shadow для каждой группы мерцания. */
+  groups: string[];
+}
 
 // Фиксированное зерно, считается один раз при загрузке модуля: на сервере и на клиенте одинаково,
 // поэтому, несмотря на «случайный» вид, не вызывает ошибку гидратации.
 function generateLayers(): SkyLayer[] {
   return LAYERS.map((layer) => {
     const random = createSeededRandom(`mystara-star-field-v3-${layer.id}`);
-    const stars = Array.from({ length: layer.count }, (_, id) => ({
-      id,
-      x: Number((random() * 100).toFixed(2)),
-      y: Number((random() * 100).toFixed(2)),
-      size: Number((layer.minSize + random() * (layer.maxSize - layer.minSize)).toFixed(2)),
-      delay: Number((random() * 6).toFixed(2)),
-      duration: Number((random() * 3 + 3).toFixed(2)),
-      opacity: Number((random() * 0.5 + 0.3).toFixed(2)),
-    }));
-    return { id: layer.id, stars, secondsPerScreen: layer.secondsPerScreen };
+    const groups: string[][] = TWINKLE_GROUPS.map(() => []);
+    for (let index = 0; index < layer.count; index += 1) {
+      const x = (random() * 100).toFixed(2);
+      const y = (random() * 100).toFixed(2);
+      const size = layer.minSize + random() * (layer.maxSize - layer.minSize);
+      // Остальные числа зерна (задержка, длительность) раньше шли в стиль каждой звезды; читаем их, чтобы
+      // узор неба остался прежним.
+      random();
+      random();
+      const alpha = (random() * 0.5 + 0.3).toFixed(2);
+      // Элемент группы — круг в 1 px: тень с разбросом (size - 1) / 2 даёт звезду нужного размера.
+      const spread = ((size - 1) / 2).toFixed(2);
+      groups[index % groups.length].push(`${x}vw ${y}vh 0 ${spread}px rgb(231 233 240 / ${alpha})`);
+    }
+    return { id: layer.id, secondsPerScreen: layer.secondsPerScreen, groups: groups.map((stars) => stars.join(", ")) };
   });
 }
 
@@ -64,22 +80,14 @@ const SHOOTING_STARS = [
   { top: "44%", left: "16%", duration: 19, delay: -3.8, angle: 21, x: "40vw", y: "16vw" },
 ] as const;
 
-function StarStrip({ stars, offset }: { stars: Star[]; offset: "left-0" | "left-1/2" }) {
+function StarStrip({ groups, offset }: { groups: string[]; offset: "left-0" | "left-1/2" }) {
   return (
     <div className={cn("absolute inset-y-0 w-1/2", offset)}>
-      {stars.map((star) => (
+      {groups.map((shadow, index) => (
         <span
-          key={star.id}
-          className="absolute block rounded-full bg-silver-200 motion-safe:animate-twinkle"
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            opacity: star.opacity,
-            animationDelay: `${star.delay}s`,
-            animationDuration: `${star.duration}s`,
-          }}
+          key={index}
+          className="star-twinkle absolute left-0 top-0 block h-px w-px rounded-full"
+          style={{ boxShadow: shadow, animationDuration: `${TWINKLE_GROUPS[index].duration}s`, animationDelay: `${TWINKLE_GROUPS[index].delay}s` }}
         />
       ))}
     </div>
@@ -96,7 +104,7 @@ export function StarField({ className }: StarFieldProps) {
       {SHOOTING_STARS.map((star) => (
         <span
           key={`${star.top}-${star.left}`}
-          className="absolute h-px w-28 origin-left rounded-full bg-gradient-to-r from-transparent via-silver-200/70 to-white opacity-0 motion-safe:animate-shooting-star"
+          className="shooting-star absolute h-px w-28 origin-left rounded-full bg-gradient-to-r from-transparent via-silver-200/70 to-white opacity-0 motion-safe:animate-shooting-star"
           style={
             {
               top: star.top,
@@ -113,12 +121,13 @@ export function StarField({ className }: StarFieldProps) {
       {SKY.map((layer) => (
         <div
           key={layer.id}
+          data-sky-layer={layer.id}
           // Слой шириной в два экрана, начинается за левым краем; сдвиг на половину своей ширины = на экран.
           className="absolute inset-y-0 -left-full w-[200%] will-change-transform motion-safe:animate-sky-drift"
           style={{ animationDuration: `${layer.secondsPerScreen}s` } as CSSProperties}
         >
-          <StarStrip stars={layer.stars} offset="left-0" />
-          <StarStrip stars={layer.stars} offset="left-1/2" />
+          <StarStrip groups={layer.groups} offset="left-0" />
+          <StarStrip groups={layer.groups} offset="left-1/2" />
         </div>
       ))}
     </div>

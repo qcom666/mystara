@@ -7,7 +7,7 @@ export function FAQ() {
   const t = useTranslation();
 
   return (
-    <section className="px-4 py-20">
+    <section className="cv-auto px-4 py-20">
       <div className="mx-auto max-w-2xl">
         <SectionHeading eyebrow={t.marketing.faq.eyebrow} title={t.marketing.faq.title} />
         <RevealGroup className="mt-10 space-y-3" stagger={0.08} delay={0.15}>

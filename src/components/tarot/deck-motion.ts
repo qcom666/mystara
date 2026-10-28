@@ -4,7 +4,8 @@ import { EASE_OUT } from "@/components/motion/reveal";
 /**
  * Общая анимация колоды из семи карт (карта дня, перетасовка в раскладах): шесть карт под верхней и сама
  * верхняя. idle — стопка, shuffling — карты разлетаются веером и собираются (круг повторяется),
- * drawing — нижние карты улетают вниз, а верхняя выходит вперёд, revealed — верхняя парит.
+ * drawing — нижние карты улетают вниз, а верхняя выходит вперёд, revealed — верхняя остаётся впереди (парение —
+ * CSS-кругом на месте использования, чтобы его не считал главный поток).
  */
 export type DeckPhase = "idle" | "shuffling" | "drawing" | "revealed";
 
@@ -51,5 +52,5 @@ export function topCardTarget(phase: DeckPhase): TargetAndTransition {
     return { y: [0, -48, 6, 0], scale: [1, 1.05, 1, 1], rotate: [0, -3, 2, 0], transition: { duration: SHUFFLE_MS / 1000, times: [0, 0.4, 0.72, 1], ease: "easeInOut", repeat: Infinity } };
   }
   if (phase === "drawing") return { y: -24, scale: 1.16, rotate: 0, transition: { type: "spring", stiffness: 120, damping: 14 } };
-  return { y: [-24, -36, -24], scale: 1.16, rotate: 0, transition: { y: { duration: 5, ease: "easeInOut", repeat: Infinity } } };
+  return { y: -24, scale: 1.16, rotate: 0 };
 }

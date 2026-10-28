@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { useEffect } from "react";
+import { type CSSProperties, useEffect } from "react";
 import { EASE_OUT } from "@/components/motion/reveal";
 import { TarotCardBack } from "@/components/tarot/tarot-card-back";
 import { GlassPanel } from "@/components/ui/glass-panel";
@@ -35,20 +35,19 @@ function InterpretingState({ label }: { label: string }) {
   return (
     <GlassPanel scrollReveal={false} className="space-y-4">
       <div className="flex items-end justify-center gap-3 pt-2" aria-hidden="true">
+        {/* Круги на CSS (globals.css, «Украшения на CSS»): их крутит видеокарта, а не главный поток. */}
         {[0, 1, 2].map((index) => (
-          <motion.div
+          <div
             key={index}
-            className="relative w-10"
-            animate={{ y: [0, -12, 0], rotate: [0, index === 1 ? 0 : index === 0 ? -6 : 6, 0] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.18 }}
+            className="relative w-10 motion-safe:animate-bob"
+            style={{ rotate: `${(index - 1) * 6}deg`, "--bob": "-12px", animationDuration: "1.2s", animationDelay: `${index * 0.18}s` } as CSSProperties}
           >
             <TarotCardBack className="w-full drop-shadow-lg" />
-            <motion.span
-              className="absolute -inset-2 -z-10 rounded-full bg-gold-500/40 blur-lg"
-              animate={{ opacity: [0.2, 0.9, 0.2] }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut", delay: index * 0.18 }}
+            <span
+              className="absolute -inset-2 -z-10 rounded-full bg-gold-500/40 blur-lg motion-safe:animate-glow-pulse"
+              style={{ "--glow-min": 0.2, "--glow-max": 0.9, "--glow-scale-min": 1, "--glow-scale-max": 1, animationDuration: "1.2s", animationDelay: `${index * 0.18}s` } as CSSProperties}
             />
-          </motion.div>
+          </div>
         ))}
       </div>
       <p className="text-shimmer-gold text-center text-sm font-medium">{label}</p>

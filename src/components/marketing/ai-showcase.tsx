@@ -10,7 +10,7 @@ export function AIShowcase() {
   const t = useTranslation();
 
   return (
-    <section className="px-4 py-20">
+    <section className="cv-auto px-4 py-20">
       <div className="mx-auto max-w-3xl">
         <SectionHeading eyebrow={t.marketing.aiShowcase.eyebrow} title={t.marketing.aiShowcase.title} subtitle={t.marketing.aiShowcase.body} />
 

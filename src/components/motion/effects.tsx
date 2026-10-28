@@ -13,7 +13,8 @@ import {
   useVelocity,
   wrap,
 } from "framer-motion";
-import { type PointerEvent, type ReactNode, useEffect, useRef } from "react";
+import { type CSSProperties, type PointerEvent, type ReactNode, useEffect, useRef } from "react";
+import { useLiteMode } from "@/lib/perf";
 import { cn } from "@/lib/utils";
 
 /**
@@ -109,7 +110,18 @@ export function ZodiacWheel({ className }: { className?: string }) {
  * Бегущая строка: плывёт сама, а при прокрутке ускоряется в сторону прокрутки и слегка наклоняется,
  * как будто её тянут. Текст повторён четыре раза, сдвиг идёт по кругу, поэтому стык не виден.
  */
-function MarqueeRow({ items, baseVelocity, itemClassName }: { items: readonly string[]; baseVelocity: number; itemClassName?: string }) {
+function MarqueeRow({
+  items,
+  baseVelocity,
+  itemClassName,
+  running,
+}: {
+  items: readonly string[];
+  baseVelocity: number;
+  itemClassName?: string;
+  /** Строка на экране и устройство не слабое: иначе кадры не считаем вовсе. */
+  running: boolean;
+}) {
   const reduceMotion = useReducedMotion();
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
@@ -121,7 +133,7 @@ function MarqueeRow({ items, baseVelocity, itemClassName }: { items: readonly st
   const direction = useRef(1);
 
   useAnimationFrame((_, delta) => {
-    if (reduceMotion) return;
+    if (reduceMotion || !running) return;
     let moveBy = direction.current * baseVelocity * (delta / 1000);
     const factor = velocityFactor.get();
     if (factor < 0) direction.current = -1;
@@ -151,12 +163,17 @@ function MarqueeRow({ items, baseVelocity, itemClassName }: { items: readonly st
 }
 
 export function MarqueeBand({ items }: { items: readonly string[] }) {
+  // Строку двигает JavaScript в каждом кадре, поэтому за пределами экрана и в облегчённом режиме она стоит.
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { margin: "100px 0px" });
+  const lite = useLiteMode();
+  const running = inView && !lite;
   return (
-    <section aria-label={items.join(", ")} className="relative border-y border-white/5 bg-midnight-950/40 py-5 font-display text-2xl text-silver-200 sm:text-3xl">
+    <section ref={ref} aria-label={items.join(", ")} className="relative border-y border-white/5 bg-midnight-950/40 py-5 font-display text-2xl text-silver-200 sm:text-3xl">
       <div className="space-y-3 [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]">
-        <MarqueeRow items={items} baseVelocity={-2.2} />
+        <MarqueeRow items={items} baseVelocity={-2.2} running={running} />
         {/* Градиент — на каждом слове: background-clip: text не переносится на сдвигаемых потомков. */}
-        <MarqueeRow items={[...items].reverse()} baseVelocity={1.6} itemClassName="text-gradient-gold" />
+        <MarqueeRow items={[...items].reverse()} baseVelocity={1.6} itemClassName="text-gradient-gold" running={running} />
       </div>
     </section>
   );
@@ -211,11 +228,11 @@ export function HeroGlyph({ children, ring = false, className }: { children: Rea
           <ZodiacWheel className="relative h-full w-full" />
         </motion.div>
       )}
-      <motion.div
+      {/* Дыхание сияния — CSS-круг (globals.css): его крутит видеокарта, а не главный поток. */}
+      <div
         aria-hidden="true"
-        className="absolute inset-8 rounded-full bg-gold-500/25 blur-2xl"
-        animate={{ opacity: [0.35, 0.8, 0.35], scale: [0.9, 1.12, 0.9] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-8 rounded-full bg-gold-500/25 blur-2xl motion-safe:animate-glow-pulse"
+        style={{ "--glow-scale-max": 1.12, animationDuration: "5s" } as CSSProperties}
       />
       <motion.p
         data-reveal

@@ -39,12 +39,14 @@ export function PremiumLockedView({ spread }: { spread: TarotSpread }) {
             </motion.div>
           );
         })}
+        {/* Появление — framer, пульс — CSS (свойство scale складывается с transform от framer). */}
         <motion.div
           data-reveal
-          className="absolute bottom-20 left-1/2 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border border-gold-400/50 bg-midnight-950/90 shadow-[0_0_40px_-6px_rgba(212,175,55,0.8)]"
+          className="absolute bottom-20 left-1/2 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border border-gold-400/50 bg-midnight-950/90 shadow-[0_0_40px_-6px_rgba(212,175,55,0.8)] motion-safe:animate-pulse-scale"
+          style={{ animationDelay: "1s" }}
           initial={{ opacity: 0, scale: 0.4 }}
-          animate={{ opacity: 1, scale: [1, 1.08, 1] }}
-          transition={{ opacity: { duration: 0.5, delay: 0.8 }, scale: { duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 1 } }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
         >
           <Lock className="h-7 w-7 text-gold-300" />
         </motion.div>

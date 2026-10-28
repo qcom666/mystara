@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
-import { type PointerEvent, type RefObject, useRef } from "react";
+import { type CSSProperties, type PointerEvent, type RefObject, useRef } from "react";
 import { Magnetic, ZodiacWheel } from "@/components/motion/effects";
 import { EASE_OUT, SplitWords } from "@/components/motion/reveal";
 import Link from "@/components/shared/localized-link";
@@ -68,11 +68,11 @@ function HeroCard({ scrollTarget }: { scrollTarget: RefObject<HTMLElement | null
         </motion.div>
       </motion.div>
       {/* Мягкое сияние за картой, медленно дышит. */}
-      <motion.div
+      {/* Дыхание — CSS-круг (globals.css): его крутит видеокарта, а не главный поток. */}
+      <div
         aria-hidden="true"
-        className="absolute -inset-10 rounded-full bg-gold-500/20 blur-3xl"
-        animate={{ opacity: [0.35, 0.7, 0.35], scale: [0.95, 1.05, 0.95] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -inset-10 rounded-full bg-gold-500/20 blur-3xl motion-safe:animate-glow-pulse"
+        style={{ "--glow-max": 0.7, "--glow-scale-min": 0.95, "--glow-scale-max": 1.05, animationDuration: "6s" } as CSSProperties}
       />
       <motion.div
         data-reveal
@@ -85,7 +85,7 @@ function HeroCard({ scrollTarget }: { scrollTarget: RefObject<HTMLElement | null
       >
         {/* Наклон и покачивание на разных элементах: два transform на одном перебивали бы друг друга. */}
         <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}>
-          <div className="relative animate-float">
+          <div className="relative motion-safe:animate-float">
             <TarotCardFace card={HERO_CARD} locale={locale} className="card-glow w-full drop-shadow-2xl" />
             <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-xl mix-blend-overlay" style={{ background: glare }} />
           </div>

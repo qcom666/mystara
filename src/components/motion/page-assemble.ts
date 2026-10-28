@@ -8,8 +8,11 @@
  * после окончания снимаются, возвращая элементу его собственные transform, filter и opacity. Не трогаем то,
  * что уже анимирует framer (`data-reveal` на элементе, внутри или у предка), элементы с собственной
  * CSS-анимацией (вращение, мерцание) и закреплённые. Ниже первого экрана работает обычное проявление при
- * прокрутке. При «уменьшить движение» ничего не происходит.
+ * прокрутке. При «уменьшить движение» ничего не происходит. В облегчённом режиме (слабое устройство,
+ * lib/perf.ts) кусков меньше, они только поднимаются и проявляются — без размытия, перспективы и искр.
  */
+
+import { isLiteMode } from "@/lib/perf";
 
 /**
  * Рамки проявляются целиком, а их содержимое влетает в них отдельными кусками: панели, ряды вкладок и
@@ -23,6 +26,7 @@ const CANDIDATES = `${FRAMES},${PIECES}`;
 /** CSS-проявление при прокрутке на первом экране уже завершено, поэтому его можно перекрыть. */
 const ALLOWED_ANIMATIONS = new Set(["none", "scroll-reveal", "scroll-reveal-step"]);
 const MAX_PIECES = 64;
+const LITE_MAX_PIECES = 16;
 /** Последний кусок стартует не позже этого: на страницах с большим числом элементов шаг сжимается. */
 const MAX_STAGGER_MS = 900;
 const SPARKS = 16;
@@ -34,14 +38,14 @@ interface Piece {
   frame: boolean;
 }
 
-function pickPieces(root: HTMLElement): Piece[] {
+function pickPieces(root: HTMLElement, maxPieces: number): Piece[] {
   const rootTop = root.getBoundingClientRect().top;
   // Меряем от начала страницы, а не от окна: прокрутка наверх при переходе случается уже после этого.
   const limit = window.innerHeight * 1.1;
   const picked: Piece[] = [];
 
   for (const el of root.querySelectorAll<HTMLElement>(CANDIDATES)) {
-    if (picked.length >= MAX_PIECES) break;
+    if (picked.length >= maxPieces) break;
     const frame = el.matches(FRAMES) || (el.matches(CARD_LIKE) && el.querySelector(CARD_CONTENT) !== null);
     // Предки идут раньше потомков: кусок внутри уже выбранного куска (ссылка в абзаце, значок в кнопке) несёт
     // предок. Внутри рамок куски выбираем отдельно — так содержимое панели собирается внутри неё; рамку в рамке
@@ -113,8 +117,9 @@ function castFlare(): HTMLElement[] {
 export function assemblePage(root: HTMLElement): () => void {
   if (typeof root.animate !== "function" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
 
+  const lite = isLiteMode();
   // Пустой набор (страница целиком анимирует себя сама, как главная) всё равно получает кольцо и искры.
-  const pieces = pickPieces(root);
+  const pieces = pickPieces(root, lite ? LITE_MAX_PIECES : MAX_PIECES);
 
   const viewportWidth = window.innerWidth;
   // На длинных страницах (каталог карт) шаг сжимается, но не до одновременного старта: каскад должен читаться.
@@ -124,6 +129,16 @@ export function assemblePage(root: HTMLElement): () => void {
     const baseFilter = style.filter === "none" ? "" : ` ${style.filter}`;
     const opacity = Number(style.opacity);
     const timing: KeyframeAnimationOptions = { duration: 850, delay: 80 + index * step, easing: "cubic-bezier(0.2, 0.9, 0.25, 1.06)", fill: "backwards" };
+    if (lite) {
+      // Слабому устройству — только подъём и проявление: ни размытия, ни перспективы.
+      return el.animate(
+        [
+          { opacity: 0, transform: `translate3d(0px, 24px, 0px)${baseTransform}` },
+          { opacity, transform: `translate3d(0px, 0px, 0px)${baseTransform}` },
+        ],
+        { ...timing, duration: 600, delay: 40 + index * 40, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+      );
+    }
     if (frame) {
       // Рамка не летит издалека, а «материализуется» на своём месте: из глубины, чуть больше и размытой.
       return el.animate(
@@ -159,7 +174,7 @@ export function assemblePage(root: HTMLElement): () => void {
     );
   });
 
-  const flare = castFlare();
+  const flare = lite ? [] : castFlare();
 
   return () => {
     animations.forEach((animation) => animation.cancel());

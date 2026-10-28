@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { Check, Crown, Moon, Sparkles } from "lucide-react";
 import Link from "@/components/shared/localized-link";
 import { Badge } from "@/components/ui/badge";
@@ -75,9 +76,9 @@ export function PricingContent() {
             </Badge>
             <h2 className="flex items-center gap-2 font-display text-2xl">
               <span className="text-shimmer-gold">{t.pricingPage.premiumTitle}</span>
-              <motion.span aria-hidden="true" animate={{ y: [0, -4, 0], rotate: [0, -8, 8, 0] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}>
+              <span aria-hidden="true" className="motion-safe:animate-bob-tilt" style={{ "--bob": "-4px", animationDuration: "3.6s" } as CSSProperties}>
                 <Crown className="h-5 w-5 text-gold-300 drop-shadow-[0_0_8px_rgba(243,218,143,0.8)]" />
-              </motion.span>
+              </span>
             </h2>
             <p className="mt-1 text-sm text-silver-400">{t.pricingPage.premiumSubtitle}</p>
             <p className="mt-4 text-3xl text-silver-50">

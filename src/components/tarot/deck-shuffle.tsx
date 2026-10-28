@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import type { CSSProperties } from "react";
 import { ZodiacWheel } from "@/components/motion/effects";
 import { EASE_OUT } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,6 @@ interface DeckShuffleProps {
  * перетасовки карты разлетаются веером и собираются, а круг проворачивается быстрее.
  */
 export function DeckShuffle({ shuffling, className }: DeckShuffleProps) {
-  const prefersReducedMotion = useReducedMotion();
   const phase = shuffling ? "shuffling" : "idle";
 
   return (
@@ -32,36 +32,34 @@ export function DeckShuffle({ shuffling, className }: DeckShuffleProps) {
         <ZodiacWheel className="relative h-full w-full" />
       </motion.div>
 
-      <motion.div
+      {/* Ореол, кольца и парение — CSS-круги (globals.css), без работы главного потока. */}
+      <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/25 blur-3xl"
-        animate={{ opacity: shuffling ? [0.6, 1, 0.6] : [0.3, 0.6, 0.3], scale: [0.9, 1.1, 0.9] }}
-        transition={{ duration: shuffling ? 1.2 : 4.5, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/25 blur-3xl motion-safe:animate-glow-pulse"
+        style={
+          shuffling
+            ? ({ "--glow-min": 0.6, "--glow-max": 1, animationDuration: "1.2s" } as CSSProperties)
+            : ({ "--glow-min": 0.3, "--glow-max": 0.6, animationDuration: "4.5s" } as CSSProperties)
+        }
       />
 
-      {!shuffling && !prefersReducedMotion && (
+      {!shuffling && (
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2">
           {[0, 1.2].map((delay) => (
-            <motion.span
+            <span
               key={delay}
-              className="absolute -ml-28 -mt-28 h-56 w-56 rounded-full border border-gold-400/40"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: [0, 0.7, 0], scale: [0.85, 1.35, 1.6] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut", delay }}
+              className="absolute -ml-28 -mt-28 h-56 w-56 rounded-full border border-gold-400/40 opacity-0 motion-safe:animate-ring-pulse"
+              style={{ "--ring-end": 1.6, animationDelay: `${delay}s` } as CSSProperties}
             />
           ))}
         </div>
       )}
 
       <motion.div
-        className="relative z-10 aspect-[3/5] w-36 sm:w-44"
+        className={cn("relative z-10 aspect-[3/5] w-36 sm:w-44", !shuffling && "motion-safe:animate-bob")}
         initial={{ opacity: 0, y: 40, scale: 0.85 }}
-        animate={{ opacity: 1, y: shuffling ? 0 : [0, -10, 0], scale: 1 }}
-        transition={
-          shuffling
-            ? { duration: 0.4, ease: EASE_OUT }
-            : { opacity: { duration: 0.6 }, scale: { duration: 0.7, ease: EASE_OUT }, y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }
-        }
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={shuffling ? { duration: 0.4, ease: EASE_OUT } : { opacity: { duration: 0.6 }, scale: { duration: 0.7, ease: EASE_OUT }, y: { duration: 0.7, ease: EASE_OUT } }}
       >
         {UNDER.map((index) => (
           <motion.div

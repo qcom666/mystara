@@ -30,19 +30,14 @@ export function CardHero({ card }: { card: TarotCard }) {
     <section className="grid items-center gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-12">
       <div className="relative mx-auto flex h-[24rem] w-full max-w-[20rem] items-center justify-center sm:h-[27rem]">
         <SuitAura card={card} />
-        <motion.div
-          data-reveal
-          className="relative w-44 sm:w-52"
-          initial={{ y: 0 }}
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-        >
+        {/* Парение — CSS-круг: его крутит видеокарта, а не главный поток. */}
+        <div className="relative w-44 motion-safe:animate-bob sm:w-52" style={{ animationDuration: "6s", animationDelay: "1.2s" }}>
           <CardFlipIn>
             <HoloCard tilt={14}>
               <TarotCardFace card={card} locale={locale} className="card-glow w-full drop-shadow-2xl" />
             </HoloCard>
           </CardFlipIn>
-        </motion.div>
+        </div>
       </div>
 
       <div className="text-center md:text-left">

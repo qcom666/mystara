@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
+import { PERF_HINT_SCRIPT } from "@/lib/perf-hint";
 import { StarField } from "@/components/ui/star-field";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -48,8 +49,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // data-scroll-behavior: плавная прокрутка из globals.css не мешает переходам между страницами.
-    <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${cormorant.variable}`}>
+    // suppressHydrationWarning: скрипт ниже до гидратации может поставить на <html> data-perf.
+    <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${cormorant.variable}`} suppressHydrationWarning>
       <head>
+        {/* Облегчённый режим для заведомо слабых устройств — до первой отрисовки (lib/perf.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: PERF_HINT_SCRIPT }} />
         {/* Без JavaScript анимации появления не запустятся: блоки показываются сразу. */}
         <noscript>
           <style>{"[data-reveal],[data-page-enter]{opacity:1!important;transform:none!important;filter:none!important}"}</style>

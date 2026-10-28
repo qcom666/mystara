@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { EASE_OUT } from "@/components/motion/reveal";
 import { useLocale, useTranslation } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -107,12 +107,12 @@ export function FlippableCard({ card, orientation, revealed, onReveal, interacti
         </motion.div>
       </motion.div>
 
-      {interactive && !revealed && !prefersReducedMotion && (
-        <motion.span
+      {/* Мерцающая рамка — CSS-круг: на столе с десятью картами framer считал бы десять циклов в каждом кадре. */}
+      {interactive && !revealed && (
+        <span
           aria-hidden="true"
-          className={cn("pointer-events-none absolute -inset-1 border border-gold-300/70 shadow-[0_0_26px_-4px_rgba(243,218,143,0.65)]", CARD_RADIUS)}
-          animate={{ opacity: [0.1, 0.75, 0.1] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          className={cn("pointer-events-none absolute -inset-1 border border-gold-300/70 opacity-0 shadow-[0_0_26px_-4px_rgba(243,218,143,0.65)] motion-safe:animate-glow-pulse", CARD_RADIUS)}
+          style={{ "--glow-min": 0.1, "--glow-max": 0.75, "--glow-scale-min": 1, "--glow-scale-max": 1, animationDuration: "2.4s" } as CSSProperties}
         />
       )}
       {revealed && !revealedAtMount && !prefersReducedMotion && <FlipBurst />}

@@ -15,7 +15,7 @@ export function CTASection() {
   const t = useTranslation();
 
   return (
-    <section className="px-4 py-24">
+    <section className="cv-auto px-4 py-24">
       <Reveal y={50} scale={0.92} className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl p-[2px] shadow-[0_0_60px_-20px_rgba(212,175,55,0.55)]">
         <div
           aria-hidden="true"

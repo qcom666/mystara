@@ -20,7 +20,7 @@ export function CardShowcase() {
   const middle = (cards.length - 1) / 2;
 
   return (
-    <section className="px-4 py-24">
+    <section className="cv-auto px-4 py-24">
       <div className="mx-auto max-w-6xl">
         <SectionHeading eyebrow={t.marketing.cardShowcase.eyebrow} title={t.marketing.cardShowcase.title} subtitle={t.marketing.cardShowcase.body} />
       </div>

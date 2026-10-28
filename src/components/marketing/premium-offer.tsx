@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
+import type { CSSProperties } from "react";
 import { Check, Crown } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Magnetic } from "@/components/motion/effects";
@@ -47,19 +48,18 @@ export function PremiumOffer({ className }: { className?: string }) {
         </div>
 
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-start">
-          <motion.div
+          {/* Корона парит и светится CSS-кругами: их крутит видеокарта, а не главный поток. */}
+          <div
             aria-hidden="true"
-            className="relative flex h-16 w-16 shrink-0 items-center justify-center self-center rounded-2xl border border-gold-400/40 bg-gold-500/10 sm:self-start"
-            animate={{ y: [0, -6, 0], rotate: [0, -4, 4, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="relative flex h-16 w-16 shrink-0 items-center justify-center self-center rounded-2xl border border-gold-400/40 bg-gold-500/10 motion-safe:animate-bob-tilt sm:self-start"
+            style={{ "--bob": "-6px" } as CSSProperties}
           >
-            <motion.span
-              className="absolute inset-0 rounded-2xl bg-gold-400/30 blur-xl"
-              animate={{ opacity: [0.3, 0.9, 0.3] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+            <span
+              className="absolute inset-0 rounded-2xl bg-gold-400/30 blur-xl motion-safe:animate-glow-pulse"
+              style={{ "--glow-min": 0.3, "--glow-max": 0.9, "--glow-scale-min": 1, "--glow-scale-max": 1, animationDuration: "2.6s" } as CSSProperties}
             />
             <Crown className="relative h-8 w-8 text-gold-300" />
-          </motion.div>
+          </div>
 
           <div className="text-center sm:text-left">
             <p className="text-xs uppercase tracking-[0.25em] text-gold-400">{t.premiumOffer.eyebrow}</p>

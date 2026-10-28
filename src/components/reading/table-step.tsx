@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { EASE_OUT } from "@/components/motion/reveal";
 import { CardDetailContent } from "@/components/tarot/card-detail-content";
 import { FlippableCard } from "@/components/tarot/flippable-card";
@@ -197,14 +197,11 @@ export function TableStep({ spread, isAuthenticated }: TableStepProps) {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.5 }}
                 >
-                  {!reduceMotion && (
-                    <motion.span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-0 rounded-full border border-gold-300/70"
-                      animate={{ opacity: [0.7, 0], scale: [1, 1.35] }}
-                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay: 1 }}
-                    />
-                  )}
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 rounded-full border border-gold-300/70 opacity-0 motion-safe:animate-ring-pulse"
+                    style={{ "--ring-start": 1, "--ring-end": 1.35, "--ring-max": 0.7, animationDuration: "1.8s", animationDelay: "1s" } as CSSProperties}
+                  />
                   <Button size="lg" onClick={handleContinue} className="relative w-full overflow-hidden shadow-[0_0_40px_-8px_rgba(212,175,55,0.75)]">
                     <span aria-hidden="true" className="pointer-events-none absolute -inset-y-2 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent motion-safe:animate-panel-sheen" />
                     <Sparkles className="relative h-4 w-4" />

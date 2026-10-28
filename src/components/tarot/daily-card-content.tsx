@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useInView, useReducedMotion, useSpring, type Variants } from "framer-motion";
 import { Briefcase, Heart, Hourglass, Send, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { type PointerEvent, type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type CSSProperties, type PointerEvent, type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PremiumOffer } from "@/components/marketing/premium-offer";
 import { Magnetic, ZodiacWheel } from "@/components/motion/effects";
 import { EASE_OUT, SpotlightCard, SplitWords } from "@/components/motion/reveal";
@@ -329,20 +329,22 @@ export function DailyCardRitual({ variant, header, botUsername = "" }: DailyCard
         </motion.div>
 
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 motion-safe:animate-[spin_70s_linear_infinite] sm:h-[28rem] sm:w-[28rem]">
+          {/* Место на орбите — у обёртки, мерцание — у самой точки: иначе мерцание сбивало бы её с орбиты. */}
           {ORBIT.map((index) => (
-            <span
-              key={index}
-              className="absolute left-1/2 top-1/2 -ml-1 -mt-1 h-2 w-2 rounded-full bg-gold-200 shadow-[0_0_10px_2px_rgba(243,218,143,0.6)] motion-safe:animate-twinkle"
-              style={{ transform: `rotate(${index * 30}deg) translateY(-11.5rem)`, animationDelay: `${index * 0.35}s` }}
-            />
+            <span key={index} className="absolute left-1/2 top-1/2 -ml-1 -mt-1 h-2 w-2" style={{ transform: `rotate(${index * 30}deg) translateY(-11.5rem)` }}>
+              <span
+                className="block h-full w-full rounded-full bg-gold-200 shadow-[0_0_10px_2px_rgba(243,218,143,0.6)] motion-safe:animate-twinkle"
+                style={{ animationDelay: `${index * 0.35}s` }}
+              />
+            </span>
           ))}
         </div>
 
-        <motion.div
+        {/* Ореол, кольца и парение — CSS-круги (globals.css): их крутит видеокарта, а не главный поток. */}
+        <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/25 blur-3xl"
-          animate={{ opacity: phase === "revealed" ? [0.6, 1, 0.6] : [0.3, 0.6, 0.3], scale: [0.9, 1.1, 0.9] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+          className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/25 blur-3xl motion-safe:animate-glow-pulse"
+          style={(phase === "revealed" ? { "--glow-min": 0.6, "--glow-max": 1 } : { "--glow-min": 0.3, "--glow-max": 0.6 }) as CSSProperties}
         />
 
         <AnimatePresence>
@@ -363,15 +365,13 @@ export function DailyCardRitual({ variant, header, botUsername = "" }: DailyCard
 
         <AnimatePresence>{flipped && !reduceMotion && <RevealBurst key={revealed?.day} />}</AnimatePresence>
 
-        {phase === "idle" && !reduceMotion && (
+        {phase === "idle" && (
           <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {[0, 1.2].map((delay) => (
-              <motion.span
+              <span
                 key={delay}
-                className="absolute left-1/2 top-1/2 -ml-32 -mt-32 h-64 w-64 rounded-full border border-gold-400/40"
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: [0, 0.7, 0], scale: [0.85, 1.35, 1.6] }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut", delay }}
+                className="absolute left-1/2 top-1/2 -ml-32 -mt-32 h-64 w-64 rounded-full border border-gold-400/40 opacity-0 motion-safe:animate-ring-pulse"
+                style={{ animationDelay: `${delay}s` }}
               />
             ))}
           </div>
@@ -391,15 +391,11 @@ export function DailyCardRitual({ variant, header, botUsername = "" }: DailyCard
           }}
           className={cn(
             "focus-ring relative z-10 aspect-[3/5] w-40 rounded-2xl sm:w-48",
-            phase === "idle" && "cursor-pointer",
+            phase === "idle" && "cursor-pointer motion-safe:animate-bob",
           )}
           initial={{ opacity: 0, y: 60, scale: 0.85 }}
-          animate={shown ? { opacity: 1, y: phase === "idle" ? [0, -10, 0] : 0, scale: 1 } : { opacity: 0, y: 60, scale: 0.85 }}
-          transition={
-            phase === "idle"
-              ? { opacity: { duration: 0.8 }, scale: { duration: 0.8, ease: EASE_OUT }, y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }
-              : { duration: 0.5, ease: EASE_OUT }
-          }
+          animate={shown ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 60, scale: 0.85 }}
+          transition={phase === "idle" ? { duration: 0.8, ease: EASE_OUT } : { duration: 0.5, ease: EASE_OUT }}
         >
           {UNDER.map((index) => (
             <motion.div
@@ -415,7 +411,9 @@ export function DailyCardRitual({ variant, header, botUsername = "" }: DailyCard
           ))}
 
           <motion.div
-            className="absolute inset-0 z-10"
+            // Открытая карта парит — CSS-кругом (translate складывается с transform от framer).
+            className={cn("absolute inset-0 z-10", phase === "revealed" && "motion-safe:animate-bob")}
+            style={phase === "revealed" ? ({ "--bob": "-12px" } as CSSProperties) : undefined}
             initial={false}
             animate={topCardTarget(phase)}
             whileHover={phase === "idle" ? { y: -16, rotate: -2, scale: 1.03, transition: { duration: 0.3, ease: EASE_OUT } } : undefined}

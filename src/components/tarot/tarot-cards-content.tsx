@@ -28,7 +28,7 @@ function CardTile({ card, locale, index }: { card: TarotCard; locale: Locale; in
 
 function Section({ title, cards, locale }: { title: string; cards: readonly TarotCard[]; locale: Locale }) {
   return (
-    <section className="mt-12">
+    <section className="cv-auto mt-12">
       <h2 className="font-display text-2xl text-silver-100">{title}</h2>
       <div className="mt-5 grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7">
         {cards.map((card, index) => (
