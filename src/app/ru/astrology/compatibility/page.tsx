@@ -6,6 +6,6 @@ export { default } from "@/app/astrology/compatibility/page";
 export const metadata: Metadata = localizedMetadata({
   path: "/astrology/compatibility",
   locale: "ru",
-  title: "Совместимость знаков зодиака",
-  description: "Узнайте, как два знака зодиака ладят в любви, дружбе и работе.",
+  title: "Совместимость знаков зодиака в любви",
+  description: "Выберите свой знак и знак партнёра — и получите разбор совместимости в любви по 12 пунктам: притяжение, доверие, общение, быт и другое.",
 });

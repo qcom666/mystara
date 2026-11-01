@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { CompatibilityPairContent } from "@/components/astrology/compatibility-pair-content";
-import { requireZodiacSignById } from "@/modules/astrology/domain/zodiac-signs.data";
-import { allCompatibilitySlugs, compatibilitySlug, getCompatibility, parseCompatibilitySlug } from "@/modules/astrology/services/compatibility";
+import { DetailedCompatibilityContent } from "@/components/astrology/detailed-compatibility-view";
 import { languageAlternates } from "@/lib/i18n/localized-routes";
+import { requireZodiacSignById } from "@/modules/astrology/domain/zodiac-signs.data";
+import { allCompatibilitySlugs, compatibilitySlug, parseCompatibilitySlug } from "@/modules/astrology/services/compatibility";
+import { getDetailedCompatibility } from "@/modules/astrology/services/detailed-compatibility";
 
 interface PageProps {
   params: Promise<{ pair: string }>;
@@ -16,12 +17,12 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const parsed = parseCompatibilitySlug((await params).pair);
   if (!parsed) return {};
-  const result = getCompatibility(...parsed);
+  const result = getDetailedCompatibility(...parsed, "love");
   const first = requireZodiacSignById(result.first).name;
   const second = requireZodiacSignById(result.second).name;
   return {
-    title: `${first} and ${second} Compatibility`,
-    description: `${first} and ${second}: ${result.scores.overall}% overall. How these signs get along in love, friendship and work.`,
+    title: `${first} and ${second}: Love Compatibility`,
+    description: `${first} and ${second}: ${result.overall}% love compatibility. A breakdown across 12 areas — attraction, trust, communication, everyday life and more.`,
     alternates: languageAlternates(`/astrology/compatibility/${compatibilitySlug(result.first, result.second)}`, "en"),
   };
 }
@@ -34,5 +35,5 @@ export default async function CompatibilityPairPage({ params }: PageProps) {
   const canonical = compatibilitySlug(...parsed);
   if (canonical !== pair) permanentRedirect(`/astrology/compatibility/${canonical}`);
 
-  return <CompatibilityPairContent result={getCompatibility(...parsed)} />;
+  return <DetailedCompatibilityContent result={getDetailedCompatibility(...parsed, "love")} />;
 }

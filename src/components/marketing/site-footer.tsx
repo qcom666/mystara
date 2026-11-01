@@ -21,6 +21,7 @@ export function SiteFooter() {
         { href: "/astrology", label: t.footer.groups.product.astrology },
         { href: "/astrology/horoscope", label: t.footer.groups.product.horoscope },
         { href: "/astrology/compatibility", label: t.footer.groups.product.compatibility },
+        { href: "/astrology/compatibility/friendship", label: t.footer.groups.product.friendshipCompatibility },
         { href: "/tarot/spreads", label: t.footer.groups.product.spreads },
         { href: "/pricing", label: t.footer.groups.product.pricing },
       ],

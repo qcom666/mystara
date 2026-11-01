@@ -16,6 +16,7 @@ const STATIC_PATHS = [
   "/astrology/natal-chart",
   "/astrology/horoscope",
   "/astrology/compatibility",
+  "/astrology/compatibility/friendship",
   "/tarot",
   "/tarot/cards",
   "/tarot/spreads",
@@ -40,6 +41,7 @@ function sitemapPaths(): string[] {
     ...getAllZodiacSigns().map((sign) => `/astrology/${sign.id}`),
     ...getAllZodiacSigns().map((sign) => `/astrology/horoscope/${sign.id}`),
     ...allCompatibilitySlugs().map((pair) => `/astrology/compatibility/${pair}`),
+    ...allCompatibilitySlugs().map((pair) => `/astrology/compatibility/friendship/${pair}`),
   ];
 }
 

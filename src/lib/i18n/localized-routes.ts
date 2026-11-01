@@ -25,6 +25,7 @@ const RU_ROUTE_PATTERNS: readonly RegExp[] = [
   /^\/astrology\/natal-chart$/,
   new RegExp(`^/astrology/horoscope(/${SIGN})?$`),
   new RegExp(`^/astrology/compatibility(/${SIGN}-${SIGN})?$`),
+  new RegExp(`^/astrology/compatibility/friendship(/${SIGN}-${SIGN})?$`),
 ];
 
 /** Язык, заданный адресом: «ru» для `/ru` и `/ru/...`, иначе null (язык выбирает посетитель). */

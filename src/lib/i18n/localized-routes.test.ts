@@ -17,10 +17,10 @@ describe("русские адреса", () => {
   });
 
   it("у каких страниц есть русская версия", () => {
-    for (const path of ["/", "/reading", "/tarot/cards", "/tarot/cards/the-fool", "/astrology/leo", "/astrology/horoscope", "/astrology/compatibility/aries-leo", "/numerology/7"]) {
+    for (const path of ["/", "/reading", "/tarot/cards", "/tarot/cards/the-fool", "/astrology/leo", "/astrology/horoscope", "/astrology/compatibility/aries-leo", "/astrology/compatibility/friendship", "/astrology/compatibility/friendship/aries-leo", "/numerology/7"]) {
       expect(hasRussianVersion(path)).toBe(true);
     }
-    for (const path of ["/account", "/login", "/admin", "/reading/three-card", "/astrology/foo", "/astrology/compatibility/aries-cat", "/privacy"]) {
+    for (const path of ["/account", "/login", "/admin", "/reading/three-card", "/astrology/foo", "/astrology/compatibility/aries-cat", "/astrology/compatibility/friendship/aries", "/privacy"]) {
       expect(hasRussianVersion(path)).toBe(false);
     }
   });
