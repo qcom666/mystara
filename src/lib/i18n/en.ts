@@ -378,6 +378,8 @@ export const en = {
     show: "Show compatibility",
     overallLabel: "compatibility",
     aspectsHeading: "Compatibility area by area",
+    spheresHeading: "Compatibility by sphere",
+    detailsHeading: "In detail: 12 areas",
     strengthsHeading: "This pair's strengths",
     growthHeading: "What to work on",
     popularHeading: "The most harmonious pairs",

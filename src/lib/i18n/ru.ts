@@ -377,6 +377,8 @@ export const ru: Dictionary = {
     show: "Показать совместимость",
     overallLabel: "совместимость",
     aspectsHeading: "Совместимость по пунктам",
+    spheresHeading: "Совместимость по сферам",
+    detailsHeading: "Подробно по 12 пунктам",
     strengthsHeading: "Сильные стороны пары",
     growthHeading: "Над чем поработать",
     popularHeading: "Самые гармоничные пары",

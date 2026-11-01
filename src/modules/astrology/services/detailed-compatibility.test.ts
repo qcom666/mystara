@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FRIENDSHIP_ASPECTS, LOVE_ASPECTS } from "../domain/compatibility-details.data";
+import { FRIENDSHIP_ASPECTS, FRIENDSHIP_GROUPS, LOVE_ASPECTS, LOVE_SPHERES } from "../domain/compatibility-details.data";
 import { getAllZodiacSigns } from "../domain/zodiac-signs.data";
 import { compatibilityPath, type CompatibilityMode, getDetailedCompatibility, scoreBand, topPairs } from "./detailed-compatibility";
 
@@ -25,6 +25,34 @@ describe("подробная совместимость", () => {
             expect(aspect.text.en.length).toBeGreaterThan(20);
           }
         }
+      }
+    }
+  });
+
+  it("любовь: шесть сфер с определениями; дружба: 11 пунктов в четырёх блоках, процент блока — среднее его пунктов", () => {
+    for (const a of SIGNS) {
+      for (const b of SIGNS) {
+        const love = getDetailedCompatibility(a, b, "love");
+        expect(love.spheres.map((sphere) => sphere.id)).toEqual(LOVE_SPHERES.map((sphere) => sphere.id));
+        expect(love.groups).toEqual([]);
+        for (const sphere of love.spheres) {
+          expect(sphere.score).toBeGreaterThanOrEqual(25);
+          expect(sphere.score).toBeLessThanOrEqual(98);
+          expect(sphere.band).toBe(scoreBand(sphere.score));
+          expect(sphere.description?.ru.length).toBeGreaterThan(20);
+        }
+
+        const friendship = getDetailedCompatibility(a, b, "friendship");
+        expect(friendship.spheres).toEqual([]);
+        expect(friendship.aspects).toHaveLength(11);
+        expect(friendship.groups.map((group) => group.id)).toEqual(FRIENDSHIP_GROUPS.map((group) => group.id));
+        expect(friendship.groups.flatMap((group) => group.aspects.map((aspect) => aspect.id))).toEqual(FRIENDSHIP_ASPECTS.map((aspect) => aspect.id));
+        for (const group of friendship.groups) {
+          const average = group.aspects.reduce((sum, aspect) => sum + aspect.score, 0) / group.aspects.length;
+          expect(group.score).toBe(Math.round(average));
+          expect(group.band).toBe(scoreBand(group.score));
+        }
+        for (const aspect of friendship.aspects) expect(aspect.description?.en.length).toBeGreaterThan(20);
       }
     }
   });

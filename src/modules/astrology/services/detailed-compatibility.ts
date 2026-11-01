@@ -2,11 +2,15 @@ import {
   type AspectBand,
   type AspectDefinition,
   FRIENDSHIP_ASPECTS,
+  FRIENDSHIP_GROUPS,
   FRIENDSHIP_VERDICTS,
   type FriendshipAspectId,
+  type FriendshipGroupId,
   LOVE_ASPECTS,
+  LOVE_SPHERES,
   LOVE_VERDICTS,
   type LoveAspectId,
+  type LoveSphereId,
   SIGN_TRAITS,
   type TraitId,
 } from "../domain/compatibility-details.data";
@@ -19,11 +23,22 @@ import { allCompatibilitySlugs, canonicalPair, compatibilitySlug, getCompatibili
 export type CompatibilityMode = "love" | "friendship";
 
 export interface AspectScore {
-  id: LoveAspectId | FriendshipAspectId;
+  id: LoveAspectId | LoveSphereId | FriendshipAspectId;
   score: number;
   band: AspectBand;
   title: Bilingual;
+  /** Что пункт значит (у сфер любви и пунктов дружбы). */
+  description?: Bilingual;
   text: Bilingual;
+}
+
+/** Блок пунктов дружбы с общим процентом блока. */
+export interface AspectGroup {
+  id: FriendshipGroupId;
+  title: Bilingual;
+  score: number;
+  band: AspectBand;
+  aspects: AspectScore[];
 }
 
 export interface DetailedCompatibility {
@@ -33,7 +48,12 @@ export interface DetailedCompatibility {
   second: ZodiacSignId;
   overall: number;
   verdict: Bilingual;
+  /** Любовь: 12 подробных пунктов; дружба: 11 пунктов (они же по блокам — в groups). */
   aspects: AspectScore[];
+  /** Любовь: шесть сфер совместимости; у дружбы пусто. */
+  spheres: AspectScore[];
+  /** Дружба: четыре блока пунктов; у любви пусто. */
+  groups: AspectGroup[];
   /** Три самых сильных и три самых слабых пункта: «сильные стороны» и «над чем поработать». */
   strengths: AspectScore[];
   growth: AspectScore[];
@@ -166,19 +186,37 @@ function loveScores(f: PairFactors): Record<LoveAspectId, number> {
 }
 
 function friendshipScores(f: PairFactors): Record<FriendshipAspectId, number> {
+  const values = 56 + 18 * f.harmony + 12 * f.flow + 10 * (f.sim("loyalty") - 0.6) + (f.samePolarity ? 4 : -2);
+  const intellect = 54 + 14 * f.harmony + 10 * f.flow + 14 * (f.sim("talk") - 0.6) + 10 * (f.sim("fun") - 0.6) + 10 * (f.avg("talk") - 0.6);
   const interests = 54 + 14 * f.harmony + 12 * f.flow + 12 * (f.sim("adventure") - 0.6) + 8 * (f.sim("fun") - 0.6);
-  const understanding = 56 + 18 * f.harmony + 14 * f.flow + 8 * (f.sim("talk") - 0.6);
-  const trust = 56 + 10 * f.harmony + 6 * f.flow + 24 * (f.min("loyalty") - 0.55) + 8 * (f.avg("tenderness") - 0.5);
-  const support = 56 + 10 * f.harmony + 6 * f.flow + 16 * (f.avg("tenderness") - 0.55) + 12 * (f.min("loyalty") - 0.55);
-  const adventures = 54 + 8 * f.harmony + 8 * f.chemistry + 32 * (f.avg("adventure") - 0.55) + 16 * (f.sim("adventure") - 0.6);
-  const humor = 56 + 12 * f.harmony + 30 * (f.avg("fun") - 0.55) + 16 * (f.sim("fun") - 0.6);
-  const reliability = 56 + 8 * f.harmony + 28 * (f.avg("loyalty") - 0.6) + 22 * (f.avg("practicality") - 0.55) + 8 * (f.sim("practicality") - 0.6);
-  const conflicts = conflictScore(f) + 2;
-  const projects = 54 + 10 * f.harmony + 14 * (f.avg("ambition") - 0.55) + 12 * (f.avg("practicality") - 0.55) + (f.sameModality ? -5 : 4);
-  const freedom = freedomScore(f) + 3;
-  const inspiration = 52 + 16 * f.chemistry + 10 * f.harmony + 20 * (f.avg("ambition") - 0.55) + 12 * (f.avg("adventure") - 0.55) + (f.samePolarity ? 0 : 3);
-  const lasting = (clamp(trust) * 1.3 + clamp(reliability) + clamp(understanding) + clamp(conflicts) + clamp(support)) / 5.3 + 6 * f.harmony;
-  return { interests, understanding, trust, support, adventures, humor, reliability, conflicts, projects, freedom, inspiration, lasting };
+  const ease = 56 + 18 * f.harmony + 14 * f.flow + 8 * (f.sim("talk") - 0.6);
+  const safety = 56 + 12 * f.harmony + 8 * f.flow + 18 * (f.avg("tenderness") - 0.55) + 12 * (f.min("loyalty") - 0.55) - 12 * (f.avg("stubborn") - 0.5);
+  const rhythm = 56 + 28 * (f.sim("freedom") - 0.6) + 12 * (f.sim("talk") - 0.6) + 6 * f.harmony;
+  const empathy = 54 + 10 * f.harmony + 6 * f.flow + 24 * (f.avg("tenderness") - 0.55) + 8 * (f.sim("ambition") - 0.6);
+  const reliability = 56 + 8 * f.harmony + 26 * (f.avg("loyalty") - 0.6) + 16 * (f.avg("practicality") - 0.55) + 10 * (f.avg("tenderness") - 0.55);
+  const giveTake = 56 + 10 * f.harmony + 4 * f.flow + 16 * (f.sim("tenderness") - 0.6) + 12 * (f.sim("ambition") - 0.6) + 10 * (f.min("loyalty") - 0.55);
+  const conflictStyle = conflictScore(f) + 2;
+  const boundaries = freedomScore(f) + 3;
+  return { values, intellect, interests, ease, safety, rhythm, empathy, reliability, giveTake, conflictStyle, boundaries };
+}
+
+/**
+ * Шесть сфер любви складываются из подробных пунктов (так сферы и пункты не противоречат друг другу) с
+ * поправками на черты, которых в пунктах нет: представления о ролях в семье, отношение к деньгам, темп мысли.
+ */
+function loveSpheres(f: PairFactors, love: Record<LoveAspectId, number>): Record<LoveSphereId, number> {
+  const p = (id: LoveAspectId) => clamp(love[id]);
+  const roles = 52 + 10 * f.harmony + 24 * (f.avg("practicality") - 0.55) + 20 * (f.min("loyalty") - 0.55) + 16 * (f.avg("tenderness") - 0.55) - (f.sameModality ? 5 : 0) + (f.samePolarity ? 0 : 3);
+  const money = 54 + 24 * (f.sim("practicality") - 0.6) + 16 * (f.avg("practicality") - 0.55) + 8 * (f.sim("ambition") - 0.6);
+  const minds = 54 + 14 * f.harmony + 20 * (f.sim("talk") - 0.6) + 12 * (f.avg("talk") - 0.6);
+  return {
+    psyche: 0.4 * p("emotional") + 0.35 * p("trust") + 0.25 * p("conflicts"),
+    worldview: 0.65 * p("values") + 0.2 * p("growth") + 0.15 * p("longTerm"),
+    family: 0.65 * clamp(roles) + 0.35 * p("everyday"),
+    intellect: 0.55 * p("communication") + 0.2 * p("fun") + 0.25 * clamp(minds),
+    material: 0.6 * p("everyday") + 0.4 * clamp(money),
+    physical: 0.55 * p("attraction") + 0.45 * p("tenderness"),
+  };
 }
 
 function verdictFor(overall: number, verdicts: { min: number; text: Bilingual }[]): Bilingual {
@@ -189,7 +227,7 @@ function build<Id extends string>(raw: Record<Id, number>, definitions: AspectDe
   const aspects: AspectScore[] = definitions.map((definition) => {
     const score = clamp(raw[definition.id]);
     const band = scoreBand(score);
-    return { id: definition.id as AspectScore["id"], score, band, title: definition.title, text: definition.text[band] };
+    return { id: definition.id as AspectScore["id"], score, band, title: definition.title, description: definition.description, text: definition.text[band] };
   });
   const totalWeight = definitions.reduce((sum, definition) => sum + definition.weight, 0);
   const average = aspects.reduce((sum, aspect, index) => sum + aspect.score * definitions[index].weight, 0) / totalWeight;
@@ -198,16 +236,25 @@ function build<Id extends string>(raw: Record<Id, number>, definitions: AspectDe
 }
 
 /**
- * Подробная совместимость пары в любви или дружбе: 12 пунктов в процентах, общий итог, сильные стороны и зоны
- * роста. Симметрична и детерминирована: оценки складываются из расстояния между знаками по кругу (гармония и
+ * Подробная совместимость пары в любви или дружбе в процентах: для любви — шесть сфер и 12 подробных пунктов,
+ * для дружбы — 11 пунктов в четырёх блоках; плюс общий итог, сильные стороны и зоны роста. Симметрична и детерминирована: оценки складываются из расстояния между знаками по кругу (гармония и
  * «искра» аспекта), сочетания стихий, крестов и полярности, а также традиционных черт каждого знака
  * (SIGN_TRAITS). Тексты пары берутся из общей совместимости знаков.
  */
 export function getDetailedCompatibility(a: ZodiacSignId, b: ZodiacSignId, mode: CompatibilityMode): DetailedCompatibility {
   const [first, second] = canonicalPair(a, b);
   const factors = pairFactors(first, second);
-  const { aspects, overall } =
-    mode === "love" ? build(loveScores(factors), LOVE_ASPECTS) : build(friendshipScores(factors), FRIENDSHIP_ASPECTS);
+  const love = loveScores(factors);
+  const { aspects, overall } = mode === "love" ? build(love, LOVE_ASPECTS) : build(friendshipScores(factors), FRIENDSHIP_ASPECTS);
+  const spheres = mode === "love" ? build(loveSpheres(factors, love), LOVE_SPHERES).aspects : [];
+  const groups: AspectGroup[] =
+    mode === "friendship"
+      ? FRIENDSHIP_GROUPS.map((group) => {
+          const members = aspects.filter((aspect) => FRIENDSHIP_ASPECTS.find((definition) => definition.id === aspect.id)?.group === group.id);
+          const score = clamp(members.reduce((sum, aspect) => sum + aspect.score, 0) / members.length);
+          return { id: group.id, title: group.title, score, band: scoreBand(score), aspects: members };
+        })
+      : [];
   const ranked = [...aspects].sort((x, y) => y.score - x.score);
   const general = getCompatibility(first, second);
   return {
@@ -217,6 +264,8 @@ export function getDetailedCompatibility(a: ZodiacSignId, b: ZodiacSignId, mode:
     overall,
     verdict: verdictFor(overall, mode === "love" ? LOVE_VERDICTS : FRIENDSHIP_VERDICTS),
     aspects,
+    spheres,
+    groups,
     strengths: ranked.slice(0, 3),
     growth: ranked.slice(-3).reverse(),
     summary: general.summary,

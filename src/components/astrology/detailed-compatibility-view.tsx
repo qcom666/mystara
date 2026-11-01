@@ -3,30 +3,30 @@
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   Anchor,
+  ArrowLeftRight,
   ArrowRight,
+  Baby,
   Brain,
+  Clock,
   Compass,
+  DoorOpen,
   Feather,
   Flame,
-  Gem,
-  Hammer,
   Handshake,
   Heart,
   HeartHandshake,
   House,
   InfinityIcon,
   Laugh,
-  LifeBuoy,
-  Lightbulb,
   type LucideIcon,
   MessageCircle,
-  MountainSnow,
+  MessagesSquare,
   Scale,
   ShieldCheck,
-  Smile,
   Sparkles,
   Sprout,
   TrendingUp,
+  Wallet,
 } from "lucide-react";
 import { type CSSProperties, Suspense, useId } from "react";
 import { CountUp } from "@/components/motion/effects";
@@ -40,6 +40,7 @@ import type { AspectBand } from "@/modules/astrology/domain/compatibility-detail
 import type { ZodiacSignId } from "@/modules/astrology/domain/types";
 import { localizeZodiacSign, requireZodiacSignById } from "@/modules/astrology/domain/zodiac-signs.data";
 import {
+  type AspectGroup,
   type AspectScore,
   COMPATIBILITY_INDEX_PATH,
   type CompatibilityMode,
@@ -66,15 +67,21 @@ const ASPECT_ICONS: Record<AspectScore["id"], LucideIcon> = {
   freedom: Feather,
   growth: Sprout,
   longTerm: InfinityIcon,
+  psyche: HeartHandshake,
+  worldview: Compass,
+  family: Baby,
+  intellect: Brain,
+  material: Wallet,
+  physical: Flame,
   interests: Sparkles,
-  understanding: Brain,
-  support: LifeBuoy,
-  adventures: MountainSnow,
-  humor: Smile,
+  ease: MessagesSquare,
+  safety: ShieldCheck,
+  rhythm: Clock,
+  empathy: HeartHandshake,
   reliability: Anchor,
-  projects: Hammer,
-  inspiration: Lightbulb,
-  lasting: Gem,
+  giveTake: ArrowLeftRight,
+  conflictStyle: Scale,
+  boundaries: DoorOpen,
 };
 
 /** Цвет пункта по уровню: высокий — золото, средний — фиолетовый, низкий — спокойное серебро. */
@@ -272,6 +279,7 @@ function AspectCard({ aspect, index }: { aspect: AspectScore; index: number }) {
             <CountUp value={aspect.score} duration={1.3} />%
           </span>
         </div>
+        {aspect.description && <p className="mt-2 text-xs leading-relaxed text-silver-500">{aspect.description[locale]}</p>}
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-midnight-700" role="presentation">
           <motion.div
             className={cn("h-full origin-left rounded-full bg-gradient-to-r", style.bar)}
@@ -285,6 +293,91 @@ function AspectCard({ aspect, index }: { aspect: AspectScore; index: number }) {
         <p className="mt-3 text-sm leading-relaxed text-silver-400">{aspect.text[locale]}</p>
       </GlassPanel>
     </motion.div>
+  );
+}
+
+/** Кольцо процентов для сферы: заполняется, когда карточка появляется на экране. */
+function MiniRing({ value, band }: { value: number; band: AspectBand }) {
+  const gradientId = useId();
+  const radius = 26;
+  const circumference = 2 * Math.PI * radius;
+  const colors: Record<AspectBand, [string, string]> = {
+    high: ["var(--gold-300)", "var(--gold-600)"],
+    mid: ["var(--violet-300)", "var(--violet-600)"],
+    low: ["var(--silver-300)", "var(--silver-500)"],
+  };
+  return (
+    <div className="relative h-16 w-16 shrink-0">
+      <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90" aria-hidden="true">
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={colors[band][0]} />
+            <stop offset="100%" stopColor={colors[band][1]} />
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r={radius} fill="none" stroke="var(--midnight-700)" strokeWidth="5" />
+        <motion.circle
+          cx="32"
+          cy="32"
+          r={radius}
+          fill="none"
+          stroke={`url(#${gradientId})`}
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={circumference.toFixed(2)}
+          initial={{ strokeDashoffset: circumference }}
+          whileInView={{ strokeDashoffset: circumference * (1 - value / 100) }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </svg>
+      <span className={cn("absolute inset-0 flex items-center justify-center font-display text-lg", BAND_STYLES[band].text)}>
+        <CountUp value={value} duration={1.3} />%
+      </span>
+    </div>
+  );
+}
+
+/** Сфера любви: кольцо процентов, название, что сфера значит, и пояснение для пары. */
+function SphereCard({ sphere }: { sphere: AspectScore }) {
+  const { locale } = useLocale();
+  const Icon = ASPECT_ICONS[sphere.id];
+  return (
+    <motion.div variants={cardVariants} data-reveal className="h-full">
+      <GlassPanel scrollReveal={false} padding="sm" className="h-full">
+        <div className="flex items-start gap-3">
+          <MiniRing value={sphere.score} band={sphere.band} />
+          <div className="min-w-0 flex-1">
+            <h3 className="flex items-center gap-2 font-display text-lg leading-tight text-silver-100">
+              <Icon className={cn("h-4 w-4 shrink-0", BAND_STYLES[sphere.band].text)} />
+              {sphere.title[locale]}
+            </h3>
+            {sphere.description && <p className="mt-1 text-xs leading-relaxed text-silver-500">{sphere.description[locale]}</p>}
+          </div>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-silver-300">{sphere.text[locale]}</p>
+      </GlassPanel>
+    </motion.div>
+  );
+}
+
+/** Блок пунктов дружбы: название, общий процент блока и пункты. */
+function GroupSection({ group, offset }: { group: AspectGroup; offset: number }) {
+  const { locale } = useLocale();
+  return (
+    <section className="mt-8">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-2">
+        <h3 className="font-display text-xl text-silver-100">{group.title[locale]}</h3>
+        <span className={cn("rounded-full border px-3 py-0.5 font-display text-lg", BAND_STYLES[group.band].icon)}>
+          <CountUp value={group.score} duration={1.3} />%
+        </span>
+      </div>
+      <motion.div className="mt-4 grid gap-4 sm:grid-cols-2" variants={gridVariants} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }}>
+        {group.aspects.map((aspect, index) => (
+          <AspectCard key={aspect.id} aspect={aspect} index={offset + index} />
+        ))}
+      </motion.div>
+    </section>
   );
 }
 
@@ -341,19 +434,42 @@ export function DetailedCompatibilityContent({ result }: { result: DetailedCompa
         <p className="text-sm leading-relaxed text-silver-300">{result.summary[locale]}</p>
       </GlassPanel>
 
+      {result.spheres.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-center font-display text-2xl text-silver-100">{copy.spheresHeading}</h2>
+          <motion.div
+            className="mt-6 grid gap-4 sm:grid-cols-2"
+            variants={gridVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.05 }}
+          >
+            {result.spheres.map((sphere) => (
+              <SphereCard key={sphere.id} sphere={sphere} />
+            ))}
+          </motion.div>
+        </section>
+      )}
+
       <section className="mt-12">
-        <h2 className="text-center font-display text-2xl text-silver-100">{copy.aspectsHeading}</h2>
-        <motion.div
-          className="mt-6 grid gap-4 sm:grid-cols-2"
-          variants={gridVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.05 }}
-        >
-          {result.aspects.map((aspect, index) => (
-            <AspectCard key={aspect.id} aspect={aspect} index={index} />
-          ))}
-        </motion.div>
+        <h2 className="text-center font-display text-2xl text-silver-100">{result.groups.length > 0 ? copy.aspectsHeading : copy.detailsHeading}</h2>
+        {result.groups.length > 0 ? (
+          result.groups.map((group, index) => (
+            <GroupSection key={group.id} group={group} offset={result.groups.slice(0, index).reduce((sum, item) => sum + item.aspects.length, 0)} />
+          ))
+        ) : (
+          <motion.div
+            className="mt-6 grid gap-4 sm:grid-cols-2"
+            variants={gridVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.05 }}
+          >
+            {result.aspects.map((aspect, index) => (
+              <AspectCard key={aspect.id} aspect={aspect} index={index} />
+            ))}
+          </motion.div>
+        )}
       </section>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">

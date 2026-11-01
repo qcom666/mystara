@@ -2,8 +2,9 @@ import type { Bilingual } from "./horoscope.data";
 import type { ZodiacSignId } from "./types";
 
 /**
- * Данные подробной совместимости (services/detailed-compatibility.ts): черты характера каждого знака и
- * пункты разбора для любви и для дружбы с текстами на три уровня оценки.
+ * Данные подробной совместимости (services/detailed-compatibility.ts): черты характера каждого знака,
+ * шесть сфер и двенадцать пунктов для любви, одиннадцать пунктов дружбы в четырёх блоках — с текстами на три
+ * уровня оценки.
  */
 
 /** Черты знака по шкале 1–10 — традиционные астрологические образы знаков, а не измерения. */
@@ -62,24 +63,25 @@ export type LoveAspectId =
   | "longTerm";
 
 export type FriendshipAspectId =
+  | "values"
+  | "intellect"
   | "interests"
-  | "understanding"
-  | "trust"
-  | "support"
-  | "adventures"
-  | "humor"
+  | "ease"
+  | "safety"
+  | "rhythm"
+  | "empathy"
   | "reliability"
-  | "conflicts"
-  | "projects"
-  | "freedom"
-  | "inspiration"
-  | "lasting";
+  | "giveTake"
+  | "conflictStyle"
+  | "boundaries";
 
 export type AspectBand = "high" | "mid" | "low";
 
 export interface AspectDefinition<Id extends string> {
   id: Id;
   title: Bilingual;
+  /** Что этот пункт значит — подпись под названием (у сфер любви и пунктов дружбы). */
+  description?: Bilingual;
   /** Пояснение для высокой (от 75 %), средней (55–74 %) и низкой оценки. */
   text: Record<AspectBand, Bilingual>;
   /** Вес пункта в общей оценке. */
@@ -317,11 +319,221 @@ export const LOVE_ASPECTS: AspectDefinition<LoveAspectId>[] = [
   },
 ];
 
-export const FRIENDSHIP_ASPECTS: AspectDefinition<FriendshipAspectId>[] = [
+export type LoveSphereId = "psyche" | "worldview" | "family" | "intellect" | "material" | "physical";
+
+/**
+ * Шесть сфер совместимости в любви — крупный план над подробными пунктами. У каждой есть определение (что
+ * эта сфера значит) и пояснение для пары на трёх уровнях.
+ */
+export const LOVE_SPHERES: AspectDefinition<LoveSphereId>[] = [
+  {
+    id: "psyche",
+    weight: 1,
+    title: { ru: "Эмоциональная и психологическая", en: "Emotional and psychological" },
+    description: {
+      ru: "Спокойное принятие особенностей друг друга без постоянного раздражения, чувство безопасности и доверия.",
+      en: "Calm acceptance of each other's quirks without constant irritation, a sense of safety and trust.",
+    },
+    text: {
+      high: {
+        ru: "Вам спокойно друг с другом: особенности партнёра не раздражают, а рядом с ним чувствуешь себя в безопасности.",
+        en: "You feel at ease together: your partner's quirks don't grate, and you feel safe by their side.",
+      },
+      mid: {
+        ru: "В целом вам спокойно вместе, но некоторые привычки друг друга требуют терпения и разговора.",
+        en: "On the whole you're at peace together, but some of each other's habits call for patience and a talk.",
+      },
+      low: {
+        ru: "Характеры здесь задевают друг друга. Спокойствие придёт, когда вы научитесь называть раздражение вслух, а не копить его.",
+        en: "Your temperaments rub against each other. Calm comes once you learn to name irritation out loud instead of storing it up.",
+      },
+    },
+  },
+  {
+    id: "worldview",
+    weight: 1,
+    title: { ru: "Ценностная (духовная)", en: "Values and worldview" },
+    description: {
+      ru: "Общие взгляды на жизнь, религию, политику, мораль и основные жизненные цели.",
+      en: "Shared views on life, religion, politics, morality and your main goals in life.",
+    },
+    text: {
+      high: {
+        ru: "Вы смотрите на жизнь похоже: в главных вопросах — что правильно, ради чего жить и куда идти — вы на одной стороне.",
+        en: "You see life in a similar way: on the big questions — what's right, what to live for, where to go — you're on the same side.",
+      },
+      mid: {
+        ru: "В главном вы совпадаете, а в отдельных вопросах — от веры до политики — взгляды расходятся. Уважение здесь важнее согласия.",
+        en: "You agree on the essentials, while on some questions — from faith to politics — your views differ. Respect matters more than agreement.",
+      },
+      low: {
+        ru: "Взгляды на жизнь у вас заметно разные. Союз держится, когда вы не пытаетесь переубедить друг друга.",
+        en: "Your outlooks differ noticeably. The union holds when you stop trying to convert each other.",
+      },
+    },
+  },
+  {
+    id: "family",
+    weight: 1,
+    title: { ru: "Семейно-ролевая", en: "Family and roles" },
+    description: {
+      ru: "Понимание того, каким должен быть брак, кто и как ведёт хозяйство, распределяет роли и воспитывает детей.",
+      en: "Your idea of what marriage should be, who runs the household and how, how roles are shared and children raised.",
+    },
+    text: {
+      high: {
+        ru: "Вы похоже представляете семью: роли распределяются естественно, без борьбы за то, кто главный.",
+        en: "You picture family life in a similar way: roles fall into place naturally, with no struggle over who's in charge.",
+      },
+      mid: {
+        ru: "Представления о семье в целом совпадают, но о ролях и воспитании лучше договориться заранее.",
+        en: "Your ideas of family broadly match, but it's best to agree on roles and parenting in advance.",
+      },
+      low: {
+        ru: "Вы по-разному видите семью и роли в ней. Обсудите это на берегу — до общего быта и детей.",
+        en: "You see family and roles in it differently. Talk it through early — before shared housekeeping and children.",
+      },
+    },
+  },
+  {
+    id: "intellect",
+    weight: 1,
+    title: { ru: "Интеллектуальная", en: "Intellectual" },
+    description: {
+      ru: "Схожий уровень восприятия информации, интерес к беседам друг с другом и уважение к мыслям партнёра.",
+      en: "A similar way of taking in information, interest in talking to each other and respect for your partner's thoughts.",
+    },
+    text: {
+      high: {
+        ru: "Вам интересно друг с другом: вы думаете в одном темпе, спорите с удовольствием и уважаете мнение партнёра.",
+        en: "You find each other interesting: you think at the same pace, enjoy a debate and respect each other's opinions.",
+      },
+      mid: {
+        ru: "Общих тем хватает, хотя думаете вы по-разному: один — быстро и широко, другой — глубоко и основательно.",
+        en: "There's plenty to talk about, though you think differently: one fast and broad, the other deep and thorough.",
+      },
+      low: {
+        ru: "Интеллектуально вы на разных волнах. Помогает искренний интерес к тому, чем живёт голова партнёра.",
+        en: "Intellectually you're on different wavelengths. Genuine curiosity about what's on your partner's mind helps.",
+      },
+    },
+  },
+  {
+    id: "material",
+    weight: 1,
+    title: { ru: "Материально-бытовая", en: "Money and household" },
+    description: {
+      ru: "Совпадение взглядов на деньги, общий или раздельный бюджет, траты и бытовые привычки.",
+      en: "Matching views on money, a joint or separate budget, spending and household habits.",
+    },
+    text: {
+      high: {
+        ru: "В деньгах и быту у вас редкое согласие: похожие привычки, траты и представления о порядке.",
+        en: "You're in rare agreement on money and home: similar habits, spending and ideas of order.",
+      },
+      mid: {
+        ru: "О деньгах и быте вы договоритесь, если сразу решите, какой бюджет общий, а какой — у каждого свой.",
+        en: "You'll agree on money and housework once you decide what budget is shared and what's each person's own.",
+      },
+      low: {
+        ru: "Отношение к деньгам и порядку у вас разное — частый повод для споров. Помогают прозрачные правила.",
+        en: "You treat money and order differently — a frequent source of arguments. Clear rules help.",
+      },
+    },
+  },
+  {
+    id: "physical",
+    weight: 1,
+    title: { ru: "Физическая и сексуальная", en: "Physical and sexual" },
+    description: {
+      ru: "Биологическая и психологическая гармония в интимной жизни, схожий темперамент.",
+      en: "Biological and psychological harmony in your intimate life, a similar temperament.",
+    },
+    text: {
+      high: {
+        ru: "Между вами сильная физическая гармония: похожий темперамент и естественное влечение.",
+        en: "There's strong physical harmony between you: a similar temperament and natural desire.",
+      },
+      mid: {
+        ru: "Физическая близость складывается, хотя темпераменты у вас немного разные — важно говорить о желаниях.",
+        en: "Physical closeness comes together, though your temperaments differ a little — talking about desires matters.",
+      },
+      low: {
+        ru: "Темпераменты у вас разные, и гармония в интимной жизни требует внимания и открытого разговора.",
+        en: "Your temperaments differ, and harmony in your intimate life needs attention and open conversation.",
+      },
+    },
+  },
+];
+
+export type FriendshipGroupId = "base" | "comfort" | "behavior" | "conflict";
+
+export const FRIENDSHIP_GROUPS: { id: FriendshipGroupId; title: Bilingual }[] = [
+  { id: "base", title: { ru: "Ценностная и интеллектуальная база", en: "Values and intellect" } },
+  { id: "comfort", title: { ru: "Психологический комфорт и общение", en: "Psychological comfort and communication" } },
+  { id: "behavior", title: { ru: "Поведение и эмоции", en: "Behaviour and emotions" } },
+  { id: "conflict", title: { ru: "Конфликтная совместимость", en: "Handling conflict" } },
+];
+
+/** Пункты дружбы, сгруппированные в четыре блока (FRIENDSHIP_GROUPS). */
+export const FRIENDSHIP_ASPECTS: (AspectDefinition<FriendshipAspectId> & { group: FriendshipGroupId })[] = [
+  {
+    id: "values",
+    group: "base",
+    weight: 1.2,
+    title: { ru: "Общность жизненных ориентиров", en: "Shared outlook on life" },
+    description: {
+      ru: "Совпадение базовых представлений о добре, честности, морали и отношении к людям.",
+      en: "Matching basic ideas about kindness, honesty, morality and how to treat people.",
+    },
+    text: {
+      high: {
+        ru: "Вы одинаково понимаете, что честно и правильно, — на таком фундаменте дружба стоит крепко.",
+        en: "You share the same sense of what's honest and right — a firm foundation for a friendship.",
+      },
+      mid: {
+        ru: "В главном ваши ценности совпадают, а в частностях вы смотрите по-разному — и это нормально.",
+        en: "Your core values match, while on details you see things differently — and that's fine.",
+      },
+      low: {
+        ru: "Представления о правильном у вас разные. Дружба держится на уважении к чужому взгляду.",
+        en: "Your ideas of what's right differ. The friendship rests on respect for the other's view.",
+      },
+    },
+  },
+  {
+    id: "intellect",
+    group: "base",
+    weight: 1,
+    title: { ru: "Интеллектуальный резонанс", en: "Intellectual resonance" },
+    description: {
+      ru: "Разговор «на одном языке»: схожая скорость мышления, глубина суждений и чувство юмора.",
+      en: "Speaking the same language: a similar pace of thought, depth of judgement and sense of humour.",
+    },
+    text: {
+      high: {
+        ru: "Вы говорите на одном языке: одинаковый темп мысли, глубина разговоров и чувство юмора.",
+        en: "You speak the same language: the same pace of thought, depth of conversation and sense of humour.",
+      },
+      mid: {
+        ru: "Поговорить вам есть о чём, хотя порой один думает быстрее, а другой — глубже.",
+        en: "You have plenty to talk about, though sometimes one thinks faster and the other deeper.",
+      },
+      low: {
+        ru: "Думаете вы по-разному, и разговор клеится не всегда. Зато каждый может показать другому новый взгляд.",
+        en: "You think differently, and conversation doesn't always click. But each of you can show the other a new perspective.",
+      },
+    },
+  },
   {
     id: "interests",
-    weight: 1.1,
-    title: { ru: "Общие интересы", en: "Shared interests" },
+    group: "base",
+    weight: 0.8,
+    title: { ru: "Совпадение интересов", en: "Shared interests" },
+    description: {
+      ru: "Общие хобби, увлечения и темы — и, главное, взаимный интерес к жизни друг друга.",
+      en: "Shared hobbies, passions and topics — and, above all, real interest in each other's lives.",
+    },
     text: {
       high: {
         ru: "Вам интересны одни и те же вещи, поэтому повод встретиться находится всегда.",
@@ -338,9 +550,14 @@ export const FRIENDSHIP_ASPECTS: AspectDefinition<FriendshipAspectId>[] = [
     },
   },
   {
-    id: "understanding",
-    weight: 1.2,
-    title: { ru: "Понимание с полуслова", en: "Understanding each other" },
+    id: "ease",
+    group: "comfort",
+    weight: 1.1,
+    title: { ru: "Лёгкость в общении", en: "Ease of communication" },
+    description: {
+      ru: "Никакой неловкости в молчании и не нужно подбирать слова: общение течёт само.",
+      en: "No awkwardness in silence and no need to choose your words: conversation simply flows.",
+    },
     text: {
       high: {
         ru: "Вы понимаете друг друга с полуслова и можете молчать вместе без неловкости.",
@@ -351,98 +568,99 @@ export const FRIENDSHIP_ASPECTS: AspectDefinition<FriendshipAspectId>[] = [
         en: "Usually you're on the same wavelength, though sometimes you have to explain what you meant.",
       },
       low: {
-        ru: "Вы смотрите на мир по-разному, поэтому недопонимания случаются. Переспрашивайте, а не додумывайте.",
+        ru: "Вы смотрите на мир по-разному, и недопонимания случаются. Переспрашивайте, а не додумывайте.",
         en: "You see the world differently, so misunderstandings happen. Ask instead of assuming.",
       },
     },
   },
   {
-    id: "trust",
-    weight: 1.3,
-    title: { ru: "Доверие и секреты", en: "Trust and secrets" },
-    text: {
-      high: {
-        ru: "Такому другу можно доверить что угодно: ваши секреты в надёжных руках.",
-        en: "You can trust this friend with anything: your secrets are safe.",
-      },
-      mid: {
-        ru: "Доверие есть, и оно крепнет с каждым испытанием, которое вы проходите вместе.",
-        en: "The trust is there, and it grows with every test you go through together.",
-      },
-      low: {
-        ru: "Доверие здесь нужно заслужить: начните с малого и держите слово.",
-        en: "Trust has to be earned here: start small and keep your word.",
-      },
-    },
-  },
-  {
-    id: "support",
+    id: "safety",
+    group: "comfort",
     weight: 1.2,
-    title: { ru: "Поддержка в трудную минуту", en: "Support in hard times" },
+    title: { ru: "Эмоциональная безопасность", en: "Emotional safety" },
+    description: {
+      ru: "Можно быть собой и делиться страхами, слабостями и глупыми мыслями без страха осуждения.",
+      en: "You can be yourself and share fears, weaknesses and silly thoughts without fear of judgement.",
+    },
     text: {
       high: {
-        ru: "В трудную минуту вы первые, кому звоните друг другу, — и знаете, что вас выслушают.",
-        en: "In hard times you're each other's first call — and you know you'll be heard.",
+        ru: "С этим другом можно быть собой: делиться страхами и самыми странными мыслями, не боясь осуждения.",
+        en: "With this friend you can be yourself: share fears and the oddest thoughts without fear of judgement.",
       },
       mid: {
-        ru: "Вы поддержите друг друга, хотя утешаете по-разному: один — делом, другой — словом.",
-        en: "You'll support each other, though you comfort differently: one with deeds, the other with words.",
+        ru: "Открываться друг другу вы можете, но некоторым темам нужны время и доверие.",
+        en: "You can open up to each other, but some topics need time and trust.",
       },
       low: {
-        ru: "Поддержку вы понимаете по-разному. Спросите прямо, что нужно другу, — так помощь попадёт в цель.",
-        en: "You understand support differently. Ask directly what your friend needs — that way help lands.",
+        ru: "Кто-то из вас резковат в оценках, и открываться страшновато. Договоритесь не критиковать то, чем делятся по секрету.",
+        en: "One of you can be blunt, which makes opening up a little scary. Agree not to criticise what's shared in confidence.",
       },
     },
   },
   {
-    id: "adventures",
+    id: "rhythm",
+    group: "comfort",
     weight: 0.9,
-    title: { ru: "Приключения и движ", en: "Adventures" },
+    title: { ru: "Схожий стиль общения", en: "Similar communication style" },
+    description: {
+      ru: "Обоих устраивают темп и формат: созваниваться каждый день или видеться раз в месяц.",
+      en: "You're both happy with the pace and format: daily calls or a meet-up once a month.",
+    },
     text: {
       high: {
-        ru: "С вами не соскучишься: поездки, спонтанные планы и безумные идеи — ваша стихия.",
-        en: "Never a dull moment: trips, spontaneous plans and wild ideas are your thing.",
+        ru: "Вам подходит один и тот же ритм: сколько общаться и как часто видеться — вопросов не возникает.",
+        en: "The same rhythm suits you both: how much to talk and how often to meet is never an issue.",
       },
       mid: {
-        ru: "Вы с удовольствием куда-то выбираетесь вместе, если кто-то один берёт инициативу.",
-        en: "You enjoy going places together, as long as one of you takes the lead.",
+        ru: "Ритм общения у вас немного разный. Договоритесь, как часто созваниваться, — и никто не почувствует себя забытым.",
+        en: "Your rhythm of contact differs a little. Agree how often to call — and no one will feel forgotten.",
       },
       low: {
-        ru: "Один рвётся в приключения, другой ценит уют. Чередуйте: вылазка — вечер дома.",
-        en: "One craves adventure, the other loves comfort. Alternate: an outing, then a night in.",
+        ru: "Один ждёт связи каждый день, другому хватает встречи раз в месяц. Найдите формат, удобный обоим.",
+        en: "One expects daily contact, the other is happy with a monthly meet-up. Find a format that suits you both.",
       },
     },
   },
   {
-    id: "humor",
-    weight: 0.9,
-    title: { ru: "Юмор", en: "Humour" },
+    id: "empathy",
+    group: "behavior",
+    weight: 1,
+    title: { ru: "Уровень эмпатии", en: "Empathy" },
+    description: {
+      ru: "Искренняя радость за успехи друга без зависти и сопереживание в трудную минуту.",
+      en: "Genuine joy at a friend's success without envy, and compassion in hard times.",
+    },
     text: {
       high: {
-        ru: "Вы смеётесь над одним и тем же, и у вас уже есть шутки, понятные только вам.",
-        en: "You laugh at the same things and already have inside jokes only you understand.",
+        ru: "Вы искренне радуетесь успехам друг друга и рядом, когда трудно, — без капли зависти.",
+        en: "You genuinely celebrate each other's successes and are there when things are hard — without a trace of envy.",
       },
       mid: {
-        ru: "Посмеяться вместе вы умеете, хотя чувство юмора у вас немного разное.",
-        en: "You can laugh together, though your senses of humour differ a little.",
+        ru: "Сочувствовать вы умеете, хотя выражаете это по-разному: один словами, другой делом.",
+        en: "You can empathise, though you show it differently: one with words, the other with deeds.",
       },
       low: {
-        ru: "Юмор у вас разный: то, что смешно одному, другого может задеть. Шутите бережно.",
-        en: "Your humour differs: what's funny to one can hurt the other. Joke with care.",
+        ru: "Сопереживание даётся вам не сразу. Спрашивайте, как дела, и выслушивайте ответ до конца.",
+        en: "Empathy doesn't come instantly to you. Ask how things are going and hear the answer out.",
       },
     },
   },
   {
     id: "reliability",
-    weight: 1,
-    title: { ru: "Надёжность", en: "Reliability" },
+    group: "behavior",
+    weight: 1.3,
+    title: { ru: "Надёжность и поддержка", en: "Reliability and support" },
+    description: {
+      ru: "Готовность прийти на помощь, держать слово и хранить секреты. Доверие — главный признак совместимости.",
+      en: "Readiness to help, keep your word and keep secrets. Trust is the main sign of compatibility.",
+    },
     text: {
       high: {
-        ru: "На вас обоих можно положиться: вы приходите вовремя, помните о важном и держите обещания.",
-        en: "You can both be counted on: you show up on time, remember what matters and keep promises.",
+        ru: "На вас обоих можно положиться: вы приходите на помощь, держите слово и храните секреты.",
+        en: "You can both be counted on: you come to help, keep your word and keep secrets.",
       },
       mid: {
-        ru: "В целом вы надёжны друг для друга, но в мелочах кто-то может подводить.",
+        ru: "В целом вы надёжны друг для друга, хотя в мелочах кто-то может подводить.",
         en: "Overall you're reliable for each other, though one of you may slip on small things.",
       },
       low: {
@@ -452,13 +670,42 @@ export const FRIENDSHIP_ASPECTS: AspectDefinition<FriendshipAspectId>[] = [
     },
   },
   {
-    id: "conflicts",
-    weight: 0.9,
-    title: { ru: "Ссоры и примирение", en: "Arguments and making up" },
+    id: "giveTake",
+    group: "behavior",
+    weight: 1,
+    title: { ru: "Баланс «брать — отдавать»", en: "Give-and-take balance" },
+    description: {
+      ru: "Взаимный обмен временем, вниманием и поддержкой — без вечного «спасателя» и того, кто только берёт.",
+      en: "A mutual exchange of time, attention and support — no permanent rescuer and no one who only takes.",
+    },
     text: {
       high: {
-        ru: "Вы редко ссоритесь, а если ссоритесь — быстро миритесь и не держите зла.",
-        en: "You rarely fall out, and when you do, you make up quickly and hold no grudges.",
+        ru: "Вы отдаёте друг другу поровну — время, внимание, поддержку, — и никто не чувствует себя использованным.",
+        en: "You give each other equally — time, attention, support — and no one feels used.",
+      },
+      mid: {
+        ru: "Баланс в целом есть, но иногда один отдаёт больше. Замечайте это и благодарите.",
+        en: "There's broadly a balance, but sometimes one gives more. Notice it and say thank you.",
+      },
+      low: {
+        ru: "Есть риск, что один станет вечным «спасателем», а другой будет только брать. Следите за равновесием.",
+        en: "There's a risk one becomes the permanent rescuer and the other only takes. Keep an eye on the balance.",
+      },
+    },
+  },
+  {
+    id: "conflictStyle",
+    group: "conflict",
+    weight: 1,
+    title: { ru: "Стиль разрешения споров", en: "How you resolve disputes" },
+    description: {
+      ru: "Умение обсуждать недопонимания спокойно, без перехода на личности и пассивной агрессии, прощать и уступать.",
+      en: "Discussing misunderstandings calmly, without personal attacks or passive aggression, and being able to forgive and compromise.",
+    },
+    text: {
+      high: {
+        ru: "Вы редко ссоритесь, а если ссоритесь — спокойно обсуждаете, быстро миритесь и не держите зла.",
+        en: "You rarely fall out, and when you do, you talk it through calmly, make up quickly and hold no grudges.",
       },
       mid: {
         ru: "Споры бывают, но дружба их выдерживает, если не копить обиды.",
@@ -471,78 +718,26 @@ export const FRIENDSHIP_ASPECTS: AspectDefinition<FriendshipAspectId>[] = [
     },
   },
   {
-    id: "projects",
-    weight: 0.8,
-    title: { ru: "Общие дела", en: "Doing things together" },
-    text: {
-      high: {
-        ru: "Вместе вы отличная команда: общий проект, ремонт или идея для бизнеса у вас спорятся.",
-        en: "Together you're a great team: a shared project, a renovation or a business idea gets done.",
-      },
-      mid: {
-        ru: "Работать вместе получается, если заранее разделить роли.",
-        en: "Working together works once you divide the roles in advance.",
-      },
-      low: {
-        ru: "В делах вы тянете в разные стороны. Дружите — а общие проекты обсуждайте очень подробно.",
-        en: "In practical matters you pull in different directions. Stay friends — and discuss joint projects in great detail.",
-      },
+    id: "boundaries",
+    group: "conflict",
+    weight: 0.9,
+    title: { ru: "Уважение к личным границам", en: "Respect for boundaries" },
+    description: {
+      ru: "Принятие чужого «нет»: никаких обид, если друг занят или хочет побыть один.",
+      en: "Accepting the other's 'no': no hard feelings if a friend is busy or wants to be alone.",
     },
-  },
-  {
-    id: "freedom",
-    weight: 0.8,
-    title: { ru: "Личное пространство", en: "Personal space" },
     text: {
       high: {
-        ru: "Вы не обижаетесь, если неделю не виделись: дружба от этого не слабеет.",
-        en: "You don't mind not seeing each other for a week: the friendship doesn't weaken.",
+        ru: "Вы спокойно принимаете чужое «нет»: никто не обижается, если другой занят или хочет побыть один.",
+        en: "You calmly accept each other's 'no': nobody's hurt if the other is busy or wants to be alone.",
       },
       mid: {
-        ru: "Одному из вас нужно чуть больше общения, чем другому. Обсудите это — и никто не почувствует себя забытым.",
-        en: "One of you needs a bit more contact than the other. Talk about it and no one will feel forgotten.",
+        ru: "Иногда отказ задевает одного из вас. Проговаривайте: «нет» — это не про отношение к другу.",
+        en: "Sometimes a refusal stings one of you. Say it out loud: a 'no' isn't about how you feel about your friend.",
       },
       low: {
-        ru: "Один ждёт постоянной связи, другой пропадает. Договоритесь о ритме, который устроит обоих.",
-        en: "One expects constant contact, the other disappears. Agree on a rhythm that suits you both.",
-      },
-    },
-  },
-  {
-    id: "inspiration",
-    weight: 0.8,
-    title: { ru: "Вдохновение", en: "Inspiring each other" },
-    text: {
-      high: {
-        ru: "Рядом друг с другом вы загораетесь идеями и решаетесь на то, на что поодиночке бы не пошли.",
-        en: "Around each other you catch fire with ideas and dare things you wouldn't alone.",
-      },
-      mid: {
-        ru: "Вы подкидываете друг другу полезные мысли, хотя мечтаете о разном.",
-        en: "You give each other useful ideas, though you dream of different things.",
-      },
-      low: {
-        ru: "Цели у вас разные, но это повод увидеть, как живёт человек с другим взглядом на мир.",
-        en: "Your goals differ, but that's a chance to see how someone with a different view of the world lives.",
-      },
-    },
-  },
-  {
-    id: "lasting",
-    weight: 1.4,
-    title: { ru: "Дружба на годы", en: "Friendship for years" },
-    text: {
-      high: {
-        ru: "Это та дружба, что выдерживает переезды, перемены и годы: у неё крепкий фундамент.",
-        en: "This is the kind of friendship that survives moves, changes and years: it has a solid foundation.",
-      },
-      mid: {
-        ru: "Дружба может стать долгой, если оба будут о ней заботиться.",
-        en: "The friendship can last if you both look after it.",
-      },
-      low: {
-        ru: "Такая дружба держится на усилиях обоих — но именно поэтому её особенно ценят.",
-        en: "This friendship relies on effort from both of you — which is exactly why it's so valued.",
+        ru: "Один легко обижается на отказ, другой бережёт своё время превыше всего. Уважайте границы друг друга.",
+        en: "One is easily hurt by a refusal, the other guards their time above all. Respect each other's boundaries.",
       },
     },
   },
